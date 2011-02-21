@@ -1,0 +1,6 @@
+= form_for :customer_search, :url => root_url do |f|
+  %ul
+    %li 
+      = f.text_field :body_contains
+    %li
+      = f.submit "Search"

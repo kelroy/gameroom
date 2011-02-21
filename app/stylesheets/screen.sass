@@ -3,4 +3,34 @@
  * Import this file using the following HTML or equivalent:
  * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
 
+@import "compass"
 @import "compass/reset"
+
+/* Fonts */
+@include font-face("BrandishRegular", font-files("/fonts/brandishregular-webfont.woff", woff, "/fonts/brandishregular-webfont.ttf", truetype, "/fonts/brandishregular-webfont.svg#webfont9QOU8SQF", svg), "/fonts/brandishregular-webfont.eot")
+@include font-face("LatinModernMonoLight10Regular", font-files("/fonts/lmmonolt10-regular-webfont.woff", woff, "/fonts/lmmonolt10-regular-webfont.ttf", truetype, "/fonts/lmmonolt10-regular-webfont.svg#webfontpr3g0jrX", svg), "/fonts/lmmonolt10-regular-webfont.eot")
+@include font-face("LatinModernMonoLight10Bold", font-files("/fonts/lmmonolt10-bold-webfont.woff", woff, "/fonts/lmmonolt10-bold-webfont.ttf", truetype, "/fonts/lmmonolt10-bold-webfont.svg#webfontNCHNbbVb", svg), "/fonts/lmmonolt10-bold-webfont.eot")
+
+/* Colors */
+$black: #0F1014
+$yellow: #E7CD4B
+$white: #FBFBF3
+
+body
+  background-color: $black
+  color: $white
+  font-family: LatinModernMonoLight10Regular, Helvetica
+  
+section
+  background-color: $white
+  color: $black
+  
+h1, h2, h3
+  font-family: BrandishRegular, Helvetica
+  
+h1
+  font-size: 48px
+  
+h2
+  font-size: 12px
+  

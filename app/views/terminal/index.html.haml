@@ -1,0 +1,49 @@
+%header
+  %h1 GAMEROOM
+  %h2 1709 O St. Lincoln NE 68508 402-438-7161
+  - if current_user
+    %ul{:id => 'user'}
+      %li= current_user.login
+      %li
+        = link_to "Logout", logout_path, :method => :delete
+  %ul{:id => 'transaction'}
+    %li
+      %a{:href => '#hold'} Hold
+    %li
+      %a{:href => '#load'} Recall
+    %li
+      %a{:href => '#reset'} Reset
+%section{:id => 'customers'}
+  = render :partial => 'customer_search_form'
+  %ul{:id => 'customer_container_nav'}
+    %li
+      %a{:href => '#customer'} Customer
+    %li
+      %a{:href => '#search_results'} Search Results
+  %div{:id => 'customer_container'}
+    %div{:id => 'customer_form'}
+      = render :partial => 'customer_form'
+      %table{:id => 'customer_history'}
+        %thead
+          %tr
+            %th Date
+            %th Amount
+    %div{:id => 'customer_search_results'}
+      %ul
+        %li Last, First
+%section{:id => 'items'}
+%section{:id => 'payment'}
+%section{:id => 'review'}
+%footer
+  %ul
+    %li
+      %a{:href => '#customers'} Customers
+    %li
+      %a{:href => '#items'} Items
+    %li
+      %a{:href => '#payment'} Payment
+  %h2 Last, First
+  %h2 $20.00
+  %ul
+    %li
+      %a{:href => '#complete'} Complete

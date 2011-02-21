@@ -1,4 +1,12 @@
 GameroomlincolnTerminal::Application.routes.draw do
+  
+  match 'login' => "user_sessions#new",      :as => :login
+  match 'logout' => "user_sessions#destroy", :as => :logout
+  
+  resources :user_sessions, :except => [:index, :show]
+  
+  root :to => 'terminal#index'
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -50,11 +50,11 @@ ul#section_nav
       font-size: 20px
       text-decoration: none
       +link_colors($black)
-      background-color: $white
+      background-color: $light_gray
       @include border-bottom-radius(10px)
       
-      &.inactive
-        background-color: $gray
+      &.active
+        background-color: $white
     
 ul#customer_nav
   height: 20px
@@ -72,12 +72,13 @@ ul#customer_nav
       font-family: LatinModernMonoLight10Bold, Tacoma, serif
       font-size: 14px
       text-decoration: none
-      +link_colors($white)
-      background-color: $black
+      +link_colors($black)
+      background-color: $light_gray
       @include border-top-radius(10px)
     
-      &.inactive
-        background-color: $gray
+      &.active
+        background-color: $black
+        +link_colors($white)
         
 ul#customer_letter_nav
   height: 20px

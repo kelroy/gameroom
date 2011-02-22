@@ -6,9 +6,9 @@
   = render :partial => 'customer_search_form'
 %ul{:id => 'customer_nav'}
   %li
-    %a{:href => '#customer'} Customer
+    %a{:href => '#customer_form', :class => 'customer_form active'} Customer
   %li
-    %a{:href => '#search_results', :class => 'inactive'} Search Results
+    %a{:href => '#customer_search_results', :class => 'customer_search_results'} Search Results
 %div{:id => 'customer_page_container'}
   %div{:id => 'customer_form'}
     = render :partial => 'customer_form'

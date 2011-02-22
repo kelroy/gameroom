@@ -1,0 +1,36 @@
+form
+  ul
+    li
+      margin-bottom: 5px
+      clear: both
+      
+      &:last-child
+        margin-bottom: 0px
+        
+      ul
+        display: block
+        
+        li
+          float: left
+          clear: none
+          margin-right: 10px
+      
+  label
+    display: block
+    margin-bottom: 5px
+    font-family: LatinModernMonoLight10Bold, Tacoma, serif
+    
+    &.inline
+      display: inline
+      
+  input, textarea, select
+    font-family: LatinModernMonoLight10Regular, Tacoma, serif
+      
+  input[type=text],
+  input[type=password],
+  textarea
+    padding: 4px
+    outline: none
+    font-size: 14px
+    border: 1px $black solid
+    @include border-radius(2px)

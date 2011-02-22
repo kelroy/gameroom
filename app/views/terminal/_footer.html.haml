@@ -1,0 +1,22 @@
+%ul{:id => 'section_nav'}
+  %li
+    %a{:href => '#customer'} 1. Customer
+  %li
+    %a{:href => '#cart', :class => 'inactive'} 2. Cart
+  %li
+    %a{:href => '#payment', :class => 'inactive'} 3. Payment
+  %li
+    %a{:href => '#review', :class => 'inactive'} 4. Review
+%ul{:id => 'summary_nav'}
+  %li
+    %h2{:id => 'customer'} Last, First
+  %li 
+    %h2 &#124;
+  %li
+    %h2{:id => 'item_count'} 1 item(s)
+  %li
+    %h2 &#124;
+  %li
+    %h2{:id => 'total'} $20.00
+  %li
+    %a{:href => '#finish'} Finish

@@ -1,0 +1,15 @@
+#login_form
+  %h2 Login
+  = form_for @user_session do |f|
+    %ul
+      %li
+        = f.label :login, "Username"
+        = f.text_field :login
+      %li
+        = f.label :password
+        = f.password_field :password
+      %li
+        = f.label :remember_me, :class => 'inline'
+        = f.check_box :remember_me
+      %li
+        = f.submit "Login"

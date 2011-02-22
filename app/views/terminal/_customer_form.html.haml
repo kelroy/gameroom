@@ -1,0 +1,62 @@
+= form_for :customer do |c|
+  %ul
+    = c.fields_for :person do |p|
+      %li
+        %ul
+          %li
+            = p.label :first_name, "First Name"
+            = p.text_field :first_name
+          %li
+            = p.label :last_name, "Last Name"
+            = p.text_field :last_name
+          %li
+            = p.label :middle_name, "Middle Name"
+            = p.text_field :middle_name
+      = p.fields_for :address do |a|
+        %li
+          %ul
+            %li
+              = a.label :first_line, "First Line"
+              = a.text_field :first_line
+            %li
+              = a.label :second_line, "Second Line"
+              = a.text_field :second_line
+            %li
+              = a.label :city
+              = a.text_field :city
+            %li
+              = a.label :state
+              = a.text_field :state
+            %li
+              = a.label :zip
+              = a.text_field :zip
+      %li
+        %ul
+          = p.fields_for :phone do |h|
+            %li
+              = h.label :number, "Phone Number"
+              = h.text_field :number
+          = p.fields_for :email do |e|
+            %li
+              = e.label :address, "Email Address"
+              = e.text_field :address
+          %li
+            = c.label :drivers_license_number, "Drivers License No."
+            = c.text_field :drivers_license_number
+          %li
+            = c.label :drivers_license_state, "Drivers License State"
+            = c.text_field :drivers_license_state
+    %li
+      %ul
+        %li
+          = c.label :credit, "Store Credit"
+          = c.text_field :credit
+        %li
+          = c.label :flagged
+          = c.check_box :flagged
+    %li
+      = c.label :notes
+      = c.text_area :notes, :rows => 4, :cols => 100
+    %li
+      = c.submit "Clear"
+      = c.submit "Save"

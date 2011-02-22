@@ -1,0 +1,47 @@
+%div{:id => 'customer_search_container'}
+  %ul{:id => 'customer_letter_nav'}
+    - ('A'..'Z').each do |letter|
+      %li
+        %a{:href => "##{letter}"}= letter
+  = render :partial => 'customer_search_form'
+%ul{:id => 'customer_nav'}
+  %li
+    %a{:href => '#customer'} Customer
+  %li
+    %a{:href => '#search_results', :class => 'inactive'} Search Results
+%div{:id => 'customer_page_container'}
+  %div{:id => 'customer_form'}
+    = render :partial => 'customer_form'
+    %div{:id => 'customer_history'}
+      %h3 Transaction History
+      %table
+        %thead
+          %tr
+            %th Date
+            %th Amount
+        %tbody
+          %tr
+            %td 12/31/00 4:32PM
+            %td $200
+  %div{:id => 'customer_search_results'}
+    %table
+      %thead
+        %tr
+          %th Name
+          %th Address
+          %th Phone
+          %th Email
+          %th Store Credit
+          %th Drivers License
+          %th Flagged
+          %th Notes
+      %tbody
+        %tr
+          %td Joe Blow
+          %td 1800 Penn Ave.
+          %td 555-555-5555
+          %td joe@blow.com
+          %td $100.00
+          %td NE - H122000000
+          %td No
+          %td Lorem Ipsum...

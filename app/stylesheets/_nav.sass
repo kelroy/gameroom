@@ -1,0 +1,129 @@
+ul#user_nav
+  float: right
+  margin-right: 10px
+  
+  li
+    float: left
+    margin-left: 10px
+    line-height: 64px
+    
+ul#summary_nav
+  float: right
+  
+  li
+    float: left
+    height: 48px
+    margin: 45px 0px
+    line-height: 48px
+    margin-left: 20px
+    
+    h2
+      font-size: 24px
+    
+    a
+      display: block
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 24px
+      padding: 0px 10px
+      text-decoration: none
+      background-color: $white
+      +link_colors($black)
+      @include border-radius(5px)
+
+ul#section_nav
+  position: absolute
+  top: 0px
+  left: 0px
+  padding: 0px 20px
+  height: 40px
+  
+  li
+    float: left
+    margin-right: 2px
+      
+    a
+      display: block
+      height: 40px
+      line-height: 40px
+      padding: 0px 20px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 20px
+      text-decoration: none
+      +link_colors($black)
+      background-color: $white
+      @include border-bottom-radius(10px)
+      
+      &.inactive
+        background-color: $gray
+    
+ul#customer_nav
+  height: 20px
+  margin-left: 20px
+  
+  li
+    float: left
+    margin-right: 2px
+    
+    a
+      display: block
+      height: 20px
+      line-height: 20px
+      padding: 0px 10px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 14px
+      text-decoration: none
+      +link_colors($white)
+      background-color: $black
+      @include border-top-radius(10px)
+    
+      &.inactive
+        background-color: $gray
+        
+ul#customer_letter_nav
+  height: 20px
+  margin-bottom: 10px
+  
+  li
+    float: left
+    margin-right: 4px
+    
+    a
+      display: block
+      height: 20px
+      padding: 2px 6px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      line-height: 20px
+      font-size: 14px
+      text-decoration: none
+      +link_colors($white)
+      background-color: $black
+      @include border-radius(5px)
+      
+ul#transaction_nav
+  position: absolute
+  top: 64px
+  right: 20px
+  padding: 5px 10px
+  border-left: 2px $black solid
+  border-bottom: 2px $black solid
+  @include border-bottom-radius(5px)
+  background-color: $black
+  
+  li
+    float: left
+    margin-left: 10px
+    
+    &:first-child
+      margin-left: 0px
+    
+    a
+      display: block
+      padding: 2px 6px
+      background-color: $white
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      line-height: 18px
+      font-size: 12px
+      text-decoration: none
+      border: 1px $black solid
+      +link_colors($black)
+      @include border-radius(5px)

@@ -1,0 +1,43 @@
+%div{:id => 'cart_header', :class => 'header_container'}
+  %div{:id => 'cart_search'}
+    %ul{:class => 'alphabet_nav'}
+      - ('A'..'Z').each do |letter|
+        %li
+          %a{:href => "##{letter}"}= letter
+    = form_for :cart_search, :url => root_url do |f|
+      %div
+        = f.text_field :body_contains, :id => 'cart_search', :placeholder => 'Search for an item...'
+    %a{:id => 'cart_scan', :class => 'button active', :href => '#scan'} Scan
+  %h2{:id => 'cart_summary'} 0 item(s): $0.00
+%ul{:id => 'cart_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#cart_list', :class => 'cart_list active'} Cart
+  %li
+    %a{:href => '#cart_add', :class => 'cart_add'} Add Item(s)
+  %li
+    %a{:href => '#cart_search_results', :class => 'cart_search_results'} Search Results
+%div{:id => 'cart_pages', :class => 'page_container'}
+  %div{:id => 'cart_list'}
+    = render :partial => 'cart_list'
+  %div{:id => 'cart_add'}
+    = render :partial => 'cart_form'
+  %div{:id => 'cart_search_results'}
+    %table
+      %thead
+        %tr
+          %th Title
+          %th Description
+          %th SKU
+          %th Price
+          %th Store Credit Value
+          %th Cash Value
+          %th Taxable
+      %tbody
+        %tr
+          %td XBox 360
+          %td Lorem Ipsum...
+          %td 000000000111
+          %td $100.00
+          %td $40.00
+          %td $20.00
+          %td Yes

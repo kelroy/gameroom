@@ -1,0 +1,43 @@
+%ul
+  %li{:class => 'cart_item'}
+    %div
+      %hgroup
+        %h3 Title
+        %h4 Lorem Ipsum...
+      %ul{:class => 'cart_item_action group_nav'}
+        %li
+          %a{:href => '#purchase'} Purchase From Store
+        %li
+          %a{:href => '#sell'} Sell To Store
+    %div
+      %ul{:class => 'cart_item_summary button_nav'}
+        %li
+          %a{:href => '#minus'} -
+        %li
+          %form{:action => '#quantity'}
+            %div
+              = text_field :quantity, :amount, :value => 0
+        %li
+          %a{:href => '#plus'} +
+        %li
+          %span{:class => 'cart_item_symbol'} @
+        %li
+          %span{:class => 'cart_item_pill'} $0.00
+        %li
+          %span{:class => 'cart_item_symbol'} =
+        %li
+          %span{:class => 'cart_item_pill'} $0.00
+        %li
+          %a{:href => '#remove'} X
+      %ul{:class => 'cart_sell_control'}
+        %li
+          %span Item Condition:
+        %li
+          %ul{:class => 'cart_item_sell_condition group_nav'}
+            - (0..5).each do |n|
+              %li
+                %a{:href => '#cart_item_sell_condition'}= n
+        %li
+          %span Store Credit Value: $20.00
+        %li
+          %span Cash Value: $10.00

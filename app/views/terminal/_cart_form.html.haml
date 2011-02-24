@@ -1,0 +1,33 @@
+= form_for :good do |g|
+  - (1..5).each do |n|
+    %ul
+      %li
+        = g.label :quantity, "Qty."
+        = g.text_field :quantity
+      %li
+        = g.label :title, "Title"
+        = g.text_field :title
+      %li
+        = g.label :description, "Description"
+        = g.text_field :description
+      %li
+        = g.label :price, "Base Price"
+        = g.text_field :price
+      %li
+        = g.label :credit, "Store Credit Price"
+        = g.text_field :credit
+      %li
+        = g.label :cash, "Cash Price"
+        = g.text_field :cash
+      %li
+        = g.label :taxable
+        = g.check_box :taxable, :checked => true
+  %ul
+    %li
+      %ul{:class => 'button_nav'}
+        %li
+          %a{:href => '#more'} More
+        %li
+          %a{:href => '#clear'} Clear
+        %li
+          %a{:href => '#save'} Save

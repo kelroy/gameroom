@@ -1,2 +1,105 @@
 section#cart
-  display: none
+    
+  div#cart_header
+    div#cart_search
+      position: relative
+      float: left
+      width: 798px
+      margin: 20px 0px
+      padding: 10px
+      background-color: $light_gray
+      border: 2px $black solid
+      @include border-radius(10px)
+      
+      a#cart_scan
+        position: absolute
+        top: 10px
+        right: 10px
+        width: 180px
+        height: 62px
+        font-size: 20px
+        text-align: center
+        line-height: 62px
+        
+      form
+        input
+          font-size: 20px
+          width: 586px
+        
+    h2#cart_summary
+      float: right
+      margin-top: 83px
+      padding: 6px 20px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 20px
+      background-color: $black
+      color: $white
+      @include border-radius(5px)
+    
+  div#cart_list
+    ul
+      > li.cart_item
+        margin-bottom: 10px
+        padding: 10px
+        background-color: $light_gray
+        @include border-radius(5px)
+        
+        &:last-child
+          margin-bottom: 0px
+        
+        div
+          height: 24px
+          line-height: 24px
+      
+          &:first-child
+            margin-bottom: 6px
+        
+          hgroup
+            float: left
+            
+            h3
+              float: left
+              margin-right: 20px
+              padding: 0px 5px
+              font-family: LatinModernMonoLight10Bold, Tacoma, serif
+              font-size: 18px
+              background-color: $gray
+              @include border-radius(5px)
+              
+            h4
+              float: right
+              font-family: LatinModernMonoLight10Regular, Tacoma, serif
+              font-size: 12px
+              
+          ul.cart_item_summary
+            float: right
+              
+            form
+              div
+                margin-bottom: 0px
+                
+            input
+              width: 40px
+              padding-top: 0px
+              padding-bottom: 0px
+              text-align: center
+            
+          ul.cart_item_action
+            float: right
+          
+          ul.cart_sell_control
+            float: right
+            margin-right: 20px
+            padding: 0px 10px
+            background-color: $gray
+            @include border-radius(5px)
+            
+            > li
+              float: left
+              margin-right: 10px
+    
+  div#cart_add
+    display: none
+                
+  div#cart_search_results
+    display: none

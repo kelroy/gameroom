@@ -1,0 +1,16 @@
+a.button
+  display: block
+  padding: 2px 6px
+  background-color: $white
+  font-family: LatinModernMonoLight10Bold, Tacoma, serif
+  line-height: 18px
+  font-size: 12px
+  text-decoration: none
+  text-align: center
+  border: 1px $black solid
+  +link_colors($black)
+  @include border-radius(5px)
+  
+  &.active
+    background-color: $black
+    +link_colors($white)

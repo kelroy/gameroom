@@ -1,15 +1,18 @@
-%div{:id => 'customer_search_container'}
-  %ul{:id => 'customer_letter_nav'}
-    - ('A'..'Z').each do |letter|
-      %li
-        %a{:href => "##{letter}"}= letter
-  = render :partial => 'customer_search_form'
-%ul{:id => 'customer_nav'}
+%div{:id => 'customer_header', :class => 'header_container'}
+  %div{:id => 'customer_search'}
+    %ul{:class => 'alphabet_nav'}
+      - ('A'..'Z').each do |letter|
+        %li
+          %a{:href => "##{letter}"}= letter
+    = form_for :customer_search, :url => root_url do |f|
+      %div
+        = f.text_field :body_contains, :id => 'customer_search', :placeholder => 'Search for a customer...'
+%ul{:id => 'customer_nav', :class => 'tab_nav'}
   %li
     %a{:href => '#customer_form', :class => 'customer_form active'} Customer
   %li
     %a{:href => '#customer_search_results', :class => 'customer_search_results'} Search Results
-%div{:id => 'customer_page_container'}
+%div{:id => 'customer_pages', :class => 'page_container'}
   %div{:id => 'customer_form'}
     = render :partial => 'customer_form'
     %div{:id => 'customer_history'}

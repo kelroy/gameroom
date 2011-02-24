@@ -1,4 +1,4 @@
-ul#user_nav
+ul.link_nav
   float: right
   margin-right: 10px
   
@@ -7,13 +7,13 @@ ul#user_nav
     margin-left: 10px
     line-height: 64px
     
-ul#summary_nav
+ul.summary_nav
   float: right
   
   li
     float: left
     height: 48px
-    margin: 45px 0px
+    margin: 31px 0px
     line-height: 48px
     margin-left: 20px
     
@@ -24,13 +24,13 @@ ul#summary_nav
       display: block
       font-family: LatinModernMonoLight10Bold, Tacoma, serif
       font-size: 24px
-      padding: 0px 10px
+      padding: 0px 20px
       text-decoration: none
       background-color: $white
       +link_colors($black)
       @include border-radius(5px)
 
-ul#section_nav
+ul.section_nav
   position: absolute
   top: 0px
   left: 0px
@@ -56,9 +56,10 @@ ul#section_nav
       &.active
         background-color: $white
     
-ul#customer_nav
+ul.tab_nav
+  clear: both
   height: 20px
-  margin-left: 20px
+  margin-left: 10px
   
   li
     float: left
@@ -80,7 +81,7 @@ ul#customer_nav
         background-color: $black
         +link_colors($white)
         
-ul#customer_letter_nav
+ul.alphabet_nav
   height: 20px
   margin-bottom: 10px
   
@@ -100,10 +101,7 @@ ul#customer_letter_nav
       background-color: $black
       @include border-radius(5px)
       
-ul#transaction_nav
-  position: absolute
-  top: 64px
-  right: 20px
+ul.drop_nav
   padding: 5px 10px
   border-left: 2px $black solid
   border-bottom: 2px $black solid
@@ -128,3 +126,48 @@ ul#transaction_nav
       border: 1px $black solid
       +link_colors($black)
       @include border-radius(5px)
+      
+ul.button_nav
+  li
+    float: left
+    margin-left: 10px
+    
+    &:first-child
+      margin-left: 0px
+    
+    a
+      display: block
+      padding: 2px 6px
+      background-color: $white
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      line-height: 18px
+      font-size: 12px
+      text-decoration: none
+      border: 1px $black solid
+      +link_colors($black)
+      @include border-radius(5px)
+      
+ul.group_nav
+  li
+    float: left
+
+    a
+      display: block
+      padding: 2px 6px
+      background-color: $white
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      line-height: 18px
+      font-size: 12px
+      text-decoration: none
+      border: 1px $black solid
+      +link_colors($black)
+    
+    &:first-child
+      a
+        @include border-top-left-radius(5px)
+        @include border-bottom-left-radius(5px)
+        
+    &:last-child
+      a
+        @include border-top-right-radius(5px)
+        @include border-bottom-right-radius(5px)

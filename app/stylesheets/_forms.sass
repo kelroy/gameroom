@@ -1,19 +1,11 @@
 form
-  ul
-    li
-      margin-bottom: 5px
-      clear: both
-      
-      &:last-child
-        margin-bottom: 0px
-        
-      ul
-        display: block
-        
-        li
-          float: left
-          clear: none
-          margin-right: 10px
+  > ul
+    clear: both
+    
+    > li
+      float: left
+      margin-right: 10px
+      margin-bottom: 10px
       
   label
     display: block
@@ -34,3 +26,6 @@ form
     font-size: 14px
     border: 1px $black solid
     @include border-radius(2px)
+    
+  input[disabled=disabled]
+    background-color: $light_gray

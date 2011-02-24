@@ -1,0 +1,56 @@
+%div{:id => 'review_header', :class => 'header_container'}  
+  %div{:id => 'review_options'}
+    %form{:action => '#review_form'}
+      %ul
+        %li
+          = label :print, :quantity, "Receipt Qty."
+          = text_field :print, :quantity, :value => 1
+        %li
+          = label :print, :active, "Print Receipt"
+          = check_box :print, :active, :checked => true
+    %a{:id => 'review_print', :class => 'button active', :href => '#print'} Print
+%ul{:id => 'review_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#review_list', :class => 'review_list active'} Review
+%div{:class => 'page_container'}
+  %div{:id => 'review_list'}
+    %table
+      %thead
+        %tr
+          %th Qty.
+          %th Title
+          %th Description
+          %th SKU
+          %th Subtotal
+      %tbody
+        %tr
+          %td 1
+          %td XBox 360
+          %td Lorem Ipsum...
+          %td 000000000111
+          %td $100.00
+  %div{:id => 'review_summary'}
+    %table
+      %tbody
+        %tr
+          %td Subtotal
+          %td $0.00
+        %tr
+          %td Tax
+          %td $0.00
+        %tr
+          %td Total
+          %td $0.00
+        %tr
+          %td
+          %td ========
+        %tr
+          %td Payment
+          %td $0.00
+        %tr
+          %td
+          %td ========
+        %tr
+          %td Change
+          %td $0.00
+        

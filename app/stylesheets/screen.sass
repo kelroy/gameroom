@@ -6,55 +6,13 @@
 @import "compass"
 @import "compass/reset"
 @import "base"
-@import "forms"
+@import "containers"
 @import "tags"
-@import "nav"
 @import "buttons"
+@import "nav"
+@import "forms"
 @import "login"
 @import "customer"
 @import "cart"
 @import "payment"
 @import "review"
-@import "containers"
-
-html, body
-  height: 100%
-  
-body
-  background-color: $white
-  color: $black
-  font-family: LatinModernMonoLight10Regular, Tacoma, serif
-  font-size: 16px
-  
-header
-  height: 64px
-  padding: 0px 20px
-  background-color: $black
-  color: $white
-  
-  a
-    +link_colors($white)
-   
-  hgroup
-    margin-top: 6px
-    float: left
-    
-  h2
-    margin-top: 2px
-    font-size: 10px
-    text-align: center
-      
-section
-  padding: 0px 20px
-  
-  a
-    +link_colors($black)
-  
-footer
-  position: relative
-  margin-top: -110px
-  padding: 0px 20px
-  height: 110px
-  clear: both
-  background-color: $black
-  color: $white

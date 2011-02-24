@@ -22,69 +22,69 @@
     %li
       %span{:class => 'payment_customer_credit'} First Last: $100.00
     %li
-      %a{:href => '#apply'} Apply
+      %a{:href => '#apply', :class => 'button'} Apply
     %li
-      %a{:href => '#clear'} Clear
+      %a{:href => '#clear', :class => 'button'} Clear
     %li
-      %form{:action => '#store_credit'}
+      = form_for :store_credit, :url => root_path do |f|
         %div
-          = text_field :store_credit, :amount, :placeholder => '0.00'
+          = f.text_field :amount, :placeholder => '0.00'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_gift_card', :class => 'payment_line'}
   %h3 Gift Card
   %ul
     %li
-      %a{:href => '#clear'} Clear
+      %a{:href => '#clear', :class => 'button'} Clear
     %li
-      %form{:action => '#gift_card'}
+      = form_for :gift_card, :url => root_path do |f|
         %div
-          = text_field :gift_card, :amount, :placeholder => '0.00'
+          = f.text_field :amount, :placeholder => '0.00'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_check', :class => 'payment_line'}
   %h3 Check
   %ul
     %li
-      %a{:href => '#clear'} Clear
+      %a{:href => '#clear', :class => 'button'} Clear
     %li
-      %form{:action => '#check'}
+      = form_for :check, :url => root_path do |f|
         %div
-          = text_field :check, :amount, :placeholder => '0.00'
+          = f.text_field :amount, :placeholder => '0.00'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_credit_card', :class => 'payment_line'}
   %h3 Credit Card
   %ul
     %li
-      %a{:href => '#clear'} Clear
+      %a{:href => '#clear', :class => 'button'} Clear
     %li
-      %form{:action => '#credit_card'}
+      = form_for :credit_card, :url => root_path do |f|
         %div
-          = text_field :credit_card, :amount, :placeholder => '0.00'
+          = f.text_field :amount, :placeholder => '0.00'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_cash', :class => 'payment_line'}
   %h3 Cash
   %ul
     %li
-      %a{:href => '#clear'} Clear
+      %a{:href => '#clear', :class => 'button'} Clear
     %li
-      %form{:action => '#cash'}
+      = form_for :cash, :url => root_path do |f|
         %div
-          = text_field :cash, :amount, :placeholder => '0.00'
+          = f.text_field :amount, :placeholder => '0.00'
 %div{:id => 'payment_action', :class => 'payment_line'}
-  %form{:action => '#action'}
+  = form_for :payment_action, :url => root_path do |f|
     %ul
       %li 
         %span{:class => 'payment_pill'} Credit Applied
       %li
-        = text_field :credit_value, :amount, :placeholder => '0.00'
+        = f.text_field :credit_value, :placeholder => '0.00'
       - (1..11).each do |n|
         %li
-          %a{:href => '#payment_scale', :class => 'payment_scale'} *
+          %a{:href => '#payment_scale', :class => 'button dark'} *
       %li
-        = text_field :cash_value, :amount, :placeholder => '0.00'
+        = f.text_field :cash_value, :placeholder => '0.00'
       %li 
         %span{:class => 'payment_pill'} Cash Given
       %li

@@ -20,15 +20,12 @@ ul.summary_nav
     h2
       font-size: 24px
     
-    a
-      display: block
-      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+    a.button
       font-size: 24px
-      padding: 0px 20px
-      text-decoration: none
-      background-color: $white
-      +link_colors($black)
-      @include border-radius(5px)
+      padding: 14px 20px
+      
+      &:hover
+        border: 1px $white solid
 
 ul.section_nav
   position: absolute
@@ -53,7 +50,7 @@ ul.section_nav
       background-color: $light_gray
       @include border-bottom-radius(10px)
       
-      &.active
+      &.selected
         background-color: $white
     
 ul.tab_nav
@@ -77,7 +74,7 @@ ul.tab_nav
       background-color: $light_gray
       @include border-top-radius(10px)
     
-      &.active
+      &.selected
         background-color: $black
         +link_colors($white)
         
@@ -90,23 +87,17 @@ ul.alphabet_nav
     margin-right: 4px
     
     a
-      display: block
       height: 20px
-      padding: 2px 6px
-      font-family: LatinModernMonoLight10Bold, Tacoma, serif
       line-height: 20px
       font-size: 14px
-      text-decoration: none
-      +link_colors($white)
-      background-color: $black
-      @include border-radius(5px)
       
 ul.drop_nav
   padding: 5px 10px
   border-left: 2px $black solid
+  border-right: 2px $black solid
   border-bottom: 2px $black solid
   @include border-bottom-radius(5px)
-  background-color: $black
+  background-color: $light_gray
   
   li
     float: left
@@ -114,18 +105,6 @@ ul.drop_nav
     
     &:first-child
       margin-left: 0px
-    
-    a
-      display: block
-      padding: 2px 6px
-      background-color: $white
-      font-family: LatinModernMonoLight10Bold, Tacoma, serif
-      line-height: 18px
-      font-size: 12px
-      text-decoration: none
-      border: 1px $black solid
-      +link_colors($black)
-      @include border-radius(5px)
       
 ul.button_nav
   li
@@ -134,18 +113,6 @@ ul.button_nav
     
     &:first-child
       margin-left: 0px
-    
-    a
-      display: block
-      padding: 2px 6px
-      background-color: $white
-      font-family: LatinModernMonoLight10Bold, Tacoma, serif
-      line-height: 18px
-      font-size: 12px
-      text-decoration: none
-      border: 1px $black solid
-      +link_colors($black)
-      @include border-radius(5px)
       
 ul.group_nav
   li
@@ -162,6 +129,12 @@ ul.group_nav
       border: 1px $black solid
       +link_colors($black)
     
+      &.selected,
+      &:hover
+        background-color: $black
+        color: $white
+        
+      
     &:first-child
       a
         @include border-top-left-radius(5px)

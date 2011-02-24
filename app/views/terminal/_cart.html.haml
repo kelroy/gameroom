@@ -3,15 +3,15 @@
     %ul{:class => 'alphabet_nav'}
       - ('A'..'Z').each do |letter|
         %li
-          %a{:href => "##{letter}"}= letter
-    = form_for :cart_search, :url => root_url do |f|
+          %a{:href => "##{letter}", :class => 'button dark'}= letter
+    = form_for :cart_search, :url => root_path do |f|
       %div
         = f.text_field :body_contains, :id => 'cart_search', :placeholder => 'Search for an item...'
-    %a{:id => 'cart_scan', :class => 'button active', :href => '#scan'} Scan
+    %a{:id => 'cart_scan', :class => 'button dark', :href => '#scan'} Scan
   %h2{:id => 'cart_summary'} 0 item(s): $0.00
 %ul{:id => 'cart_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#cart_list', :class => 'cart_list active'} Cart
+    %a{:href => '#cart_list', :class => 'cart_list selected'} Cart
   %li
     %a{:href => '#cart_add', :class => 'cart_add'} Add Item(s)
   %li

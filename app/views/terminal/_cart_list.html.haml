@@ -6,19 +6,19 @@
         %h4 Lorem Ipsum...
       %ul{:class => 'cart_item_action group_nav'}
         %li
-          %a{:href => '#purchase'} Purchase From Store
+          %a{:href => '#purchase', :class => 'selected'} Purchase From Store
         %li
           %a{:href => '#sell'} Sell To Store
     %div
       %ul{:class => 'cart_item_summary button_nav'}
         %li
-          %a{:href => '#minus'} -
+          %a{:href => '#minus', :class => 'button'} -
         %li
-          %form{:action => '#quantity'}
+          = form_for :quantity, :url => root_path do |f|
             %div
-              = text_field :quantity, :amount, :value => 0
+              = f.text_field :amount, :value => 0
         %li
-          %a{:href => '#plus'} +
+          %a{:href => '#plus', :class => 'button'} +
         %li
           %span{:class => 'cart_item_symbol'} @
         %li
@@ -28,7 +28,7 @@
         %li
           %span{:class => 'cart_item_pill'} $0.00
         %li
-          %a{:href => '#remove'} X
+          %a{:href => '#remove', :class => 'button'} X
       %ul{:class => 'cart_sell_control'}
         %li
           %span Item Condition:

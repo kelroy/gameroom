@@ -3,13 +3,13 @@
     %ul{:class => 'alphabet_nav'}
       - ('A'..'Z').each do |letter|
         %li
-          %a{:href => "##{letter}"}= letter
-    = form_for :customer_search, :url => root_url do |f|
+          %a{:href => "##{letter}", :class => 'button dark'}= letter
+    = form_for :customer_search, :url => root_path do |f|
       %div
         = f.text_field :body_contains, :id => 'customer_search', :placeholder => 'Search for a customer...'
 %ul{:id => 'customer_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#customer_form', :class => 'customer_form active'} Customer
+    %a{:href => '#customer_form', :class => 'customer_form selected'} Customer
   %li
     %a{:href => '#customer_search_results', :class => 'customer_search_results'} Search Results
 %div{:id => 'customer_pages', :class => 'page_container'}

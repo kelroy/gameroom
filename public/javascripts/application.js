@@ -67,22 +67,22 @@ var gameroomlincoln_terminal = {
     $('section').hide();
     $('section#login').show(); // TODO: FIX!
     $('section#' + section).show();
-    $('ul.section_nav a').removeClass('active');
-    $('ul.section_nav a.' + section).addClass('active');
+    $('ul.section_nav a').removeClass('selected');
+    $('ul.section_nav a.' + section).addClass('selected');
   },
   
   showCustomerSection: function(section) {
     $('div#customer_pages > div').hide();
     $('div#customer_pages > div#' + section).show();
-    $('ul#customer_nav a').removeClass('active');
-    $('ul#customer_nav a.' + section).addClass('active');
+    $('ul#customer_nav a').removeClass('selected');
+    $('ul#customer_nav a.' + section).addClass('selected');
   },
   
   showCartSection: function(section) {
     $('div#cart_pages > div').hide();
     $('div#cart_pages > div#' + section).show();
-    $('ul#cart_nav a').removeClass('active');
-    $('ul#cart_nav a.' + section).addClass('active');
+    $('ul#cart_nav a').removeClass('selected');
+    $('ul#cart_nav a.' + section).addClass('selected');
   }
   
 };

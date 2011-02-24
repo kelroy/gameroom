@@ -1,6 +1,6 @@
 %ul{:class => 'section_nav'}
   %li
-    %a{:href => '#customer', :class => 'customer active'} 1. Customer
+    %a{:href => '#customer', :class => 'customer selected'} 1. Customer
   %li
     %a{:href => '#cart', :class => 'cart'} 2. Cart
   %li
@@ -9,14 +9,14 @@
     %a{:href => '#review', :class => 'review'} 4. Review
 %ul{:class => 'summary_nav'}
   %li
-    %h2{:id => 'customer'} Last, First
+    %h2{:id => 'summary_customer'} Last, First
   %li 
     %h2 &#124;
   %li
-    %h2{:id => 'item_count'} 0 item(s)
+    %h2{:id => 'summary_item_count'} 0 item(s)
   %li
     %h2 &#124;
   %li
-    %h2{:id => 'total'} $0.00
+    %h2{:id => 'summary_total'} $0.00
   %li
-    %a{:href => '#finish'} Finish
+    %a{:href => '#finish', :class => 'button'} Finish

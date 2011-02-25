@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110202063807) do
+ActiveRecord::Schema.define(:version => 20110225170045) do
 
   create_table "addresses", :force => true do |t|
     t.integer  "person_id",   :null => false
@@ -26,7 +26,10 @@ ActiveRecord::Schema.define(:version => 20110202063807) do
   end
 
   create_table "customers", :force => true do |t|
-    t.integer  "credit",     :default => 0, :null => false
+    t.integer  "credit",                 :default => 0,    :null => false
+    t.string   "drivers_license_number"
+    t.string   "drivers_license_state"
+    t.boolean  "active",                 :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -48,14 +51,12 @@ ActiveRecord::Schema.define(:version => 20110202063807) do
   end
 
   create_table "entries", :force => true do |t|
-    t.integer  "transaction_id",                :null => false
-    t.integer  "good_id"
-    t.integer  "service_id"
-    t.integer  "unit_id"
-    t.string   "title",                         :null => false
+    t.integer  "till_id",                                        :null => false
+    t.string   "title"
     t.string   "description"
-    t.integer  "price",          :default => 0, :null => false
-    t.integer  "quantity",       :default => 0, :null => false
+    t.datetime "time",        :default => '2011-02-25 17:04:28', :null => false
+    t.integer  "amount"
+    t.string   "action"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -73,6 +74,17 @@ ActiveRecord::Schema.define(:version => 20110202063807) do
     t.datetime "updated_at"
   end
 
+  create_table "items", :force => true do |t|
+    t.integer  "transaction_id",                :null => false
+    t.integer  "good_id"
+    t.string   "title",                         :null => false
+    t.string   "description"
+    t.integer  "price",          :default => 0, :null => false
+    t.integer  "quantity",       :default => 0, :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "people", :force => true do |t|
     t.integer  "user_id"
     t.integer  "customer_id"
@@ -80,6 +92,7 @@ ActiveRecord::Schema.define(:version => 20110202063807) do
     t.string   "first_name"
     t.string   "middle_name"
     t.string   "last_name"
+    t.datetime "date_of_birth"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -100,8 +113,24 @@ ActiveRecord::Schema.define(:version => 20110202063807) do
     t.datetime "updated_at"
   end
 
+  create_table "tills", :force => true do |t|
+    t.string   "title"
+    t.string   "description"
+    t.integer  "minimum_transfer"
+    t.integer  "minimum_balance"
+    t.boolean  "retainable",       :default => true, :null => false
+    t.boolean  "active",           :default => true, :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "tills_users", :id => false, :force => true do |t|
+    t.integer "till_id"
+    t.integer "user_id"
+  end
+
   create_table "transactions", :force => true do |t|
-    t.integer  "store_id"
+    t.integer  "till_id"
     t.integer  "customer_id",                    :null => false
     t.decimal  "tax_rate",    :default => 0.0,   :null => false
     t.boolean  "complete",    :default => true,  :null => false

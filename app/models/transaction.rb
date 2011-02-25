@@ -1,12 +1,13 @@
 class Transaction < ActiveRecord::Base
-  attr_readonly           :store_id, :customer_id
+  attr_readonly           :till_id, :customer_id
   
+  belongs_to  :till
   belongs_to  :customer
-  has_many    :entries
-  has_many    :goods,    :through => :entries
+  has_many    :items
+  has_many    :goods,    :through => :items
   
   accepts_nested_attributes_for :customer
-  accepts_nested_attributes_for :entries
+  accepts_nested_attributes_for :items
   
   # Is transaction complete?
   def complete?

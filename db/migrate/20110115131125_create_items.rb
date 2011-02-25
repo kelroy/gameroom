@@ -1,10 +1,8 @@
-class CreateEntries < ActiveRecord::Migration
+class CreateItems < ActiveRecord::Migration
   def self.up
-    create_table :entries do |t|
+    create_table :items do |t|
       t.integer :transaction_id,  :null => false
       t.integer :good_id
-      t.integer :service_id
-      t.integer :unit_id
       t.string  :title,           :null => false
       t.string  :description
       t.integer :price,           :null => false, :default => 0
@@ -15,6 +13,6 @@ class CreateEntries < ActiveRecord::Migration
   end
 
   def self.down
-    drop_table :entries
+    drop_table :items
   end
 end

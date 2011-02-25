@@ -10,7 +10,8 @@ describe Person do
       valid_data = {
         :first_name => 'First',
         :middle_name => 'Middle',
-        :last_name => 'Last'
+        :last_name => 'Last',
+        :date_of_birth => Time.now
       }
       Person.new(valid_data).should be_valid
     end

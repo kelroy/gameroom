@@ -8,12 +8,22 @@ describe Entry do
   context "when given valid entry data" do
     it "should be valid" do
       valid_data = {
-        :transaction_id => 1,
+        :till_id => 1,
         :title => 'Title',
-        :price => 0,
-        :quantity => 0
+        :description => 'Lorem Ipsum...',
+        :time => Time.now,
+        :amount => 0,
+        :action => 'debit'
       }
       Entry.new(valid_data).should be_valid
     end
+  end
+  
+  it "should accept only valid actions" do
+    entry = Factory.build(:entry)
+    entry.action = 'bad'
+    entry.should_not be_valid
+    entry.action = 'debit'
+    entry.should be_valid
   end
 end

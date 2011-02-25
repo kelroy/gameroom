@@ -8,7 +8,6 @@ describe Transaction do
   context "when given valid transaction data" do
     it "should be valid" do
       valid_data = {
-        :store_id => 1,
         :customer_id => 1,
         :tax_rate => 0.06,
         :complete => true,

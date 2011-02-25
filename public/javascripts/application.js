@@ -5,8 +5,7 @@ var gameroomlincoln_terminal = {
   run: function() {
     
     gameroomlincoln_terminal.init();
-    
-    gameroomlincoln_terminal.showSection('review');
+    gameroomlincoln_terminal.showSection('customer');
     
   },
   
@@ -28,6 +27,18 @@ var gameroomlincoln_terminal = {
     $('a.review').click(function(event){
       gameroomlincoln_terminal.showSection('review');
       event.preventDefault();
+    });
+    $(document).keypress(function(event){
+      switch(event.keyCode) {
+        case 37:
+          gameroomlincoln_terminal.cycleSection('back');
+          break;
+        case 39:
+          gameroomlincoln_terminal.cycleSection('forward');
+          break;
+        default:
+          break;
+      }
     });
     
     /* Customer Nav */
@@ -69,6 +80,26 @@ var gameroomlincoln_terminal = {
     $('section#' + section).show();
     $('ul.section_nav a').removeClass('selected');
     $('ul.section_nav a.' + section).addClass('selected');
+  },
+  
+  cycleSection: function(direction) {
+    $('section').hide();
+    $('section#login').show(); // TODO: FIX!
+    $('ul.section_nav a').removeClass('selected');
+    
+    switch(direction) {
+      case 'back':
+        $('ul.section_nav a').each(function(index) {
+          if(index != 0) {
+            //$('section#' + section).show();
+          }
+        });
+        break;
+      case 'forward':
+        break;
+      default:
+        break;
+    }
   },
   
   showCustomerSection: function(section) {

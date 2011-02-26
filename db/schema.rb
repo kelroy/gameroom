@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110225170045) do
+ActiveRecord::Schema.define(:version => 20110226220356) do
 
   create_table "addresses", :force => true do |t|
     t.integer  "person_id",   :null => false
@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110225170045) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-02-25 17:04:28', :null => false
+    t.datetime "time",        :default => '2011-02-26 23:13:29', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"
@@ -81,6 +81,14 @@ ActiveRecord::Schema.define(:version => 20110225170045) do
     t.string   "description"
     t.integer  "price",          :default => 0, :null => false
     t.integer  "quantity",       :default => 0, :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "payments", :force => true do |t|
+    t.integer  "transaction_id",                :null => false
+    t.string   "form",                          :null => false
+    t.integer  "amount",         :default => 0, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

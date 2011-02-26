@@ -4,6 +4,7 @@ class Transaction < ActiveRecord::Base
   belongs_to  :till
   belongs_to  :customer
   has_many    :items
+  has_many    :payments
   has_many    :goods,    :through => :items
   
   accepts_nested_attributes_for :customer

@@ -4,19 +4,25 @@
 //= require "payment_controller"
 //= require "review_controller"
 //= require "tab_controller"
+//= require "transaction_controller"
 
 var TerminalController = new JS.Class({
   
   initialize: function() {
     
-    //this.till_controller = new TillController('div#till');
-    //this.customer_controller = new CustomerController('section#customer');
-    //this.cart_controller = new CartController('section#cart');
-    //this.payment_controller = new PaymentController('section#payment');
-    //this.review_controller = new ReviewController('section#review');
-    //this.section_nav = new TabController();
-    //this.user_nav = $('ul')
-    //this.summary_nav = $('ul.summary_nav').hide();
+    this.transaction_controller = new TransactionController();
+    this.till_controller = new TillController('div#till');
+    this.user_nav = $('ul#user_nav').hide();
     
+    this.till_controller.view.show();
+    this.till_controller.addObserver(this.updateTill, this);
+  },
+  
+  updateTill: function(till) {
+    this.transaction_controller.till = till;
+    this.transaction_controller.newTransaction();
+    $('li.current_user_till', this.user_nav).html(till.title);
+    $(this.user_nav).show();
+    this.till_controller.view.hide();
   }
 });

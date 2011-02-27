@@ -11,7 +11,7 @@ unless Rails.env.production?
   customer = Factory.create(:customer)
   employee = Factory.create(:employee)
 
-  person = Factory.create(:person)
+  person = Factory.create(:person, :first_name => 'Joe', :middle_name => 'C', :last_name => 'Example')
   person.emails << Factory.create(:email, :person => person)
   person.emails << Factory.create(:email, :person => person)
   person.addresses << Factory.create(:address, :person => person)
@@ -19,7 +19,7 @@ unless Rails.env.production?
   person.phones << Factory.create(:phone, :person => person)
   person.phones << Factory.create(:phone, :person => person)
 
-  user = Factory.create(:user, :email => 'example@example.com', :login => 'login')
+  user = Factory.create(:user, :person => person, :email => 'example@example.com', :login => 'login')
 
   till = Factory.create(:till)
   till.entries << Factory.create(:entry, :till => till)

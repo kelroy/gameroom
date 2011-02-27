@@ -1,5 +1,5 @@
-//= require "section_controller"
+//= require "view_controller"
 
-var CartController = new JS.Class(SectionController, {
+var CartController = new JS.Class(ViewController, {
   
 });

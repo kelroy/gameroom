@@ -6,6 +6,8 @@
         = t.select :id, current_user.tills.all.map { |till| [till.title, till.id] }
     %ul
       %li
-        = t.submit "Cancel"
-      %li
-        = t.submit "Select"
+        %ul{:id => 'till_nav', :class => 'button_nav'}
+          %li
+            = link_to "Cancel", logout_path, :method => :delete, :class => 'cancel button'
+          %li
+            %a{:href => '#select', :class => 'select button'} Select

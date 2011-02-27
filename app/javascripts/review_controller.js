@@ -1,5 +1,5 @@
-//= require "section_controller"
+//= require "view_controller"
 
-var ReviewController = new JS.Class(SectionController, {
+var ReviewController = new JS.Class(ViewController, {
   
 });

@@ -1,4 +1,4 @@
-var SectionController = new JS.Class({
+var ViewController = new JS.Class({
   
   initialize: function(view) {
     this.view = $(view);

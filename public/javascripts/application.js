@@ -1,12 +1,6 @@
 /* Gameroom Terminal */
 
-var TillController = new JS.Class({
-
-  initialize: function() {
-
-  }
-});
-var SectionController = new JS.Class({
+var ViewController = new JS.Class({
 
   initialize: function(view) {
     this.view = $(view);
@@ -14,26 +8,55 @@ var SectionController = new JS.Class({
   }
 });
 
-var CustomerController = new JS.Class(SectionController, {
+var TillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
+
+    return this.callSuper();
+  },
+
+  doSelect: function(event) {
+    event.data.instance.notifyObservers(new Till(0, 'Title'));
+    event.preventDefault();
+  }
+});
+
+var CustomerController = new JS.Class(ViewController, {
 
 });
 
-var CartController = new JS.Class(SectionController, {
+var CartController = new JS.Class(ViewController, {
 
 });
 
-var PaymentController = new JS.Class(SectionController, {
+var PaymentController = new JS.Class(ViewController, {
 
 });
 
-var ReviewController = new JS.Class(SectionController, {
+var ReviewController = new JS.Class(ViewController, {
 
 });
-var TabController = new JS.Class({
+var TabController = new JS.Class(ViewController, {
+
+});
+var TransactionController = new JS.Class({
 
   initialize: function() {
 
+    this.customer_controller = new CustomerController('section#customer');
+    this.cart_controller = new CartController('section#cart');
+    this.payment_controller = new PaymentController('section#payment');
+    this.review_controller = new ReviewController('section#review');
+    this.till = new Till();
 
+    this.section_nav = new TabController('ul#section_nav');
+    this.summary_nav = $('ul#summary_nav').hide();
+    this.transaction_nav = $('ul#transaction_nav').hide();
+  },
+
+  newTransaction: function() {
   }
 });
 
@@ -41,7 +64,20 @@ var TerminalController = new JS.Class({
 
   initialize: function() {
 
+    this.transaction_controller = new TransactionController();
+    this.till_controller = new TillController('div#till');
+    this.user_nav = $('ul#user_nav').hide();
 
+    this.till_controller.view.show();
+    this.till_controller.addObserver(this.updateTill, this);
+  },
+
+  updateTill: function(till) {
+    this.transaction_controller.till = till;
+    this.transaction_controller.newTransaction();
+    $('li.current_user_till', this.user_nav).html(till.title);
+    $(this.user_nav).show();
+    this.till_controller.view.hide();
   }
 });
 
@@ -49,9 +85,8 @@ var gameroomlincoln_terminal = {
 
   run: function() {
 
-    gameroomlincoln_terminal.init();
-    gameroomlincoln_terminal.showSection('customer');
 
+    new TerminalController();
 
   },
 
@@ -196,8 +231,9 @@ var Receipt = new JS.Class({
 });
 var Till = new JS.Class({
 
-  initialize: function() {
-
+  initialize: function(id, title) {
+    this.id = id;
+    this.title = title;
   }
 });
 var Transaction = new JS.Class({

@@ -6,10 +6,10 @@ var gameroomlincoln_terminal = {
   
   run: function() {
     
-    gameroomlincoln_terminal.init();
-    gameroomlincoln_terminal.showSection('customer');
+    //gameroomlincoln_terminal.init();
+    //gameroomlincoln_terminal.showSection('customer');
     
-    //new TerminalController();
+    new TerminalController();
     
   },
   

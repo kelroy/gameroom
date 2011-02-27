@@ -3,6 +3,19 @@ GameroomlincolnTerminal::Application.routes.draw do
   match 'login' => "user_sessions#new",      :as => :login
   match 'logout' => "user_sessions#destroy", :as => :logout
   
+  resources :customers
+  resources :employees
+  resources :goods do
+    resources :properties
+  end
+  resources :people do
+    resources :addresses
+    resources :phones
+    resources :emails
+  end
+  resources :transactions
+  resources :tills
+  resources :users
   resources :user_sessions, :except => [:index, :show]
   
   root :to => 'terminal#index'

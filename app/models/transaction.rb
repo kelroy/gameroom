@@ -9,6 +9,7 @@ class Transaction < ActiveRecord::Base
   
   accepts_nested_attributes_for :customer
   accepts_nested_attributes_for :items
+  accepts_nested_attributes_for :payments
   
   # Is transaction complete?
   def complete?

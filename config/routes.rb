@@ -13,7 +13,9 @@ GameroomlincolnTerminal::Application.routes.draw do
     resources :phones
     resources :emails
   end
-  resources :transactions
+  resources :transactions do
+    resource :receipt, :only => :show
+  end
   resources :tills
   resources :users
   resources :user_sessions, :except => [:index, :show]

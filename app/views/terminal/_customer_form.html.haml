@@ -14,10 +14,10 @@
     = c.fields_for :person do |p|
       = p.fields_for :address do |a|
         %li
-          = a.label :first_line, "First Line"
+          = a.label :first_line, "Address First Line"
           = a.text_field :first_line
         %li
-          = a.label :second_line, "Second Line"
+          = a.label :second_line, "Address Second Line"
           = a.text_field :second_line
         %li
           = a.label :city

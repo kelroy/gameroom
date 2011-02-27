@@ -1,0 +1,8 @@
+!!!5
+%html
+  %head
+    = stylesheet_link_tag 'print.css', :media => 'screen, projection, print'
+    = csrf_meta_tag
+    %title GAMEROOM
+  %body
+    = yield

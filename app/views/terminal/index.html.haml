@@ -4,7 +4,7 @@
       %h1 GAMEROOM
       %h2 1709 O St. Lincoln NE 68508 402-438-7161
     - if current_user
-      %ul{:class => 'link_nav'}
+      %ul{:id => 'user_nav', :class => 'link_nav'}
         %li{:class => 'current_user_login'}= current_user.login
         %li &#124;
         %li{:class => 'current_user_till'}
@@ -12,7 +12,7 @@
         %li
           = link_to "Logout", logout_path, :method => :delete
   .section_container
-    %ul{:class => 'drop_nav'}
+    %ul{:id => 'transaction_nav', :class => 'drop_nav'}
       %li
         %a{:href => '#hold', :class => 'button'} Hold
       %li

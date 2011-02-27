@@ -44,4 +44,6 @@ group :development, :test do
   gem 'fakeweb'
   gem 'pickle'
   gem 'email_spec'
+  gem 'sprockets'
+  gem 'jsmin'
 end

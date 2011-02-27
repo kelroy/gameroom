@@ -1,5 +1,6 @@
 class ReceiptsController < ApplicationController
   before_filter :set_parent
+  layout 'receipt'
   
   # Set the parent resource based on route param
   def set_parent

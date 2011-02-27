@@ -1,5 +1,50 @@
 /* Gameroom Terminal */
 
+var TillController = new JS.Class({
+
+  initialize: function() {
+
+  }
+});
+var SectionController = new JS.Class({
+
+  initialize: function(view) {
+    this.view = $(view);
+    this.view.hide();
+  }
+});
+
+var CustomerController = new JS.Class(SectionController, {
+
+});
+
+var CartController = new JS.Class(SectionController, {
+
+});
+
+var PaymentController = new JS.Class(SectionController, {
+
+});
+
+var ReviewController = new JS.Class(SectionController, {
+
+});
+var TabController = new JS.Class({
+
+  initialize: function() {
+
+
+  }
+});
+
+var TerminalController = new JS.Class({
+
+  initialize: function() {
+
+
+  }
+});
+
 var gameroomlincoln_terminal = {
 
   run: function() {
@@ -115,9 +160,6 @@ var gameroomlincoln_terminal = {
   }
 
 };
-var CartController = new JS.Class(SectionController, {
-
-});
 var Customer = new JS.Class({
 
   initialize: function() {
@@ -127,9 +169,6 @@ var Customer = new JS.Class({
   save: function() {
 
   }
-});
-var CustomerController = new JS.Class(SectionController, {
-
 });
 var Entry = new JS.Class({
 
@@ -149,46 +188,13 @@ var Item = new JS.Class({
 
   }
 });
-var PaymentController = new JS.Class(SectionController, {
-
-});
 var Receipt = new JS.Class({
 
   initialize: function(quantity) {
     this.quantity = quantity;
   },
 });
-var ReviewController = new JS.Class(SectionController, {
-
-});
-var SectionController = new JS.Class({
-
-  initialize: function(view) {
-    this.view = $(view);
-    this.view.hide();
-  }
-});
-var TabController = new JS.Class({
-
-  initialize: function() {
-
-
-  }
-});
-var TerminalController = new JS.Class({
-
-  initialize: function() {
-
-
-  }
-});
 var Till = new JS.Class({
-
-  initialize: function() {
-
-  }
-});
-var TillController = new JS.Class({
 
   initialize: function() {
 

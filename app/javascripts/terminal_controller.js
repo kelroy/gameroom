@@ -1,3 +1,10 @@
+//= require "till_controller"
+//= require "customer_controller"
+//= require "cart_controller"
+//= require "payment_controller"
+//= require "review_controller"
+//= require "tab_controller"
+
 var TerminalController = new JS.Class({
   
   initialize: function() {

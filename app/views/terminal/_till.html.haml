@@ -1,6 +1,6 @@
 %div{:id => 'till', :class => 'modal'}
   %h2 Select a till...
-  = form_for :tills, :url => '#tills' do |t|
+  = form_for :till, :url => '#tills' do |t|
     %ul
       %li
         = t.select :id, current_user.tills.all.map { |till| [till.title, till.id] }

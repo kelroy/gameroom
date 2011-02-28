@@ -1,9 +1,4 @@
 //= require "till_controller"
-//= require "customer_controller"
-//= require "cart_controller"
-//= require "payment_controller"
-//= require "review_controller"
-//= require "tab_controller"
 //= require "transaction_controller"
 
 var TerminalController = new JS.Class({
@@ -20,7 +15,7 @@ var TerminalController = new JS.Class({
   
   updateTill: function(till) {
     this.transaction_controller.till = till;
-    this.transaction_controller.newTransaction();
+    this.transaction_controller.addTransaction(till);
     $('li.current_user_till', this.user_nav).html(till.title);
     $(this.user_nav).show();
     this.till_controller.view.hide();

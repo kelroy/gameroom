@@ -2,4 +2,7 @@
 
 var CartController = new JS.Class(ViewController, {
   
+  reset: function() {
+    
+  }
 });

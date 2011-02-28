@@ -2,4 +2,7 @@
 
 var CustomerController = new JS.Class(ViewController, {
   
+  reset: function() {
+    
+  }
 });

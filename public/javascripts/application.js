@@ -18,30 +18,90 @@ var TillController = new JS.Class(ViewController, {
   },
 
   doSelect: function(event) {
-    event.data.instance.notifyObservers(new Till(0, 'Title'));
+    id = $('div#till select#till_id').val();
+    title = $('div#till select#till_id option:selected').html();
+    event.data.instance.notifyObservers(new Till(id, title));
     event.preventDefault();
   }
 });
 
 var CustomerController = new JS.Class(ViewController, {
 
+  reset: function() {
+
+  }
 });
 
 var CartController = new JS.Class(ViewController, {
 
+  reset: function() {
+
+  }
 });
 
 var PaymentController = new JS.Class(ViewController, {
 
+  reset: function() {
+
+  }
 });
 
 var ReviewController = new JS.Class(ViewController, {
 
-});
-var TabController = new JS.Class(ViewController, {
+  reset: function() {
 
+  }
 });
+var PageController = new JS.Class(ViewController, {
+
+  sections: [],
+
+  initialize: function(view, sections) {
+    $('a', view).bind('click', {page_controller: this, view: view}, this.doClick);
+    this.sections = sections;
+    this.callSuper();
+  },
+
+  doClick: function(event) {
+    index = $('li > a', event.data.view).index(this);
+    event.data.page_controller.showSection(index);
+    event.preventDefault();
+  },
+
+  showSection: function(index) {
+    this.hideSections();
+    this.sections[index].show();
+    $('li a', this.view).removeClass('selected');
+    $('li a', this.view).eq(index).addClass('selected');
+  },
+
+  hideSections: function() {
+    for(section in this.sections) {
+      $(this.sections[section]).hide();
+    }
+  },
+
+  reset: function() {
+    this.view.show();
+  }
+});
+var SummaryController = new JS.Class(ViewController, {
+
+  reset: function() {
+
+  }
+});
+var Till = new JS.Class({
+
+  initialize: function(id, title) {
+    this.id = id;
+    this.title = title;
+  }
+});
+
 var TransactionController = new JS.Class({
+
+  transactions: [],
 
   initialize: function() {
 
@@ -51,12 +111,27 @@ var TransactionController = new JS.Class({
     this.review_controller = new ReviewController('section#review');
     this.till = new Till();
 
-    this.section_nav = new TabController('ul#section_nav');
-    this.summary_nav = $('ul#summary_nav').hide();
+    this.section_controller = new PageController('ul#section_nav', [
+      this.customer_controller.view,
+      this.cart_controller.view,
+      this.payment_controller.view,
+      this.review_controller.view
+    ]);
+    this.summary_controller = new SummaryController('ul#summary_nav');
     this.transaction_nav = $('ul#transaction_nav').hide();
   },
 
-  newTransaction: function() {
+  reset: function() {
+    this.customer_controller.reset();
+    this.cart_controller.reset();
+    this.payment_controller.reset();
+    this.review_controller.reset();
+    this.section_controller.reset();
+    this.summary_controller.reset();
+  },
+
+  addTransaction: function(till) {
+    this.reset();
   }
 });
 
@@ -74,7 +149,7 @@ var TerminalController = new JS.Class({
 
   updateTill: function(till) {
     this.transaction_controller.till = till;
-    this.transaction_controller.newTransaction();
+    this.transaction_controller.addTransaction(till);
     $('li.current_user_till', this.user_nav).html(till.title);
     $(this.user_nav).show();
     this.till_controller.view.hide();
@@ -228,13 +303,6 @@ var Receipt = new JS.Class({
   initialize: function(quantity) {
     this.quantity = quantity;
   },
-});
-var Till = new JS.Class({
-
-  initialize: function(id, title) {
-    this.id = id;
-    this.title = title;
-  }
 });
 var Transaction = new JS.Class({
 

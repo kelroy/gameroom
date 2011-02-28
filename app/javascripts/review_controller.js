@@ -2,4 +2,7 @@
 
 var ReviewController = new JS.Class(ViewController, {
   
+  reset: function() {
+    
+  }
 });

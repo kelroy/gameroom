@@ -10,8 +10,9 @@ var TillController = new JS.Class(ViewController, {
   },
   
   doSelect: function(event) {
-    // Get till id from select list and find till
-    event.data.instance.notifyObservers(new Till(0, 'Title'));
+    id = $('div#till select#till_id').val();
+    title = $('div#till select#till_id option:selected').html();
+    event.data.instance.notifyObservers(new Till(id, title));
     event.preventDefault();
   }
 });

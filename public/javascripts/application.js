@@ -26,6 +26,7 @@ var TillController = new JS.Class(ViewController, {
 });
 
 var CustomerController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   reset: function() {
 
@@ -33,6 +34,7 @@ var CustomerController = new JS.Class(ViewController, {
 });
 
 var CartController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   reset: function() {
 
@@ -40,18 +42,88 @@ var CartController = new JS.Class(ViewController, {
 });
 
 var PaymentController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   reset: function() {
 
+  },
+
+  update: function(transaction) {
+
+  }
+});
+var Currency = new JS.Class({
+  extend: {
+    pretty: function(pennies) {
+      value = pennies / 100;
+      return '$' + value.toFixed(2);
+    }
+  }
+});
+var String = new JS.Class({
+  extend: {
+    ucfirst: function(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
   }
 });
 
 var ReviewController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
+    this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
+    this.item_row = $('div#review_list table > tbody > tr', view).detach();
+    this.reset();
+    this.callSuper();
+  },
 
   reset: function() {
+    $('input#receipt_quantity', this.view).val(1);
+    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
+  },
 
+  update: function(transaction) {
+    for(item in transaction.items) {
+      new_item_row = this.item_row.clone();
+      $('td.quantity', new_item_row).html(transaction.items[item].quantity);
+      $('td.title', new_item_row).html(transaction.items[item].title);
+      $('td.description', new_item_row).html(transaction.items[item].description);
+      $('td.sku', new_item_row).html(transaction.items[item].sku);
+      $('td.price', new_item_row).html(Currency.pretty(transaction.items[item].price));
+      $('td.subtotal', new_item_row).html(Currency.pretty(transaction.items[item].price * transaction.items[item].quantity));
+      $('div#review_list table tbody').append(new_item_row);
+    }
+    for(payment in transaction.payments) {
+      new_payment_row = this.payment_row.clone();
+      $('td', new_payment_row).eq(0).html(String.ucfirst(transaction.payments[payment].type));
+      $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
+      $('div#review_summary table tbody tr#change').before(new_payment_row);
+    }
+    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal));
+    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax));
+    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total));
+    $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(transaction.change));
+  },
+
+  onReceiptQuantityChanged: function(event) {
+    quantity = $(this).val();
+    if(!isNaN(quantity)) {
+      event.data.instance.notifyObservers(quantity);
+    } else {
+      $(this).val(1);
+      event.data.instance.notifyObservers(1);
+    }
+  },
+
+  setReceiptQuantity: function(quantity) {
+    this.notifyObservers(quantity);
   }
 });
+
 var PageController = new JS.Class(ViewController, {
 
   sections: [],
@@ -88,6 +160,7 @@ var PageController = new JS.Class(ViewController, {
     this.view.show();
   }
 });
+
 var SummaryController = new JS.Class(ViewController, {
 
   reset: function() {
@@ -113,19 +186,31 @@ var SummaryController = new JS.Class(ViewController, {
     $('h2#summary_total', this.view).html(Currency.pretty(total));
   }
 });
+
+var FinishController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    $('a', view).bind('click', {instance: this}, this.finish)
+    this.callSuper();
+  },
+
+  finish: function(event) {
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },
+
+  update: function(transaction) {
+    if(transaction.valid()) {
+      this.view.show();
+    }
+  }
+});
 var Till = new JS.Class({
 
   initialize: function(id, title) {
     this.id = id;
     this.title = title;
-  }
-});
-var Currency = new JS.Class({
-  extend: {
-    pretty: function(pennies) {
-      value = pennies / 100;
-      return '$' + value.toFixed(2);
-    }
   }
 });
 
@@ -148,8 +233,8 @@ var TransactionController = new JS.Class({
       this.review_controller.view
     ]);
     this.summary_controller = new SummaryController('ul#summary');
+    this.finish_controller = new FinishController('ul#finish');
     this.transaction_nav = $('ul#transaction_nav').hide();
-    $('ul#finish').hide();
   },
 
   reset: function() {
@@ -164,7 +249,16 @@ var TransactionController = new JS.Class({
   addTransaction: function(till) {
     this.reset();
     transaction = new Transaction();
+    transaction.addObserver(this.payment_controller.update, this.payment_controller);
+    transaction.addObserver(this.review_controller.update, this.review_controller);
     transaction.addObserver(this.summary_controller.update, this.summary_controller);
+    transaction.addObserver(this.finish_controller.update, this.finish_controller);
+    transaction.updated();
+    this.customer_controller.addObserver(transaction.updateCustomer, transaction);
+    this.cart_controller.addObserver(transaction.updateCart, transaction);
+    this.payment_controller.addObserver(transaction.updatePayment, transaction);
+    this.review_controller.addObserver(transaction.updateReceipt, transaction);
+    this.finish_controller.addObserver(transaction.save, transaction);
     this.transactions.push(transaction);
   }
 });
@@ -224,7 +318,18 @@ var Good = new JS.Class({
 var Item = new JS.Class({
 
   initialize: function() {
+    this.quantity = 3;
+    this.title = 'blak';
+    this.description = 'Lorem...';
+    this.sku = '11121222';
+    this.price = 1234;
+  }
+});
+var Payment = new JS.Class({
 
+  initialize: function() {
+    this.type = 'cash';
+    this.amount = 0;
   }
 });
 var Receipt = new JS.Class({
@@ -233,6 +338,7 @@ var Receipt = new JS.Class({
     this.quantity = quantity;
   },
 });
+
 var Transaction = new JS.Class({
   include: JS.Observable,
 
@@ -241,17 +347,43 @@ var Transaction = new JS.Class({
     this.customer = new Customer();
     this.receipt = new Receipt();
     this.items = [];
+    this.payments = [];
+    this.subtotal = 0;
     this.total = 0;
+    this.tax = 0;
+    this.change = 0;
     this.tax_rate = 0.07;
     this.complete = false;
     this.locked = false;
+
+    this.payments.push(new Payment());
   },
 
   updated: function() {
     this.notifyObservers(this);
   },
 
+  updateCustomer: function(customer) {
+    this.updated();
+  },
+
+  updateCart: function(cart) {
+    this.updated();
+  },
+
+  updatePayment: function(payment) {
+    this.updated();
+  },
+
+  updateReceipt: function(quantity) {
+    this.receipt.quantity = quantity;
+  },
+
   save: function() {
 
+  },
+
+  valid: function() {
+    return true;
   }
 });

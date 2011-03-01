@@ -1,3 +1,6 @@
+//= require "view_controller"
+//= require "currency"
+
 var SummaryController = new JS.Class(ViewController, {
   
   reset: function() {

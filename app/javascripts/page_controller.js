@@ -1,3 +1,5 @@
+//= require "view_controller"
+
 var PageController = new JS.Class(ViewController, {
   
   sections: [],

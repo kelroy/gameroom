@@ -1,6 +1,6 @@
 %div{:id => 'review_header', :class => 'header_container'}  
   %div{:id => 'review_options'}
-    = form_for :print, :url => root_path do |f|
+    = form_for :receipt, :url => root_path do |f|
       %ul
         %li
           = f.label :quantity, "Receipt Qty."
@@ -17,36 +17,38 @@
           %th Title
           %th Description
           %th SKU
+          %th Price
           %th Subtotal
       %tbody
         %tr
-          %td 1
-          %td XBox 360
-          %td Lorem Ipsum...
-          %td 000000000111
-          %td $100.00
+          %td{:class => 'quantity'}
+          %td{:class => 'title'}
+          %td{:class => 'description'}
+          %td{:class => 'sku'}
+          %td{:class => 'price'}
+          %td{:class => 'subtotal'}
   %div{:id => 'review_summary'}
     %table
       %tbody
-        %tr
+        %tr{:id => 'subtotal'}
           %td Subtotal
-          %td $0.00
-        %tr
+          %td
+        %tr{:id => 'tax'}
           %td Tax
-          %td $0.00
-        %tr
+          %td
+        %tr{:id => 'divider'}
+          %td
+          %td =========
+        %tr{:id => 'total'}
           %td Total
-          %td $0.00
-        %tr
+          %td
+        %tr{:id => 'divider'}
           %td
           %td =========
-        %tr
-          %td Payment
-          %td $0.00
-        %tr
+        %tr{:id => 'payment'}
           %td
-          %td =========
-        %tr
-          %td Change
-          %td $0.00
+          %td
+        %tr{:id => 'change'}
+          %td Change Due
+          %td
         

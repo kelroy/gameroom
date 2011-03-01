@@ -30,6 +30,7 @@ var PageController = new JS.Class(ViewController, {
   reset: function() {
     $('li a', this.view).removeClass('selected');
     $('li a', this.view).first().addClass('selected');
+	this.sections[0].show();
     this.view.show();
   }
 });

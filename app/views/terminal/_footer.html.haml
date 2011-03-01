@@ -7,16 +7,18 @@
     %a{:href => '#payment', :class => 'payment'} 3. Payment
   %li
     %a{:href => '#review', :class => 'review'} 4. Review
-%ul{:id => 'summary_nav', :class => 'summary_nav'}
-  %li
-    %h2{:id => 'summary_customer'} Last, First
-  %li 
-    %h2 &#124;
-  %li
-    %h2{:id => 'summary_item_count'} 0 item(s)
-  %li
-    %h2 &#124;
-  %li
-    %h2{:id => 'summary_total'} $0.00
-  %li
-    %a{:href => '#finish', :class => 'button'} Finish
+%div{:class => 'summary_container'}
+  %ul{:id => 'summary', :class => 'summary_nav'}
+    %li
+      %h2{:id => 'summary_customer'}
+    %li 
+      %h2 &#124;
+    %li
+      %h2{:id => 'summary_item_count'} 0 item(s)
+    %li
+      %h2 &#124;
+    %li
+      %h2{:id => 'summary_total'} $0.00
+  %ul{:id => 'finish', :class => 'button_nav'}
+    %li
+      %a{:href => '#finish', :class => 'button big'} Finish

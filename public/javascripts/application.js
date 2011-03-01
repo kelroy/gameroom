@@ -82,13 +82,35 @@ var PageController = new JS.Class(ViewController, {
   },
 
   reset: function() {
+    $('li a', this.view).removeClass('selected');
+    $('li a', this.view).first().addClass('selected');
+	this.sections[0].show();
     this.view.show();
   }
 });
 var SummaryController = new JS.Class(ViewController, {
 
   reset: function() {
+    this.setCustomer('Select a customer...');
+    this.setItemCount(0);
+    this.setTotal(0);
+    this.view.show();
+  },
 
+  update: function(transaction) {
+    this.setTotal(transaction.total);
+  },
+
+  setItemCount: function(count) {
+    $('h2#summary_item_count', this.view).html(count + ' item(s)');
+  },
+
+  setCustomer: function(customer) {
+    $('h2#summary_customer', this.view).html(customer);
+  },
+
+  setTotal: function(total) {
+    $('h2#summary_total', this.view).html(Currency.pretty(total));
   }
 });
 var Till = new JS.Class({
@@ -96,6 +118,14 @@ var Till = new JS.Class({
   initialize: function(id, title) {
     this.id = id;
     this.title = title;
+  }
+});
+var Currency = new JS.Class({
+  extend: {
+    pretty: function(pennies) {
+      value = pennies / 100;
+      return '$' + value.toFixed(2);
+    }
   }
 });
 
@@ -117,8 +147,9 @@ var TransactionController = new JS.Class({
       this.payment_controller.view,
       this.review_controller.view
     ]);
-    this.summary_controller = new SummaryController('ul#summary_nav');
+    this.summary_controller = new SummaryController('ul#summary');
     this.transaction_nav = $('ul#transaction_nav').hide();
+    $('ul#finish').hide();
   },
 
   reset: function() {
@@ -132,6 +163,9 @@ var TransactionController = new JS.Class({
 
   addTransaction: function(till) {
     this.reset();
+    transaction = new Transaction();
+    transaction.addObserver(this.summary_controller.update, this.summary_controller);
+    this.transactions.push(transaction);
   }
 });
 
@@ -160,113 +194,8 @@ var gameroomlincoln_terminal = {
 
   run: function() {
 
-
     new TerminalController();
 
-  },
-
-  init: function() {
-
-    /* Section Nav */
-    $('a.customer').click(function(event){
-      gameroomlincoln_terminal.showSection('customer');
-      event.preventDefault();
-    });
-    $('a.cart').click(function(event){
-      gameroomlincoln_terminal.showSection('cart');
-      event.preventDefault();
-    });
-    $('a.payment').click(function(event){
-      gameroomlincoln_terminal.showSection('payment');
-      event.preventDefault();
-    });
-    $('a.review').click(function(event){
-      gameroomlincoln_terminal.showSection('review');
-      event.preventDefault();
-    });
-    $(document).keypress(function(event){
-      switch(event.keyCode) {
-        case 37:
-          gameroomlincoln_terminal.cycleSection('back');
-          break;
-        case 39:
-          gameroomlincoln_terminal.cycleSection('forward');
-          break;
-        default:
-          break;
-      }
-    });
-
-    /* Customer Nav */
-    $('a.customer_form').click(function(event){
-      gameroomlincoln_terminal.showCustomerSection('customer_form');
-      event.preventDefault();
-    });
-    $('a.customer_search_results').click(function(event){
-      gameroomlincoln_terminal.showCustomerSection('customer_search_results');
-      event.preventDefault();
-    });
-    $('div#customer_search ul.alphabet_nav a').click(function(event){
-      $('input#customer_search').val($(this).html());
-      event.preventDefault();
-    });
-
-    /* Cart Nav */
-    $('a.cart_list').click(function(event){
-      gameroomlincoln_terminal.showCartSection('cart_list');
-      event.preventDefault();
-    });
-    $('a.cart_add').click(function(event){
-      gameroomlincoln_terminal.showCartSection('cart_add');
-      event.preventDefault();
-    });
-    $('a.cart_search_results').click(function(event){
-      gameroomlincoln_terminal.showCartSection('cart_search_results');
-      event.preventDefault();
-    });
-    $('div#cart_search ul.alphabet_nav a').click(function(event){
-      $('input#cart_search').val($(this).html());
-      event.preventDefault();
-    });
-  },
-
-  showSection: function(section) {
-    $('section').hide();
-    $('section#' + section).show();
-    $('ul#section_nav a').removeClass('selected');
-    $('ul#section_nav a.' + section).addClass('selected');
-  },
-
-  cycleSection: function(direction) {
-    $('section').hide();
-    $('ul#section_nav a').removeClass('selected');
-
-    switch(direction) {
-      case 'back':
-        $('ul.section_nav a').each(function(index) {
-          if(index != 0) {
-          }
-        });
-        break;
-      case 'forward':
-        break;
-      default:
-        break;
-    }
-  },
-
-  showCustomerSection: function(section) {
-    $('div#customer_pages > div').hide();
-    $('div#customer_pages > div#' + section).show();
-    $('ul#customer_nav a').removeClass('selected');
-    $('ul#customer_nav a.' + section).addClass('selected');
-  },
-
-  showCartSection: function(section) {
-    $('div#cart_pages > div').hide();
-    $('div#cart_pages > div#' + section).show();
-    $('ul#cart_nav a').removeClass('selected');
-    $('ul#cart_nav a.' + section).addClass('selected');
   }
 
 };
@@ -305,15 +234,21 @@ var Receipt = new JS.Class({
   },
 });
 var Transaction = new JS.Class({
+  include: JS.Observable,
 
   initialize: function() {
     this.till = new Till();
     this.customer = new Customer();
     this.receipt = new Receipt();
     this.items = [];
+    this.total = 0;
     this.tax_rate = 0.07;
     this.complete = false;
     this.locked = false;
+  },
+
+  updated: function() {
+    this.notifyObservers(this);
   },
 
   save: function() {

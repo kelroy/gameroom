@@ -5,6 +5,7 @@
 //= require "page_controller"
 //= require "summary_controller"
 //= require "till"
+//= require "currency"
 
 var TransactionController = new JS.Class({
   
@@ -24,8 +25,9 @@ var TransactionController = new JS.Class({
       this.payment_controller.view,
       this.review_controller.view
     ]);
-    this.summary_controller = new SummaryController('ul#summary_nav');
+    this.summary_controller = new SummaryController('ul#summary');
     this.transaction_nav = $('ul#transaction_nav').hide();
+    $('ul#finish').hide();
   },
   
   reset: function() {
@@ -38,7 +40,9 @@ var TransactionController = new JS.Class({
   },
   
   addTransaction: function(till) {
-    // Add a transaction to the transaction stack
     this.reset();
+    transaction = new Transaction();
+    transaction.addObserver(this.summary_controller.update, this.summary_controller);
+    this.transactions.push(transaction);
   }
 });

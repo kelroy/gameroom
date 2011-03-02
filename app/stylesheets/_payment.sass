@@ -52,7 +52,7 @@ section#payment
     text-align: center
     clear: both
     
-  div#payment_total
+  div#payment_summary
     height: auto
     margin-top: 60px
     background-color: $gray
@@ -61,7 +61,7 @@ section#payment
       li
         margin: 0px
     
-    span.payment_cart_items
+    span.payment_plain
       font-size: 20px
       line-height: 32px
       margin-right: 10px
@@ -77,12 +77,20 @@ section#payment
       line-height: 28px
       font-family: LatinModernMonoLight10Bold, Tacoma, serif
       font-size: 16px
+      
+    span.payment_plain
+      font-size: 14px
+      line-height: 32px
+      margin-right: 10px
     
   div#payment_action
     margin: 20px 0px
     background-color: $white
     
     ul
+      float: right
+      clear: none
+      
       li
         a
           height: 26px
@@ -99,5 +107,5 @@ section#payment
     span.payment_pill
       width: 200px
       
-    span.payment_pill_action
+    span#payment_change
       width: 280px

@@ -9,12 +9,17 @@ var Transaction = new JS.Class({
   
   initialize: function() {
     this.till = new Till();
-    this.customer = new Customer();
+    customer = new Customer();
+    customer.id = 1;
+    customer.person.first_name = "Joe";
+    customer.person.last_name = "Bot";
+    customer.credit = 10000;
+    this.customer = customer;
     this.receipt = new Receipt();
     this.items = [];
     this.payments = [];
     this.subtotal = 0;
-    this.total = 0;
+    this.total = 1000;
     this.tax = 0;
     this.change = 0;
     this.tax_rate = 0.07;
@@ -34,8 +39,8 @@ var Transaction = new JS.Class({
     this.updated();
   },
   
-  updatePayment: function(payment) {
-    // payment is array of Payment objects
+  updatePayment: function(payments) {
+    this.payments = payments;
     this.updated();
   },
   

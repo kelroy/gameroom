@@ -4,15 +4,15 @@
 var SummaryController = new JS.Class(ViewController, {
   
   reset: function() {
-    this.setCustomer('Select a customer...');
+    this.setCustomer(new Customer());
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();
   },
 
   update: function(transaction) {
-    // Set customer
-    // Set items
+    this.setCustomer(transaction.customer);
+    this.setItemCount(transaction.items.length);
     this.setTotal(transaction.total);
   },
   
@@ -21,7 +21,11 @@ var SummaryController = new JS.Class(ViewController, {
   },
   
   setCustomer: function(customer) {
-    $('h2#summary_customer', this.view).html(customer);
+    if(customer.id == null) {
+      $('h2#summary_customer', this.view).html("Select a customer...");
+    } else {
+      $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+    }
   },
   
   setTotal: function(total) {

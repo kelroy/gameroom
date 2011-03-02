@@ -21,6 +21,10 @@ var ReviewController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
+    alert(transaction.payments.length);
+    $('div#review_summary table > tbody > tr#payment', this.view).remove()
+    $('div#review_list table > tbody > tr', this.view).remove();
+    
     for(item in transaction.items) {
       new_item_row = this.item_row.clone();
       $('td.quantity', new_item_row).html(transaction.items[item].quantity);

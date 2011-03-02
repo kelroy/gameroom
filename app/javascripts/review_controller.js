@@ -33,7 +33,7 @@ var ReviewController = new JS.Class(ViewController, {
     }
     for(payment in transaction.payments) {
       new_payment_row = this.payment_row.clone();
-      $('td', new_payment_row).eq(0).html(String.ucfirst(transaction.payments[payment].type));
+      $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].type.replace('_', ' ')));
       $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
       $('div#review_summary table tbody tr#change').before(new_payment_row);
     }

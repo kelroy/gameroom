@@ -9,17 +9,12 @@ var Transaction = new JS.Class({
   
   initialize: function() {
     this.till = new Till();
-    customer = new Customer();
-    customer.id = 1;
-    customer.person.first_name = "Joe";
-    customer.person.last_name = "Bot";
-    customer.credit = 10000;
-    this.customer = customer;
+    this.customer = new Customer();
     this.receipt = new Receipt();
     this.items = [];
     this.payments = [];
     this.subtotal = 0;
-    this.total = 1000;
+    this.total = -1000;
     this.tax = 0;
     this.change = 0;
     this.tax_rate = 0.07;

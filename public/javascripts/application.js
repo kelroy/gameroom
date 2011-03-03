@@ -40,6 +40,150 @@ var CartController = new JS.Class(ViewController, {
 
   }
 });
+var PaymentLineController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    $('input.payment', view).bind('change', {instance: this}, this.onChange);
+    $('a.clear', view).bind('click', {instance: this}, this.onClear);
+    this.payment = new Payment();
+    this.payment.type = $('input.payment', view).attr('data-payment-type');
+    this.disable();
+    this.reset();
+    this.callSuper();
+    this.view.show();
+  },
+
+  reset: function() {
+    $('input.payment', this.view).val(null);
+  },
+
+  enable: function() {
+    $('input.payment', this.view).attr('disabled', false);
+  },
+
+  disable: function() {
+    $('input.payment', this.view).attr('disabled', true);
+  },
+
+  hideClearButtons: function() {
+    $('a.clear', this.view).hide();
+  },
+
+  showClearButtons: function() {
+    $('a.clear', this.view).show();
+  },
+
+  onClear: function(event) {
+    input = $(this).parents('div.payment_line').find('input.payment');
+    input.val(null);
+    event.data.instance.payment.amount = null;
+    event.data.instance.notifyObservers(event.data.instance.payment);
+    event.preventDefault();
+  },
+
+  onChange: function(event) {
+    if(!isNaN($(this).val())) {
+      event.data.instance.payment.amount = Currency.toPennies($(this).val());
+
+      if(event.data.instance.payment.amount != 0) {
+        $(this).val(Currency.format(event.data.instance.payment.amount));
+      } else {
+        $(this).val(null);
+      }
+      event.data.instance.notifyObservers(event.data.instance.payment);
+    } else {
+      $(this).val(null);
+    }
+  }
+});
+var StoreCreditController = new JS.Class(PaymentLineController, {
+
+  initialize: function(view) {
+    $('a.apply', view).hide().bind('click', {instance: this}, this.onApply);
+    this.setTransaction(new Transaction());
+    this.callSuper();
+  },
+
+  enable: function() {
+    if(this.transaction.customer.id != null) {
+      this.callSuper();
+    }
+  },
+
+  onApply: function(event) {
+    if(event.data.instance.transaction.customer.credit > event.data.instance.transaction.total) {
+      amount = event.data.instance.transaction.total;
+    } else {
+      amount = event.data.instance.transaction.customer.credit;
+    }
+    $('div#payment_store_credit input#store_credit_amount').val(Currency.format(amount));
+    event.data.instance.payment.amount = amount;
+    event.data.instance.notifyObservers(event.data.instance.payment);
+    event.preventDefault();
+  },
+
+  onChange: function(event) {
+    if(!isNaN($(this).val())) {
+      amount = Currency.toPennies($(this).val());
+      credit = event.data.instance.transaction.customer.credit;
+      total = event.data.instance.transaction.total;
+
+      if(amount > credit) {
+        event.data.instance.payment.amount = credit;
+      } else {
+        event.data.instance.payment.amount = amount;
+      }
+      if(event.data.instance.payment.amount > total) {
+        event.data.instance.payment.amount = total;
+      }
+      if(event.data.instance.payment.amount != 0) {
+        $(this).val(Currency.format(event.data.instance.payment.amount));
+      } else {
+        $(this).val(null);
+      }
+      event.data.instance.notifyObservers(event.data.instance.payment);
+    } else {
+      $(this).val(null);
+    }
+  },
+
+  setTransaction: function(transaction) {
+    this.transaction = transaction;
+    if(transaction.customer.id != null) {
+      $('div#payment_store_credit span#payment_customer').html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name + ': ' + Currency.pretty(transaction.customer.credit));
+      $('div#payment_store_credit a.apply').show();
+      this.enable();
+    }
+  }
+
+});
+var ScaleController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.setTransaction(new Transaction());
+    this.callSuper();
+  },
+
+  reset: function() {
+    $('input.scale', this.view).val(null);
+  },
+
+  enable: function() {
+    this.view.show();
+  },
+
+  disable: function() {
+    this.view.hide();
+  },
+
+  setTransaction: function(transaction) {
+    this.transaction = transaction;
+    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(this.transaction.total)));
+  }
+
+});
 var Till = new JS.Class({
 
   initialize: function(id, title) {
@@ -106,17 +250,12 @@ var Transaction = new JS.Class({
 
   initialize: function() {
     this.till = new Till();
-    customer = new Customer();
-    customer.id = 1;
-    customer.person.first_name = "Joe";
-    customer.person.last_name = "Bot";
-    customer.credit = 10000;
-    this.customer = customer;
+    this.customer = new Customer();
     this.receipt = new Receipt();
     this.items = [];
     this.payments = [];
     this.subtotal = 0;
-    this.total = 1000;
+    this.total = -1000;
     this.tax = 0;
     this.change = 0;
     this.tax_rate = 0.07;
@@ -156,60 +295,52 @@ var Transaction = new JS.Class({
 
 var PaymentController = new JS.Class(ViewController, {
   include: JS.Observable,
-  payments: [],
 
   initialize: function(view) {
     this.transaction = new Transaction();
-    this.customer = new Customer();
-    $('input.payment', view).bind('change', {instance: this}, this.onPayment);
-    $('a.clear', view).bind('click', {instance: this}, this.onClear);
-    $('a.apply', view).hide().bind('click', {instance: this}, this.onApply);
+    this.scale_controller = new ScaleController('div#ul_payment_scale_container');
+    this.store_credit_controller = new StoreCreditController('div#payment_store_credit');
+    this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
+    this.check_controller = new PaymentLineController('div#payment_check');
+    this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
+    this.cash_controller = new PaymentLineController('div#payment_cash');
+    this.store_credit_controller.addObserver(this.setPayment, this);
+    this.gift_card_controller.addObserver(this.setPayment, this);
+    this.check_controller.addObserver(this.setPayment, this);
+    this.credit_card_controller.addObserver(this.setPayment, this);
+    this.cash_controller.addObserver(this.setPayment, this);
+    this.payments = [];
     this.reset();
     this.callSuper();
   },
 
-  onClear: function(event) {
-    input = $(this).parents('div.payment_line').find('input.payment');
-    input.val(null);
-    event.data.instance.removePayment(input.attr('data-payment-type'));
-    event.preventDefault();
+  reset: function() {
+    this.payments = [];
+    this.resetSummary();
+    this.resetPaymentFields();
+    this.resetScaleFields();
+    this.enableBuyFromStore();
+    this.notifyObservers(this.payments);
   },
 
-  onApply: function(event) {
-    if(event.data.instance.customer.credit > event.data.instance.transaction.total) {
-      amount = event.data.instance.transaction.total;
-    } else {
-      amount = event.data.instance.customer.credit;
-    }
-    payment = new Payment();
-    payment.type = 'store_credit';
-    payment.amount = amount;
-    $('div#payment_store_credit input#store_credit_amount').val(Currency.format(amount));
-    event.data.instance.addPayment(payment);
-    event.preventDefault();
+  resetSummary: function() {
+    $('div#payment_summary span#payment_summary_items', this.view).html('0 item(s) in cart');
+    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00 ($0.00)');
+    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
+    $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
+    $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');
   },
 
-  onPayment: function(event) {
-    if(!isNaN($(this).val())) {
-      payment = new Payment();
-      payment.amount = Currency.toPennies($(this).val());
-      payment.type = $(this).attr('data-payment-type');
-      customer = event.data.instance.customer.credit;
+  resetPaymentFields: function() {
+    this.store_credit_controller.reset();
+    this.gift_card_controller.reset();
+    this.check_controller.reset();
+    this.credit_card_controller.reset();
+    this.cash_controller.reset();
+  },
 
-      if(payment.type == 'store_credit') {
-        if(payment.amount > customer.credit) {
-          payment.amount = customer.credit;
-        }
-      }
-      if(payment.amount != 0) {
-        $(this).val(Currency.format(payment.amount));
-      } else {
-        $(this).val(null);
-      }
-      event.data.instance.addPayment(payment);
-    } else {
-      $(this).val(null);
-    }
+  resetScaleFields: function() {
+    this.scale_controller.reset();
   },
 
   findPayment: function(type) {
@@ -222,14 +353,13 @@ var PaymentController = new JS.Class(ViewController, {
     return payment;
   },
 
-  addPayment: function(payment) {
+  setPayment: function(payment) {
     existing_payment = this.findPayment(payment.type);
     if(existing_payment != null) {
       this.removePayment(existing_payment.type);
-    } else {
-      if(payment.amount != 0) {
-        this.payments.push(payment);
-      }
+    }
+    if(payment.amount != null && payment.amount != 0) {
+      this.payments.push(payment);
     }
     this.notifyObservers(this.payments);
   },
@@ -238,52 +368,37 @@ var PaymentController = new JS.Class(ViewController, {
     for(p in this.payments) {
       if(this.payments[p].type == type) {
         this.payments.splice(p, 1);
-        this.notifyObservers(this.payments);
         return true;
       }
     }
     return false;
   },
 
-  reset: function() {
-    this.resetSummary();
-    this.resetAllPaymentFields();
-    this.resetAllScaleFields();
-    this.enableBuyFromStore();
+  enablePaymentFields: function() {
+    this.store_credit_controller.enable();
+    this.gift_card_controller.enable();
+    this.check_controller.enable();
+    this.credit_card_controller.enable();
+    this.cash_controller.enable();
   },
 
-  resetSummary: function() {
-    $('div#payment_summary span#payment_summary_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00 ($0.00)');
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
-    $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');
-  },
-
-  resetAllPaymentFields: function() {
-    $('input.payment', this.view).val(null);
-  },
-
-  resetAllScaleFields: function() {
-    $('input.scale', this.view).val(null);
+  disablePaymentFields: function() {
+    this.store_credit_controller.disable();
+    this.gift_card_controller.disable();
+    this.check_controller.disable();
+    this.credit_card_controller.disable();
+    this.cash_controller.disable();
   },
 
   update: function(transaction) {
     this.transaction = transaction;
-    this.updateCustomer(transaction.customer);
+    this.store_credit_controller.setTransaction(transaction);
+    this.scale_controller.setTransaction(transaction);
     this.updateSummary(transaction);
     if(transaction.total > 0) {
       this.enableBuyFromStore();
     } else {
       this.enableSellToStore();
-    }
-  },
-
-  updateCustomer: function(customer) {
-    if(customer.id != null) {
-      this.customer = customer;
-      $('div#payment_store_credit span#payment_customer').html(customer.person.first_name + ' ' + customer.person.last_name + ': ' + Currency.pretty(customer.credit));
-      $('div#payment_store_credit a.apply').show();
     }
   },
 
@@ -294,26 +409,16 @@ var PaymentController = new JS.Class(ViewController, {
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total));
   },
 
-  hideClearButtons: function() {
-    $('a.clear', this.view).hide();
-  },
-
-  showClearButtons: function() {
-    $('a.clear', this.view).show();
-  },
-
   enableBuyFromStore: function() {
-    this.showClearButtons();
-    $('input.payment', this.view).attr('disabled', false);
-    $('div#payment_action ul#payment_scale_container', this.view).hide();
+    this.enablePaymentFields();
+    this.scale_controller.disable();
   },
 
   enableSellToStore: function() {
-    this.hideClearButtons();
-    this.resetAllPaymentFields();
+    this.disablePaymentFields();
+    this.resetPaymentFields();
     this.payments = [];
-    $('input.payment', this.view).attr('disabled', true);
-    $('div#payment_action ul#payment_scale_container', this.view).show();
+    this.scale_controller.enable();
   }
 });
 var Currency = new JS.Class({

@@ -2,25 +2,24 @@
 
 var PageController = new JS.Class(ViewController, {
   
-  sections: [],
-  
   initialize: function(view, sections) {
-    $('a', view).bind('click', {page_controller: this, view: view}, this.doClick);
-    this.sections = sections;
     this.callSuper();
+    this.sections = sections;
+    this.reset();
+    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
   
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
-    event.data.page_controller.showSection(index);
+    event.data.instance.showSection(index);
     event.preventDefault();
   },
   
   showSection: function(index) {
     this.hideSections();
     this.sections[index].show();
-    $('li a', this.view).removeClass('selected');
-    $('li a', this.view).eq(index).addClass('selected');
+    $('li > a', this.view).removeClass('selected');
+    $('li', this.view).eq(index).find('a').addClass('selected');
   },
   
   hideSections: function() {
@@ -30,9 +29,6 @@ var PageController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    $('li a', this.view).removeClass('selected');
-    $('li a', this.view).first().addClass('selected');
-	this.sections[0].show();
-    this.view.show();
+    this.showSection(0);
   }
 });

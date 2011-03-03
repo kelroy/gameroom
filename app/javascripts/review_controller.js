@@ -21,7 +21,7 @@ var ReviewController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
-    alert(transaction.payments.length);
+    //alert(transaction.payments.length);
     $('div#review_summary table > tbody > tr#payment', this.view).remove()
     $('div#review_list table > tbody > tr', this.view).remove();
     

@@ -4,7 +4,6 @@ var ViewController = new JS.Class({
 
   initialize: function(view) {
     this.view = $(view);
-    this.view.hide();
   }
 });
 
@@ -24,12 +23,101 @@ var TillController = new JS.Class(ViewController, {
     event.preventDefault();
   }
 });
+var Person = new JS.Class({
+
+  initialize: function() {
+    this.first_name = null;
+    this.middle_name = null;
+    this.last_name = null;
+    this.date_of_birth = null;
+  },
+
+  save: function() {
+
+  }
+});
+
+var Customer = new JS.Class({
+
+  initialize: function() {
+    this.id = null;
+    this.person = new Person();
+    this.credit = null;
+    this.drivers_license_number = null;
+    this.drivers_license_state = null;
+    this.notes = null;
+    this.active = false;
+  },
+
+  save: function() {
+
+  }
+});
+
+var CustomerFormController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.customer = new Customer();
+    this.reset();
+    this.callSuper();
+  },
+
+  reset: function() {
+
+  }
+});
+
+var CustomerSearchResultsController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.customer = new Customer();
+    this.reset();
+    this.callSuper();
+  },
+
+  reset: function() {
+
+  }
+});
+
+var CustomerSearchController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.reset();
+    this.callSuper();
+  },
+
+  reset: function() {
+
+  }
+});
 
 var CustomerController = new JS.Class(ViewController, {
   include: JS.Observable,
 
+  initialize: function(view) {
+    this.customer = new Customer();
+    this.customer_form_controller = new CustomerFormController('div#customer_form');
+    this.customer_search_controller = new CustomerSearchController('div#customer_search');
+    this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
+    this.customer_page_controller = new PageController('ul#customer_nav', [
+      this.customer_form_controller.view,
+      this.customer_search_results_controller.view
+    ]);
+    this.reset();
+    this.callSuper();
+  },
+
   reset: function() {
 
+  },
+
+  setCustomer: function(customer) {
+    this.customer = customer;
+    this.notifyObservers(customer);
   }
 });
 
@@ -189,36 +277,6 @@ var Till = new JS.Class({
   initialize: function(id, title) {
     this.id = id;
     this.title = title;
-  }
-});
-var Person = new JS.Class({
-
-  initialize: function() {
-    this.first_name = null;
-    this.middle_name = null;
-    this.last_name = null;
-    this.date_of_birth = null;
-  },
-
-  save: function() {
-
-  }
-});
-
-var Customer = new JS.Class({
-
-  initialize: function() {
-    this.id = null;
-    this.person = new Person();
-    this.credit = null;
-    this.drivers_license_number = null;
-    this.drivers_license_state = null;
-    this.notes = null;
-    this.active = false;
-  },
-
-  save: function() {
-
   }
 });
 var Receipt = new JS.Class({
@@ -472,7 +530,6 @@ var ReviewController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    alert(transaction.payments.length);
     $('div#review_summary table > tbody > tr#payment', this.view).remove()
     $('div#review_list table > tbody > tr', this.view).remove();
 
@@ -515,25 +572,24 @@ var ReviewController = new JS.Class(ViewController, {
 
 var PageController = new JS.Class(ViewController, {
 
-  sections: [],
-
   initialize: function(view, sections) {
-    $('a', view).bind('click', {page_controller: this, view: view}, this.doClick);
-    this.sections = sections;
     this.callSuper();
+    this.sections = sections;
+    this.reset();
+    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
 
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
-    event.data.page_controller.showSection(index);
+    event.data.instance.showSection(index);
     event.preventDefault();
   },
 
   showSection: function(index) {
     this.hideSections();
     this.sections[index].show();
-    $('li a', this.view).removeClass('selected');
-    $('li a', this.view).eq(index).addClass('selected');
+    $('li > a', this.view).removeClass('selected');
+    $('li', this.view).eq(index).find('a').addClass('selected');
   },
 
   hideSections: function() {
@@ -543,10 +599,7 @@ var PageController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    $('li a', this.view).removeClass('selected');
-    $('li a', this.view).first().addClass('selected');
-	this.sections[0].show();
-    this.view.show();
+    this.showSection(0);
   }
 });
 
@@ -608,12 +661,12 @@ var TransactionController = new JS.Class({
 
   initialize: function() {
 
+    this.till = new Till();
+    this.transaction_nav = $('ul#transaction_nav');
     this.customer_controller = new CustomerController('section#customer');
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.till = new Till();
-
     this.section_controller = new PageController('ul#section_nav', [
       this.customer_controller.view,
       this.cart_controller.view,
@@ -622,7 +675,13 @@ var TransactionController = new JS.Class({
     ]);
     this.summary_controller = new SummaryController('ul#summary');
     this.finish_controller = new FinishController('ul#finish');
-    this.transaction_nav = $('ul#transaction_nav').hide();
+
+    this.reset();
+    this.customer_controller.view.hide();
+    this.section_controller.view.hide();
+    this.summary_controller.view.hide();
+    this.finish_controller.view.hide();
+    this.transaction_nav.hide();
   },
 
   reset: function() {
@@ -632,6 +691,7 @@ var TransactionController = new JS.Class({
     this.review_controller.reset();
     this.section_controller.reset();
     this.summary_controller.reset();
+    this.section_controller.view.show();
   },
 
   addTransaction: function(till) {

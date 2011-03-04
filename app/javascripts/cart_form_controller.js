@@ -1,18 +1,14 @@
 //= require "form_controller"
 
-var CustomerFormController = new JS.Class(FormController, {
+var CartFormController = new JS.Class(FormController, {
   
   initialize: function(view) {
     this.callSuper();
   },
   
-  update: function(customer) {
-    // Do customer update
-  },
-  
   save: function() {
-    // Do customer save
-    this.notifyObservers(new Customer());
+    // Do cart save
+    this.notifyObservers();
   },
   
   onClear: function(event) {

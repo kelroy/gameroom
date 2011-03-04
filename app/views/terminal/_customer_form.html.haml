@@ -55,10 +55,11 @@
     %li
       = c.label :notes
       = c.text_area :notes, :rows => 4, :cols => 100
+      = c.hidden_field :id, :value => 0
   %ul
     %li
       %ul{:class => 'button_nav'}
         %li
-          %a{:href => '#clear', :class => 'button'} Clear
+          %a{:href => '#clear', :class => 'button clear'} Clear
         %li
-          %a{:href => '#save', :class => 'button'} Save
+          %a{:href => '#save', :class => 'button save'} Save

@@ -7,7 +7,7 @@ var CustomerSearchController = new JS.Class(ViewController, {
     this.callSuper();
     this.reset();
     
-    this.customer_query = $('div#customer_search input#customer_query');
+    this.customer_query = $('input#customer_query', this.view);
     this.customer_query.bind('change', {instance: this}, this.onChange);
     this.alphabet_controller = new AlphabetController('div#customer_search ul.alphabet_nav', this.customer_query);
     this.alphabet_controller.addObserver(this.onLetter, this);

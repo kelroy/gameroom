@@ -138,16 +138,29 @@ var CustomerTableController = new JS.Class(TableController, {
     this.reset();
     for(customer in customers){
       new_row = $(this.table_row).clone();
-      address_list = $('<ul></ul>');
-
-      for(address in customers[customer].addresses) {
-        address_list.append($('<li></li>').html(customers[customer].addresses[address].first_line));
-      }
-
       new_row.attr('data-object-id', customers[customer].id);
+
       $('td.name', new_row).html(customers[customer].name);
-      $('td.phone', new_row).html(customers[customer].phone);
-      $('td.email', new_row).html(customers[customer].email);
+      for(address in customers[customer].addresses) {
+        address_string = [
+          customers[customer].addresses[address].first_line,
+          customers[customer].addresses[address].second_line,
+          customers[customer].addresses[address].city + ',',
+          customers[customer].addresses[address].state,
+          customers[customer].addresses[address].province,
+          customers[customer].addresses[address].country,
+          customers[customer].addresses[address].zip
+        ].join(' ');
+        $('td.address', new_row).append($('<address></address>').html(address_string));
+      }
+      for(phone in customers[customer].phones) {
+        phone_string = customers[customer].phones[phone].title + ' - ' + customers[customer].phones[phone].number;
+        $('td.phone', new_row).append($('<p></p>').html(phone_string));
+      }
+      for(email in customers[customer].emails) {
+        email_string = customers[customer].emails[email].address;
+        $('td.phone', new_row).append($('<p></p>').html(email_string));
+      }
       $('td.credit', new_row).html(customers[customer].credit);
       $('td.drivers_license', new_row).html(customers[customer].drivers_license_number);
       $('td.flagged', new_row).html(customers[customer].active);
@@ -164,6 +177,10 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     this.callSuper();
     this.customer_table_controller = new CustomerTableController($('table', this.view));
     this.customer_table_controller.addObserver(this.onCustomer, this);
+  },
+
+  reset: function() {
+    this.customer_table_controller.reset();
   },
 
   search: function(query) {
@@ -216,13 +233,21 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_search_results_controller.view
     ]);
     this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+    this.customer_search_controller.addObserver(this.showSearchSection, this);
 
     this.reset();
     this.callSuper();
   },
 
   reset: function() {
+    this.customer_form_controller.reset();
+    this.customer_search_controller.reset();
+    this.customer_search_results_controller.reset();
+    this.customer_page_controller.reset();
+  },
 
+  showSearchSection: function() {
+    this.customer_page_controller.showSection(1);
   },
 
   setCustomer: function(customer) {
@@ -831,6 +856,10 @@ var TerminalController = new JS.Class({
 
     this.till_controller.view.show();
     this.till_controller.addObserver(this.updateTill, this);
+
+    $('form').submit(function(event) {
+      event.preventDefault();
+    });
   },
 
   updateTill: function(till) {

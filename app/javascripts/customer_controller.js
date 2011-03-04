@@ -17,13 +17,21 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_search_results_controller.view
     ]);
     this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+    this.customer_search_controller.addObserver(this.showSearchSection, this);
     
     this.reset();
     this.callSuper();
   },
   
   reset: function() {
-    
+    this.customer_form_controller.reset();
+    this.customer_search_controller.reset();
+    this.customer_search_results_controller.reset();
+    this.customer_page_controller.reset();
+  },
+  
+  showSearchSection: function() {
+    this.customer_page_controller.showSection(1);
   },
   
   setCustomer: function(customer) {

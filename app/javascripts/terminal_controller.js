@@ -11,6 +11,11 @@ var TerminalController = new JS.Class({
     
     this.till_controller.view.show();
     this.till_controller.addObserver(this.updateTill, this);
+    
+    // Prevent all forms from doing page requests
+    $('form').submit(function(event) {
+      event.preventDefault();
+    });
   },
   
   updateTill: function(till) {

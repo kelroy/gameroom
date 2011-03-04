@@ -1,6 +1,6 @@
 %div{:id => 'review_header', :class => 'header_container'}  
   %div{:id => 'review_options'}
-    = form_for :receipt, :url => root_path do |f|
+    = form_for :receipt, :method => 'get', :url => root_path do |f|
       %ul
         %li
           = f.label :quantity, "Receipt Qty."

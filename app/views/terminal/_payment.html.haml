@@ -26,7 +26,7 @@
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
-      = form_for :store_credit, :url => root_path do |f|
+      = form_for :store_credit, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'store_credit'
 %div{:class => 'payment_divider'}
@@ -37,7 +37,7 @@
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
-      = form_for :gift_card, :url => root_path do |f|
+      = form_for :gift_card, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'gift_card'
 %div{:class => 'payment_divider'}
@@ -48,7 +48,7 @@
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
-      = form_for :check, :url => root_path do |f|
+      = form_for :check, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'check'
 %div{:class => 'payment_divider'}
@@ -59,7 +59,7 @@
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
-      = form_for :credit_card, :url => root_path do |f|
+      = form_for :credit_card, :method => 'get', :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'credit_card'
 %div{:class => 'payment_divider'}
@@ -70,11 +70,11 @@
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
-      = form_for :cash, :url => root_path do |f|
+      = form_for :cash, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'cash'
 %div{:id => 'payment_action', :class => 'payment_line'}
-  = form_for :payment_action, :url => root_path do |f|
+  = form_for :payment_action, :method => 'get', :url => root_path do |f|
     %ul{:id => 'payment_change_container'}
       %li
         %span{:class => 'payment_symbol'} =

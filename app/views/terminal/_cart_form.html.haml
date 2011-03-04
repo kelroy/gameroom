@@ -1,4 +1,4 @@
-= form_for :good, :url => root_path do |g|
+= form_for :good, :method => 'get', :url => root_path do |g|
   - (1..5).each do |n|
     %ul
       %li

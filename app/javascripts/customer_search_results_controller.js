@@ -10,6 +10,10 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     this.customer_table_controller.addObserver(this.onCustomer, this);
   },
   
+  reset: function() {
+    this.customer_table_controller.reset();
+  },
+  
   search: function(query) {
     this.customer_table_controller.update(Customer.search(query));
   },

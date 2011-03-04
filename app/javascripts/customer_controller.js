@@ -16,6 +16,8 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
     ]);
+    this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+    
     this.reset();
     this.callSuper();
   },

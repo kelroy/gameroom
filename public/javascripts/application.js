@@ -1,11 +1,25 @@
-/* Gameroom Terminal */
-
 var ViewController = new JS.Class({
 
   initialize: function(view) {
     this.view = $(view);
   }
 });
+
+var AlphabetController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    $('a', this.view).bind('click', {instance: this}, this.onSelect);
+  },
+
+  onSelect: function(event) {
+    event.data.instance.notifyObservers($(this).html());
+    event.preventDefault();
+  }
+});
+/* Gameroom Terminal */
+
 
 var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -38,6 +52,15 @@ var Person = new JS.Class({
 });
 
 var Customer = new JS.Class({
+  extend: {
+    find: function(id) {
+      return new Customer();
+    },
+
+    search: function(query) {
+      return [];
+    }
+  },
 
   initialize: function() {
     this.id = null;
@@ -68,17 +91,63 @@ var CustomerFormController = new JS.Class(ViewController, {
   }
 });
 
+var TableController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.table_row = $('tbody > tr', view).detach();
+    this.reset();
+    $('tbody > tr', view).live('click', {instance: this}, this.onSelect);
+  },
+
+  reset: function() {
+    $('tbody > tr', this.view).remove();
+  },
+
+  update: function(data) {
+  },
+
+  onSelect: function(event) {
+    event.data.instance.notifyObservers($(this).attr('data-object-id'));
+  }
+});
+
+var CustomerTableController = new JS.Class(TableController, {
+
+  update: function(customers) {
+    this.reset();
+    for(customer in customers){
+      new_row = $(this.table_row).clone();
+      new_row.attr('data-object-id', customers[customer].id);
+      $('td.name', new_row).html(customers[customer].name);
+      $('td.address', new_row).html(customers[customer].address);
+      $('td.phone', new_row).html(customers[customer].phone);
+      $('td.email', new_row).html(customers[customer].email);
+      $('td.credit', new_row).html(customers[customer].credit);
+      $('td.drivers_license', new_row).html(customers[customer].drivers_license_number);
+      $('td.flagged', new_row).html(customers[customer].active);
+      $('td.notes', new_row).html(customers[customer].notes);
+      $('tbody', this.view).append(new_row);
+    }
+  }
+});
+
 var CustomerSearchResultsController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
-    this.customer = new Customer();
-    this.reset();
     this.callSuper();
+    this.customer_table_controller = new CustomerTableController($('table', this.view));
+    this.customer_table_controller.addObserver(this.onCustomer, this);
   },
 
-  reset: function() {
+  search: function(query) {
+    this.customer_table_controller.update(Customer.search(query));
+  },
 
+  onCustomer: function(id) {
+    this.notifyObservers(Customer.find(id));
   }
 });
 
@@ -86,12 +155,27 @@ var CustomerSearchController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
-    this.reset();
     this.callSuper();
+    this.reset();
+
+    this.customer_query = $('div#customer_search input#customer_query');
+    this.customer_query.bind('change', {instance: this}, this.onChange);
+    this.alphabet_controller = new AlphabetController('div#customer_search ul.alphabet_nav', this.customer_query);
+    this.alphabet_controller.addObserver(this.onLetter, this);
   },
 
   reset: function() {
+    $(this.customer_query).val(null);
+  },
 
+  onLetter: function(letter) {
+    $(this.customer_query).val(letter);
+    $(this.customer_query).trigger('change');
+  },
+
+  onChange: function(event) {
+    event.data.instance.notifyObservers($(this.customer_query).val());
+    event.preventDefault();
   }
 });
 
@@ -107,6 +191,8 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
     ]);
+    this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+
     this.reset();
     this.callSuper();
   },

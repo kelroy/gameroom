@@ -1,6 +1,15 @@
 //= require "person"
 
 var Customer = new JS.Class({
+  extend: {
+    find: function(id) {
+      return new Customer();
+    },
+    
+    search: function(query) {
+      return [];
+    }
+  },
   
   initialize: function() {
     this.id = null;

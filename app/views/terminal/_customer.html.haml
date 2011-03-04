@@ -6,7 +6,7 @@
           %a{:href => "##{letter}", :class => 'button dark'}= letter
     = form_for :customer_search, :url => root_path do |f|
       %div
-        = f.text_field :body_contains, :id => 'customer_search', :placeholder => 'Search for a customer...'
+        = f.text_field :body_contains, :id => 'customer_query', :placeholder => 'Search for a customer...'
 %ul{:id => 'customer_nav', :class => 'tab_nav'}
   %li
     %a{:href => '#customer_form', :class => 'customer_form'} Customer
@@ -39,12 +39,12 @@
           %th Flagged
           %th Notes
       %tbody
-        %tr
-          %td Joe Blow
-          %td 1800 Penn Ave.
-          %td 555-555-5555
-          %td joe@blow.com
-          %td $100.00
-          %td NE - H122000000
-          %td No
-          %td Lorem Ipsum...
+        %tr{:"data-object-id" => 0}
+          %td{:class => 'name'}
+          %td{:class => 'address'}
+          %td{:class => 'phone'}
+          %td{:class => 'email'}
+          %td{:class => 'credit'}
+          %td{:class => 'drivers_license'}
+          %td{:class => 'flagged'}
+          %td{:class => 'notes'}

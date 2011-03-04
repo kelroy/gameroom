@@ -5,6 +5,9 @@ var Person = new JS.Class({
     this.middle_name = null;
     this.last_name = null;
     this.date_of_birth = null;
+    this.addresses = [];
+    this.phones = [];
+    this.emails = [];
   },
 
   save: function() {

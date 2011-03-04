@@ -1,3 +1,19 @@
+var Address = new JS.Class({
+
+  initialize: function() {
+    this.first_line = null;
+    this.second_line = null;
+    this.city = null;
+    this.state = null;
+    this.province = null;
+    this.country = null;
+    this.zip = null
+  },
+
+  save: function() {
+
+  }
+});
 var ViewController = new JS.Class({
 
   initialize: function(view) {
@@ -44,6 +60,9 @@ var Person = new JS.Class({
     this.middle_name = null;
     this.last_name = null;
     this.date_of_birth = null;
+    this.addresses = [];
+    this.phones = [];
+    this.emails = [];
   },
 
   save: function() {
@@ -119,9 +138,14 @@ var CustomerTableController = new JS.Class(TableController, {
     this.reset();
     for(customer in customers){
       new_row = $(this.table_row).clone();
+      address_list = $('<ul></ul>');
+
+      for(address in customers[customer].addresses) {
+        address_list.append($('<li></li>').html(customers[customer].addresses[address].first_line));
+      }
+
       new_row.attr('data-object-id', customers[customer].id);
       $('td.name', new_row).html(customers[customer].name);
-      $('td.address', new_row).html(customers[customer].address);
       $('td.phone', new_row).html(customers[customer].phone);
       $('td.email', new_row).html(customers[customer].email);
       $('td.credit', new_row).html(customers[customer].credit);
@@ -827,6 +851,16 @@ var gameroomlincoln_terminal = {
   }
 
 };
+var Email = new JS.Class({
+
+  initialize: function() {
+    this.address = null;
+  },
+
+  save: function() {
+
+  }
+});
 var Entry = new JS.Class({
 
   initialize: function() {
@@ -836,6 +870,17 @@ var Entry = new JS.Class({
 var Good = new JS.Class({
 
   initialize: function() {
+
+  }
+});
+var Phone = new JS.Class({
+
+  initialize: function() {
+    this.title = null;
+    this.number = null;
+  },
+
+  save: function() {
 
   }
 });

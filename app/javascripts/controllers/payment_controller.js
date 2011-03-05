@@ -2,8 +2,8 @@
 //= require "payment_line_controller"
 //= require "store_credit_controller"
 //= require "scale_controller"
-//= require "transaction"
-//= require "customer"
+//= require "../models/transaction"
+//= require "../models/customer"
 
 var PaymentController = new JS.Class(ViewController, {
   include: JS.Observable,

@@ -1,0 +1,13 @@
+//= require "../factory"
+
+Factory.define('Customer', {
+  id: Factory.sequence('Customer', 'id'),
+  person: {
+    factory: 'Person'
+  },
+  credit: 0,
+  drivers_license_number: 'H12000000',
+  drivers_license_state: 'NE',
+  notes: 'Lorem Ipsum...',
+  active: true
+});

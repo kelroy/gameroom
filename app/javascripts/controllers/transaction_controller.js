@@ -5,8 +5,8 @@
 //= require "page_controller"
 //= require "summary_controller"
 //= require "finish_controller"
-//= require "till"
-//= require "currency"
+//= require "../models/till"
+//= require "../currency"
 
 var TransactionController = new JS.Class({
   

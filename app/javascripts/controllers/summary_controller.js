@@ -1,5 +1,5 @@
 //= require "view_controller"
-//= require "currency"
+//= require "../currency"
 
 var SummaryController = new JS.Class(ViewController, {
   

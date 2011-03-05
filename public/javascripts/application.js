@@ -1,41 +1,11 @@
-var Address = new JS.Class({
+/* Gameroom Terminal */
 
-  initialize: function() {
-    this.first_line = null;
-    this.second_line = null;
-    this.city = null;
-    this.state = null;
-    this.province = null;
-    this.country = null;
-    this.zip = null
-  },
-
-  save: function() {
-
-  }
-});
 var ViewController = new JS.Class({
 
   initialize: function(view) {
     this.view = $(view);
   }
 });
-
-var AlphabetController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    $('a', this.view).bind('click', {instance: this}, this.onSelect);
-  },
-
-  onSelect: function(event) {
-    event.data.instance.notifyObservers($(this).html());
-    event.preventDefault();
-  }
-});
-/* Gameroom Terminal */
-
 
 var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -196,6 +166,23 @@ var CustomerTableController = new JS.Class(TableController, {
     }
   }
 });
+var Factory = new JS.Class({
+  extend: {
+    factories: [],
+
+    build: function(klass, properties) {
+      return false
+    },
+
+    define: function(klass, properties) {
+      return false
+    },
+
+    sequence: function(klass, property) {
+      return false
+    }
+  }
+});
 var Person = new JS.Class({
 
   initialize: function() {
@@ -216,7 +203,7 @@ var Person = new JS.Class({
 var Customer = new JS.Class({
   extend: {
     find: function(id) {
-      return new Customer();
+      return Factory.build('customer');
     },
 
     search: function(query) {
@@ -594,6 +581,7 @@ var StoreCreditController = new JS.Class(PaymentLineController, {
   }
 
 });
+
 var ScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
 
@@ -1083,6 +1071,48 @@ var gameroomlincoln_terminal = {
   }
 
 };
+
+var AlphabetController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    $('a', this.view).bind('click', {instance: this}, this.onSelect);
+  },
+
+  onSelect: function(event) {
+    event.data.instance.notifyObservers($(this).html());
+    event.preventDefault();
+  }
+});
+
+Factory.define('Customer', {
+  id: Factory.sequence('Customer', 'id'),
+  person: {
+    factory: 'Person'
+  },
+  credit: 0,
+  drivers_license_number: 'H12000000',
+  drivers_license_state: 'NE',
+  notes: 'Lorem Ipsum...',
+  active: true
+});
+var Address = new JS.Class({
+
+  initialize: function() {
+    this.first_line = null;
+    this.second_line = null;
+    this.city = null;
+    this.state = null;
+    this.province = null;
+    this.country = null;
+    this.zip = null
+  },
+
+  save: function() {
+
+  }
+});
 var Email = new JS.Class({
 
   initialize: function() {

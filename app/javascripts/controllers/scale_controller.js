@@ -1,3 +1,5 @@
+//= require "view_controller"
+
 var ScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
   

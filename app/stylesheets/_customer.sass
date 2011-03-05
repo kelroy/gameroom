@@ -17,26 +17,69 @@ section#customer
   
   div#customer_pages
       
+    div#customer_review
+      h2#customer_notice
+        font-size: 20px
+        text-align: center
+        margin: 20px 0px
+        
+      div#customer_data
+        display: none
+        
+        div#customer_left
+          float: left
+          
+          h3
+            font-size: 24px
+            margin-bottom: 20px
+            
+          div.customer_data_block
+            margin-bottom: 10px
+            
+            &:last-child
+              margin-bottom: 0px
+            
+            h4
+              margin-bottom: 10px
+              
+            p
+              background-color: $lighter_gray
+              padding: 10px
+              @include border-radius(5px)
+              
+              address
+                display: block
+                background-color: $lighter_gray
+            
+        div#customer_right
+          float: right
+            
+          div#customer_history
+            display: none
+            
+          div.customer_important
+            margin-bottom: 10px
+            padding: 10px
+            max-height: 400px
+            border: 2px $black solid
+            @include border-radius(5px)
+            overflow: auto
+            background-color: $light_gray
+          
+            &:last-child
+              margin-bottom: 0px
+            
+            p
+              margin-top: 10px
+            
+            table
+              tr:hover
+                cursor: default
+        
     div#customer_form
       ul:last-child
         li
           margin-bottom: 0px
-    
-    div#customer_history
-      display: none
-      position: absolute
-      top: 20px
-      right: 20px
-      padding: 10px
-      max-height: 400px
-      border: 2px $black solid
-      @include border-radius(5px)
-      overflow: auto
-      background-color: $light_gray
-      
-      table
-        tr:hover
-          cursor: default
       
     div#customer_search_results
       display: none

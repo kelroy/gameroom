@@ -1,4 +1,5 @@
 //= require "table_controller"
+//= require "../boolean"
 
 var CustomerTableController = new JS.Class(TableController, {
   
@@ -37,7 +38,7 @@ var CustomerTableController = new JS.Class(TableController, {
         customers[customer].drivers_license_number,
         customers[customer].drivers_license_state
       ].join(' '));
-      $('td.flagged', new_row).html(customers[customer].active.toString());
+      $('td.flagged', new_row).html(Boolean.toString(!customers[customer].active));
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
     }

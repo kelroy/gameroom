@@ -19,6 +19,8 @@ var TableController = new JS.Class(ViewController, {
   },
   
   onSelect: function(event) {
+    $('tbody > tr', event.data.instance.view).removeClass('selected');
+    $(this).addClass('selected');
     event.data.instance.notifyObservers($(this).attr('data-object-id'));
   }
 });

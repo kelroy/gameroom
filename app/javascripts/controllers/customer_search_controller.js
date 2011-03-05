@@ -23,7 +23,7 @@ var CustomerSearchController = new JS.Class(ViewController, {
   },
   
   onChange: function(event) {
-    event.data.instance.notifyObservers($(this.customer_query).val());
+    event.data.instance.notifyObservers($(event.data.instance.customer_query).val());
     event.preventDefault();
   }
 });

@@ -5,7 +5,6 @@
 //= require "payment"
 
 var Transaction = new JS.Class({
-  include: JS.Observable,
   
   initialize: function() {
     this.till = new Till();
@@ -20,27 +19,6 @@ var Transaction = new JS.Class({
     this.tax_rate = 0.07;
     this.complete = false;
     this.locked = false;
-  },
-  
-  updated: function() {
-    this.notifyObservers(this);
-  },
-  
-  updateCustomer: function(customer) {
-    this.updated();
-  },
-  
-  updateCart: function(cart) {
-    this.updated();
-  },
-  
-  updatePayment: function(payments) {
-    this.payments = payments;
-    this.updated();
-  },
-  
-  updateReceipt: function(quantity) {
-    this.receipt.quantity = quantity;
   },
   
   save: function() {

@@ -9,23 +9,52 @@
         = f.text_field :body_contains, :id => 'customer_query', :placeholder => 'Search for a customer...'
 %ul{:id => 'customer_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#customer_form', :class => 'customer_form'} Customer
+    %a{:href => '#customer_review', :class => 'customer_review'} Customer
+  %li
+    %a{:href => '#customer_form', :class => 'customer_form'} Add / Update Customer
   %li
     %a{:href => '#customer_search_results', :class => 'customer_search_results'} Search Results
 %div{:id => 'customer_pages', :class => 'page_container'}
+  %div{:id => 'customer_review'}
+    %h2{:id => 'customer_notice'} No customer selected.
+    %div{:id => 'customer_data'}
+      %div{:id => 'customer_left'}
+        %h3{:id => 'customer_name'}
+        %div{:id => 'customer_addresses', :class => 'customer_data_block'}
+          %h4 Address
+          %p
+        %div{:id => 'customer_emails', :class => 'customer_data_block'}
+          %h4 Email
+          %p
+        %div{:id => 'customer_phones', :class => 'customer_data_block'}
+          %h4 Phone
+          %p
+        %div{:id => 'customer_license', :class => 'customer_data_block'}
+          %h4 Drivers License
+          %p
+        %div{:id => 'customer_notes', :class => 'customer_data_block'}
+          %h4 Notes
+          %p
+      %div{:id => 'customer_right'}
+        %div{:id => 'customer_flagged', :class => 'customer_important'}
+          %h3 Flagged
+          %p
+        %div{:id => 'customer_credit', :class => 'customer_important'}
+          %h3 Store Credit
+          %p
+        %div{:id => 'customer_history', :class => 'customer_important'}
+          %h3 Transaction History
+          %table
+            %thead
+              %tr
+                %th Date
+                %th Amount
+            %tbody
+              %tr
+                %td 12/31/00 4:32PM
+                %td $200
   %div{:id => 'customer_form'}
     = render :partial => 'customer_form'
-    %div{:id => 'customer_history'}
-      %h3 Transaction History
-      %table
-        %thead
-          %tr
-            %th Date
-            %th Amount
-        %tbody
-          %tr
-            %td 12/31/00 4:32PM
-            %td $200
   %div{:id => 'customer_search_results'}
     %table
       %thead

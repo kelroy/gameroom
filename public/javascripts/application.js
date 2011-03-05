@@ -67,10 +67,35 @@ var CustomerFormController = new JS.Class(FormController, {
   },
 
   update: function(customer) {
+    $('input#customer_person_first_name', this.view).val(customer.person.first_name);
+    $('input#customer_person_middle_name', this.view).val(customer.person.middle_name);
+    $('input#customer_person_last_name', this.view).val(customer.person.last_name);
+    $('input#customer_credit', this.view).val(customer.credit);
+    $('input#customer_drivers_license_number', this.view).val(customer.drivers_license_number);
+    $('input#customer_drivers_license_state', this.view).val(customer.drivers_license_state);
+    $('input#customer_flagged', this.view).val(!customer.active);
+    $('textarea#customer_notes', this.view).val(customer.notes);
+    if(customer.person.addresses.length > 0){
+      $('input#customer_person_address_first_line', this.view).val(customer.person.addresses[0].first_line);
+      $('input#customer_person_address_second_line', this.view).val(customer.person.addresses[0].second_line);
+      $('input#customer_person_address_city', this.view).val(customer.person.addresses[0].city);
+      $('input#customer_person_address_state', this.view).val(customer.person.addresses[0].state);
+      $('input#customer_person_address_zip', this.view).val(customer.person.addresses[0].zip);
+    }
+    if(customer.person.phones.length > 0){
+      $('input#customer_person_phone_number', this.view).val(customer.person.phones[0].number);
+    }
+    if(customer.person.emails.length > 0){
+      $('input#customer_person_email_address', this.view).val(customer.person.emails[0].address);
+    }
   },
 
   save: function() {
-    this.notifyObservers(new Customer());
+  },
+
+  reset: function() {
+    this.callSuper();
+    $('input#customer_credit', this.view).val(0);
   },
 
   onClear: function(event) {
@@ -102,7 +127,7 @@ var CustomerSearchController = new JS.Class(ViewController, {
   },
 
   onChange: function(event) {
-    event.data.instance.notifyObservers($(this.customer_query).val());
+    event.data.instance.notifyObservers($(event.data.instance.customer_query).val());
     event.preventDefault();
   }
 });
@@ -125,7 +150,16 @@ var TableController = new JS.Class(ViewController, {
   },
 
   onSelect: function(event) {
+    $('tbody > tr', event.data.instance.view).removeClass('selected');
+    $(this).addClass('selected');
     event.data.instance.notifyObservers($(this).attr('data-object-id'));
+  }
+});
+var Boolean = new JS.Class({
+  extend: {
+    toString: function(boolean) {
+      return boolean ? 'Yes' : 'No'
+    }
   }
 });
 
@@ -166,7 +200,7 @@ var CustomerTableController = new JS.Class(TableController, {
         customers[customer].drivers_license_number,
         customers[customer].drivers_license_state
       ].join(' '));
-      $('td.flagged', new_row).html(customers[customer].active.toString());
+      $('td.flagged', new_row).html(Boolean.toString(!customers[customer].active));
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
     }
@@ -340,33 +374,49 @@ var CustomerController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.customer_review_controller = new CustomerReviewController('div#customer_review');
     this.customer_form_controller = new CustomerFormController('div#customer_form');
     this.customer_search_controller = new CustomerSearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
     this.customer_page_controller = new PageController('ul#customer_nav', [
+      this.customer_review_controller.view,
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
     ]);
     this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
     this.customer_search_controller.addObserver(this.showSearchSection, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
+    this.customer_search_results_controller.addObserver(this.showReviewSection, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
 
     this.reset();
   },
 
   reset: function() {
+    this.customer_review_controller.reset();
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
     this.customer_page_controller.reset();
+    this.showFormSection();
   },
 
-  showSearchSection: function() {
+  showReviewSection: function() {
+    this.customer_page_controller.showSection(0);
+  },
+
+  showFormSection: function() {
     this.customer_page_controller.showSection(1);
   },
 
+  showSearchSection: function(query) {
+    if(query) {
+      this.customer_page_controller.showSection(2);
+    }
+  },
+
   setCustomer: function(customer) {
+    this.customer_review_controller.update(customer);
     this.customer_form_controller.update(customer);
     this.notifyObservers(customer);
   }
@@ -726,7 +776,6 @@ var Payment = new JS.Class({
 });
 
 var Transaction = new JS.Class({
-  include: JS.Observable,
 
   initialize: function() {
     this.till = new Till();
@@ -741,27 +790,6 @@ var Transaction = new JS.Class({
     this.tax_rate = 0.07;
     this.complete = false;
     this.locked = false;
-  },
-
-  updated: function() {
-    this.notifyObservers(this);
-  },
-
-  updateCustomer: function(customer) {
-    this.updated();
-  },
-
-  updateCart: function(cart) {
-    this.updated();
-  },
-
-  updatePayment: function(payments) {
-    this.payments = payments;
-    this.updated();
-  },
-
-  updateReceipt: function(quantity) {
-    this.receipt.quantity = quantity;
   },
 
   save: function() {
@@ -1078,12 +1106,14 @@ var FinishController = new JS.Class(ViewController, {
 });
 
 var TransactionController = new JS.Class({
+  include: JS.Observable,
 
   transactions: [],
 
   initialize: function() {
-
     this.till = new Till();
+    this.current_transaction = null;
+
     this.transaction_nav = $('ul#transaction_nav');
     this.customer_controller = new CustomerController('section#customer');
     this.cart_controller = new CartController('section#cart');
@@ -1097,6 +1127,17 @@ var TransactionController = new JS.Class({
     ]);
     this.summary_controller = new SummaryController('ul#summary');
     this.finish_controller = new FinishController('ul#finish');
+
+    this.customer_controller.addObserver(this.updateCustomer, this);
+    this.cart_controller.addObserver(this.updateCart, this);
+    this.payment_controller.addObserver(this.updatePayment, this);
+    this.review_controller.addObserver(this.updateReceipt, this);
+    this.finish_controller.addObserver(this.saveTransaction, this);
+
+    this.addObserver(this.payment_controller.update, this.payment_controller);
+    this.addObserver(this.review_controller.update, this.review_controller);
+    this.addObserver(this.summary_controller.update, this.summary_controller);
+    this.addObserver(this.finish_controller.update, this.finish_controller);
 
     this.reset();
     this.customer_controller.view.hide();
@@ -1116,20 +1157,53 @@ var TransactionController = new JS.Class({
     this.section_controller.view.show();
   },
 
-  addTransaction: function(till) {
+  updateCustomer: function(customer) {
+    if(this.current_transaction) {
+      this.current_transaction.customer = customer;
+      this.notifyObservers(this.current_transaction);
+    }
+  },
+
+  updateCart: function(cart) {
+    if(this.current_transaction) {
+      this.notifyObservers(this.current_transaction);
+    }
+  },
+
+  updatePayment: function(payments) {
+    if(this.current_transaction) {
+      this.current_transaction.payments = payments;
+      this.notifyObservers(this.current_transaction);
+    }
+  },
+
+  updateReceipt: function(quantity) {
+    if(this.current_transaction) {
+      this.current_transaction.receipt.quantity = quantity;
+    }
+  },
+
+  newTransaction: function(till) {
     this.reset();
-    transaction = new Transaction();
-    transaction.addObserver(this.payment_controller.update, this.payment_controller);
-    transaction.addObserver(this.review_controller.update, this.review_controller);
-    transaction.addObserver(this.summary_controller.update, this.summary_controller);
-    transaction.addObserver(this.finish_controller.update, this.finish_controller);
-    transaction.updated();
-    this.customer_controller.addObserver(transaction.updateCustomer, transaction);
-    this.cart_controller.addObserver(transaction.updateCart, transaction);
-    this.payment_controller.addObserver(transaction.updatePayment, transaction);
-    this.review_controller.addObserver(transaction.updateReceipt, transaction);
-    this.finish_controller.addObserver(transaction.save, transaction);
+    this.till = till;
+    this.addTransaction(new Transaction());
+    this.setCurrentTransaction(this.transactions.length - 1);
+  },
+
+  addTransaction: function(transaction) {
     this.transactions.push(transaction);
+  },
+
+  removeTransaction: function(index) {
+    this.transactions.splice(index, 1);
+  },
+
+  setCurrentTransaction: function(index) {
+    this.current_transaction = this.transactions[index];
+  },
+
+  saveTransaction: function() {
+    this.current_transaction.save();
   }
 });
 
@@ -1150,8 +1224,7 @@ var TerminalController = new JS.Class({
   },
 
   updateTill: function(till) {
-    this.transaction_controller.till = till;
-    this.transaction_controller.addTransaction(till);
+    this.transaction_controller.newTransaction(till);
     $('li.current_user_till', this.user_nav).html(till.title);
     $(this.user_nav).show();
     this.till_controller.view.hide();
@@ -1179,6 +1252,55 @@ var AlphabetController = new JS.Class(ViewController, {
   onSelect: function(event) {
     event.data.instance.notifyObservers($(this).html());
     event.preventDefault();
+  }
+});
+
+var CustomerReviewController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  update: function(customer) {
+    $('div#customer_data h3#customer_name', this.view).html([
+      customer.person.first_name,
+      customer.person.middle_name,
+      customer.person.last_name
+    ].join(' '));
+    if(customer.person.addresses.length > 0) {
+      $('div#customer_data div#customer_addresses > p', this.view).html([
+        customer.person.addresses[0].first_line,
+        customer.person.addresses[0].second_line,
+        customer.person.addresses[0].city + ',',
+        customer.person.addresses[0].state,
+        customer.person.addresses[0].zip
+      ].join(' '));
+    }
+    if(customer.person.phones.length > 0){
+      $('div#customer_data div#customer_phones > p', this.view).html(customer.person.phones[0].number);
+    }
+    if(customer.person.emails.length > 0){
+      $('div#customer_data div#customer_emails > p', this.view).html(customer.person.emails[0].address);
+    }
+    $('div#customer_data div#customer_license > p', this.view).html([
+      customer.drivers_license_state,
+      customer.drivers_license_number
+    ].join(' - '));
+    $('div#customer_data div#customer_notes > p', this.view).html(customer.notes);
+    $('div#customer_data div#customer_flagged > p', this.view).html(Boolean.toString(!customer.active));
+    $('div#customer_data div#customer_credit > p', this.view).html(Currency.pretty(customer.credit));
+    $('h2#customer_notice').hide();
+    $('div#customer_data').show();
+  },
+
+  reset: function() {
+    $('h2#customer_notice').show();
+    $('div#customer_data h3#customer_name', this.view).html(null);
+    $('div#customer_data div#customer_addresses > p', this.view).html(null);
+    $('div#customer_data div#customer_emails > p', this.view).html(null);
+    $('div#customer_data div#customer_phones > p', this.view).html(null);
+    $('div#customer_data div#customer_license > p', this.view).html(null);
+    $('div#customer_data div#customer_notes > p', this.view).html(null);
   }
 });
 

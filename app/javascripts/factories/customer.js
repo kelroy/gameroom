@@ -1,7 +1,9 @@
 //= require "../factory"
 
 Factory.define('Customer', {
-  id: Factory.sequence('Customer', 'id'),
+  id: {
+    sequence: 'id'
+  },
   person: {
     factory: 'Person'
   },

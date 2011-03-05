@@ -8,30 +8,36 @@ var CustomerTableController = new JS.Class(TableController, {
       new_row = $(this.table_row).clone();
       new_row.attr('data-object-id', customers[customer].id);
       
-      $('td.name', new_row).html(customers[customer].name);
-      for(address in customers[customer].addresses) {
+      $('td.name', new_row).html([
+        customers[customer].person.first_name,
+        customers[customer].person.last_name
+      ].join(' '));
+      for(address in customers[customer].person.addresses) {
         address_string = [
-          customers[customer].addresses[address].first_line, 
-          customers[customer].addresses[address].second_line,
-          customers[customer].addresses[address].city + ',',
-          customers[customer].addresses[address].state,
-          customers[customer].addresses[address].province,
-          customers[customer].addresses[address].country,
-          customers[customer].addresses[address].zip
+          customers[customer].person.addresses[address].first_line, 
+          customers[customer].person.addresses[address].second_line,
+          customers[customer].person.addresses[address].city + ',',
+          customers[customer].person.addresses[address].state,
+          customers[customer].person.addresses[address].province,
+          customers[customer].person.addresses[address].country,
+          customers[customer].person.addresses[address].zip
         ].join(' ');
         $('td.address', new_row).append($('<address></address>').html(address_string));
       }
-      for(phone in customers[customer].phones) {
-        phone_string = customers[customer].phones[phone].title + ' - ' + customers[customer].phones[phone].number;
+      for(phone in customers[customer].person.phones) {
+        phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
         $('td.phone', new_row).append($('<p></p>').html(phone_string));
       }
-      for(email in customers[customer].emails) {
-        email_string = customers[customer].emails[email].address;
-        $('td.phone', new_row).append($('<p></p>').html(email_string));
+      for(email in customers[customer].person.emails) {
+        email_string = customers[customer].person.emails[email].address;
+        $('td.email', new_row).append($('<p></p>').html(email_string));
       }
-      $('td.credit', new_row).html(customers[customer].credit);
-      $('td.drivers_license', new_row).html(customers[customer].drivers_license_number);
-      $('td.flagged', new_row).html(customers[customer].active);
+      $('td.credit', new_row).html(Currency.pretty(customers[customer].credit));
+      $('td.drivers_license', new_row).html([
+        customers[customer].drivers_license_number,
+        customers[customer].drivers_license_state
+      ].join(' '));
+      $('td.flagged', new_row).html(customers[customer].active.toString());
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
     }

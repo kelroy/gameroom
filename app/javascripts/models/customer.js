@@ -1,14 +1,19 @@
 //= require "../factory"
+//= require "../factories/customer"
 //= require "person"
 
 var Customer = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('customer');
+      return Factory.build('Customer');
     },
     
     search: function(query) {
-      return [];
+      results = [];
+      for(i = 0; i < 5; i++){
+        results.push(Factory.build('Customer'));
+      }
+      return results;
     }
   },
   

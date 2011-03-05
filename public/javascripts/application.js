@@ -137,30 +137,36 @@ var CustomerTableController = new JS.Class(TableController, {
       new_row = $(this.table_row).clone();
       new_row.attr('data-object-id', customers[customer].id);
 
-      $('td.name', new_row).html(customers[customer].name);
-      for(address in customers[customer].addresses) {
+      $('td.name', new_row).html([
+        customers[customer].person.first_name,
+        customers[customer].person.last_name
+      ].join(' '));
+      for(address in customers[customer].person.addresses) {
         address_string = [
-          customers[customer].addresses[address].first_line,
-          customers[customer].addresses[address].second_line,
-          customers[customer].addresses[address].city + ',',
-          customers[customer].addresses[address].state,
-          customers[customer].addresses[address].province,
-          customers[customer].addresses[address].country,
-          customers[customer].addresses[address].zip
+          customers[customer].person.addresses[address].first_line,
+          customers[customer].person.addresses[address].second_line,
+          customers[customer].person.addresses[address].city + ',',
+          customers[customer].person.addresses[address].state,
+          customers[customer].person.addresses[address].province,
+          customers[customer].person.addresses[address].country,
+          customers[customer].person.addresses[address].zip
         ].join(' ');
         $('td.address', new_row).append($('<address></address>').html(address_string));
       }
-      for(phone in customers[customer].phones) {
-        phone_string = customers[customer].phones[phone].title + ' - ' + customers[customer].phones[phone].number;
+      for(phone in customers[customer].person.phones) {
+        phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
         $('td.phone', new_row).append($('<p></p>').html(phone_string));
       }
-      for(email in customers[customer].emails) {
-        email_string = customers[customer].emails[email].address;
-        $('td.phone', new_row).append($('<p></p>').html(email_string));
+      for(email in customers[customer].person.emails) {
+        email_string = customers[customer].person.emails[email].address;
+        $('td.email', new_row).append($('<p></p>').html(email_string));
       }
-      $('td.credit', new_row).html(customers[customer].credit);
-      $('td.drivers_license', new_row).html(customers[customer].drivers_license_number);
-      $('td.flagged', new_row).html(customers[customer].active);
+      $('td.credit', new_row).html(Currency.pretty(customers[customer].credit));
+      $('td.drivers_license', new_row).html([
+        customers[customer].drivers_license_number,
+        customers[customer].drivers_license_state
+      ].join(' '));
+      $('td.flagged', new_row).html(customers[customer].active.toString());
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
     }
@@ -171,17 +177,94 @@ var Factory = new JS.Class({
     factories: [],
 
     build: function(klass, properties) {
-      return false
+      var factory = this._factory_fetch(klass);
+      if(factory != null && window[klass] != undefined) {
+        var properties = this._merge_properties(factory.properties, properties);
+        var object = new window[klass];
+        for(property in properties) {
+          if(properties[property].sequence != undefined) {
+            object[property] = this.sequence(klass, properties[property].sequence);
+          } else if(properties[property].factory != undefined) {
+            object[property] = this.build(properties[property].factory);
+          } else if(properties[property].factories != undefined) {
+            object[property] = [this.build(properties[property].factories)];
+          } else {
+            object[property] = properties[property];
+          }
+        }
+        return object;
+      } else {
+        return null;
+      }
     },
 
     define: function(klass, properties) {
-      return false
+      if(!this._factory_exists(klass)) {
+        this.factories.push({klass: klass, properties: properties, sequences: {}});
+      } else {
+        var factory = this._factory_fetch(klass);
+        factory.properties = properties;
+      }
     },
 
     sequence: function(klass, property) {
-      return false
+      if(this._factory_exists(klass)) {
+        var factory = this._factory_fetch(klass);
+      } else {
+        this.define(klass, {});
+        var factory = this._factory_fetch(klass);
+      }
+      if(factory.sequences[property] != undefined) {
+        factory.sequences[property] += 1;
+      } else {
+        factory.sequences[property] = 1;
+      }
+      return factory.sequences[property];
+    },
+
+    _merge_properties: function(original, source) {
+      var original_copy = {};
+      for(property in original) {
+        original_copy[property]  = original[property];
+      }
+      for(property in source) {
+        original_copy[property] = source[property];
+      }
+      return original_copy;
+    },
+
+    _factory_fetch: function(klass) {
+      for(factory in this.factories) {
+        if(this.factories[factory].klass == klass) {
+          return this.factories[factory];
+        }
+      }
+      return null;
+    },
+
+    _factory_exists: function(klass) {
+      for(factory in this.factories) {
+        if(this.factories[factory].klass == klass) {
+          return true;
+        }
+      }
+      return false;
     }
   }
+});
+
+Factory.define('Customer', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  credit: 0,
+  drivers_license_number: 'H12000000',
+  drivers_license_state: 'NE',
+  notes: 'Lorem Ipsum...',
+  active: true
 });
 var Person = new JS.Class({
 
@@ -203,11 +286,15 @@ var Person = new JS.Class({
 var Customer = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('customer');
+      return Factory.build('Customer');
     },
 
     search: function(query) {
-      return [];
+      results = [];
+      for(i = 0; i < 5; i++){
+        results.push(Factory.build('Customer'));
+      }
+      return results;
     }
   },
 
@@ -382,6 +469,15 @@ var CartTableController = new JS.Class(TableController, {
   }
 });
 var Item = new JS.Class({
+  extend: {
+    find: function(id) {
+      return Factory.build('customer');
+    },
+
+    search: function(query) {
+      return [];
+    }
+  },
 
   initialize: function() {
     this.quantity = 3;
@@ -389,7 +485,7 @@ var Item = new JS.Class({
     this.description = 'Lorem...';
     this.sku = '11121222';
     this.price = 1234;
-  }
+  },
 });
 
 var CartSearchResultsController = new JS.Class(ViewController, {
@@ -1086,16 +1182,51 @@ var AlphabetController = new JS.Class(ViewController, {
   }
 });
 
-Factory.define('Customer', {
-  id: Factory.sequence('Customer', 'id'),
-  person: {
-    factory: 'Person'
+Factory.define('Address', {
+  id: {
+    sequence: 'id'
   },
-  credit: 0,
-  drivers_license_number: 'H12000000',
-  drivers_license_state: 'NE',
-  notes: 'Lorem Ipsum...',
-  active: true
+  first_line: '555 Street Way',
+  second_line: 'Suite 309',
+  city: 'Lincoln',
+  state: 'NE',
+  province: '',
+  country: 'US',
+  zip: '68508'
+});
+
+Factory.define('Email', {
+  id: {
+    sequence: 'id'
+  },
+  address: 'example@example.com'
+});
+
+Factory.define('Person', {
+  id: {
+    sequence: 'id'
+  },
+  phones: {
+    factories: 'Phone'
+  },
+  emails: {
+    factories: 'Email'
+  },
+  addresses: {
+    factories: 'Address'
+  },
+  first_name: 'First',
+  middle_name: 'Middle',
+  last_name: 'Last',
+  date_of_birth: new Date()
+});
+
+Factory.define('Phone', {
+  id: {
+    sequence: 'id'
+  },
+  title: 'Work',
+  number: '402-444-5555'
 });
 var Address = new JS.Class({
 

@@ -14,6 +14,16 @@ var CartTableController = new JS.Class(TableController, {
       $('td.price', new_row).html(Currency.pretty(items[item].price));
       $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
       for(property in items[item].properties) {
+        switch(items[item].properties[property].key) {
+          case 'credit_price':
+            $('td.credit_price', new_row).html(items[item].properties[property].value);
+            break;
+          case 'cash_price':
+            $('td.cash_price', new_row).html(items[item].properties[property].value);
+            break;
+          default:
+            break;
+        }
       }
       $('tbody', this.view).append(new_row);
     }

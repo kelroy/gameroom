@@ -6,5 +6,9 @@ var Email = new JS.Class({
 
   save: function() {
     
+  },
+  
+  valid: function() {
+    return true;
   }
 });

@@ -1,7 +1,7 @@
 var Item = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('item');
+      return Factory.build('Item');
     },
     
     search: function(query) {
@@ -24,4 +24,8 @@ var Item = new JS.Class({
     this.locked = false;
     this.active = false;
   },
+  
+  valid: function() {
+    return true;
+  }
 });

@@ -7,5 +7,9 @@ var Phone = new JS.Class({
 
   save: function() {
     
+  },
+  
+  valid: function() {
+    return true;
   }
 });

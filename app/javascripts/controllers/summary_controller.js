@@ -12,7 +12,7 @@ var SummaryController = new JS.Class(ViewController, {
 
   update: function(transaction) {
     this.setCustomer(transaction.customer);
-    this.setItemCount(transaction.items.length);
+    this.setItemCount(transaction.lines.length);
     this.setTotal(transaction.total);
   },
   

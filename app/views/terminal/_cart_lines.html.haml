@@ -4,27 +4,27 @@
     %div
       %ul{:class => 'cart_line_quantity button_nav'}
         %li
-          %a{:href => '#remove', :class => 'button'} X
+          %a{:href => '#remove', :class => 'button remove'} X
         %li
-          %a{:href => '#minus', :class => 'button'} -
+          %a{:href => '#minus', :class => 'button minus'} -
         %li
           = form_for :quantity, :method => 'get', :url => root_path do |f|
             %div
               = f.text_field :amount, :value => 1
         %li
-          %a{:href => '#plus', :class => 'button'} +
+          %a{:href => '#plus', :class => 'button plus'} +
         %li
-          %a{:href => '#info', :class => 'button'} ?
+          %a{:href => '#info', :class => 'button info'} ?
       %hgroup{:class => 'cart_line_information'}
-        %h3 Title
-        %h4 Lorem Ipsum...
-      %h4{:class => 'cart_line_subtotal'} Subtotal: $0.00
+        %h3
+        %h4
+      %h4{:class => 'cart_line_subtotal'}
     %div
       %ul{:class => 'cart_line_action group_nav'}
         %li
-          %a{:href => '#purchase', :class => 'selected'} Purchase From Store
+          %a{:href => '#purchase', :class => 'purchase selected'} Purchase From Store
         %li
-          %a{:href => '#sell'} Sell To Store
+          %a{:href => '#sell', :class => 'sell'} Sell To Store
       %ul{:class => 'cart_line_sell_control'}
         %li
           %span Item Condition:

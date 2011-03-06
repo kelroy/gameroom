@@ -1,4 +1,5 @@
 //= require "cart_table_controller"
+//= require "../models/line"
 //= require "../models/item"
 
 var CartSearchResultsController = new JS.Class(ViewController, {
@@ -19,6 +20,9 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   },
   
   onItem: function(id) {
-    this.notifyObservers([Item.find(id)]);
+    line = new Line();
+    line.item = Item.find(id);
+    line.quantity = 1;
+    this.notifyObservers([line]);
   }
 });

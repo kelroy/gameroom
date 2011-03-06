@@ -32,7 +32,7 @@ var ReviewController = new JS.Class(ViewController, {
       $('td.sku', new_line).html(transaction.lines[line].item.sku);
       $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
       $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].price * transaction.lines[line].quantity));
-      $('div#review_list table tbody').append(new_line);
+      $('div#review_lines table tbody').append(new_line);
     }
     for(payment in transaction.payments) {
       var new_payment_row = this.payment_row.clone();

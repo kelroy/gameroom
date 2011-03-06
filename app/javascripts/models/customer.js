@@ -29,5 +29,9 @@ var Customer = new JS.Class({
 
   save: function() {
     return true;
+  },
+  
+  valid: function() {
+    return true;
   }
 });

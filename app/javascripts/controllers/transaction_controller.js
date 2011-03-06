@@ -68,8 +68,9 @@ var TransactionController = new JS.Class({
     }
   },
   
-  updateCart: function(cart) {
+  updateCart: function(lines) {
     if(this.current_transaction) {
+      this.current_transaction.lines = lines;
       this.notifyObservers(this.current_transaction);
     }
   },

@@ -21,8 +21,8 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_controller.addObserver(this.cart_search_results_controller.search, this.cart_search_results_controller);
     this.cart_search_controller.addObserver(this.showSearchSection, this);
     this.cart_lines_controller.addObserver(this.setLines, this);
-    this.cart_search_results_controller.addObserver(this.addItems, this);
-    this.cart_form_controller.addObserver(this.addItems, this);
+    this.cart_search_results_controller.addObserver(this.addLines, this);
+    this.cart_form_controller.addObserver(this.addLines, this);
     
     this.reset();
   },
@@ -43,9 +43,9 @@ var CartController = new JS.Class(ViewController, {
     this.cart_page_controller.showSection(2);
   },
   
-  addItems: function(items) {
+  addLines: function(lines) {
     this.showLinesSection();
-    this.cart_lines_controller.update(items);
+    this.cart_lines_controller.update(lines);
   },
   
   setLines: function(lines) {

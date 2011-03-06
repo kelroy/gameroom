@@ -10,7 +10,7 @@ var CustomerFormController = new JS.Class(FormController, {
     $('input#customer_person_first_name', this.view).val(customer.person.first_name);
     $('input#customer_person_middle_name', this.view).val(customer.person.middle_name);
     $('input#customer_person_last_name', this.view).val(customer.person.last_name);
-    $('input#customer_credit', this.view).val(customer.credit);
+    $('input#customer_credit', this.view).val(Currency.format(customer.credit));
     $('input#customer_drivers_license_number', this.view).val(customer.drivers_license_number);
     $('input#customer_drivers_license_state', this.view).val(customer.drivers_license_state);
     $('input#customer_flagged', this.view).attr('checked', !customer.active);
@@ -54,7 +54,7 @@ var CustomerFormController = new JS.Class(FormController, {
     
     customer = new Customer();
     customer.id = $('input#customer_id', this.view).val();
-    customer.credit = $('input#customer_credit', this.view).val();
+    customer.credit = parseInt(Currency.toPennies($('input#customer_credit', this.view).val()));
     customer.notes = $('textarea#customer_notes', this.view).val();
     customer.drivers_license_number = $('input#customer_drivers_license_number', this.view).val();
     customer.drivers_license_state = $('input#customer_drivers_license_state', this.view).val();

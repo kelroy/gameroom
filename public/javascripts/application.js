@@ -802,6 +802,10 @@ var CartController = new JS.Class(ViewController, {
     this.cart_page_controller.reset();
   },
 
+  update: function(transaction) {
+    $('h2#cart_summary', this.view).html(transaction.lines.length + ' item(s) in cart: ' + Currency.pretty(transaction.subtotal));
+  },
+
   showLinesSection: function() {
     this.cart_page_controller.showSection(0);
   },
@@ -1358,6 +1362,7 @@ var TransactionController = new JS.Class({
     this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
 
+    this.addObserver(this.cart_controller.update, this.cart_controller);
     this.addObserver(this.payment_controller.update, this.payment_controller);
     this.addObserver(this.review_controller.update, this.review_controller);
     this.addObserver(this.summary_controller.update, this.summary_controller);

@@ -20,7 +20,6 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
     this.customer_search_controller.addObserver(this.showSearchSection, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
-    this.customer_search_results_controller.addObserver(this.showReviewSection, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
     
     this.reset();
@@ -52,6 +51,7 @@ var CustomerController = new JS.Class(ViewController, {
   setCustomer: function(customer) {
     this.customer_review_controller.update(customer);
     this.customer_form_controller.update(customer);
+    this.showReviewSection();
     this.notifyObservers(customer);
   }
 });

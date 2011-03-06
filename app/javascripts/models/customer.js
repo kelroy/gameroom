@@ -28,6 +28,6 @@ var Customer = new JS.Class({
   },
 
   save: function() {
-    
+    return true;
   }
 });

@@ -37,61 +37,89 @@ section#cart
       @include border-radius(5px)
     
   div#cart_list
-    ul
+    h2#cart_notice
+      display: none
+      font-size: 20px
+      text-align: center
+      margin: 20px 0px
+      
+    ul#cart_items
       > li.cart_item
         margin-bottom: 10px
         padding: 10px
-        background-color: $light_gray
+        background-color: $lighter_gray
         @include border-radius(5px)
         
         &:last-child
           margin-bottom: 0px
         
-        div
+        > div
+          display: none
+          clear: both
           height: 24px
           line-height: 24px
       
           &:first-child
-            margin-bottom: 6px
+            display: block
+      
+          &:last-child
+            margin-top: 5px
         
-          hgroup
+          hgroup.cart_item_information
             float: left
             
             h3
               float: left
-              margin-right: 20px
-              padding: 0px 5px
+              margin-right: 10px
+              padding: 0px 20px
               font-family: LatinModernMonoLight10Bold, Tacoma, serif
               font-size: 18px
-              background-color: $gray
+              background-color: $black
+              color: $white
               @include border-radius(5px)
               
             h4
-              float: right
+              float: left
               font-family: LatinModernMonoLight10Regular, Tacoma, serif
               font-size: 12px
-              
-          ul.cart_item_summary
+          
+          h4.cart_item_subtotal
             float: right
+            padding: 0px 20px
+            font-family: LatinModernMonoLight10Bold, Tacoma, serif
+            font-size: 18px
+            background-color: $black
+            color: $white
+            @include border-radius(5px)
+          
+          ul.cart_item_quantity
+            float: left
+            margin-right: 10px
+            
+            li
+              margin-left: 5px
               
-            form
-              div
-                margin-bottom: 0px
+              &:first-child
+                margin-left: 0px
+                margin-right: 5px
+              
+              &:last-child
+                margin-left: 10px
                 
-            input
-              width: 40px
-              padding-top: 0px
-              padding-bottom: 0px
-              text-align: center
+              input
+                width: 30px
+                line-height: 18px
+                padding: 0px 4px
+                text-align: center
             
           ul.cart_item_action
-            float: right
+            float: left
           
-          ul.cart_sell_control
+          ul.cart_item_sell_control
             float: right
-            margin-right: 20px
             padding: 0px 10px
-            background-color: $gray
+            background-color: $black
+            color: $white
             @include border-radius(5px)
             
             > li
@@ -101,6 +129,7 @@ section#cart
               ul.cart_item_sell_condition
                 li
                   a
+                    border: 1px $white solid
                     height: 14px
                     line-height: 14px
                     margin-top: 2px

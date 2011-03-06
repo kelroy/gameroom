@@ -50,7 +50,7 @@
       = c.text_field :credit, :disabled => true
     %li
       = c.label :flagged
-      = c.check_box :flagged
+      = check_box_tag :customer_flagged, 1
   %ul
     %li
       = c.label :notes

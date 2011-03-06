@@ -36,15 +36,15 @@ section#cart
       color: $white
       @include border-radius(5px)
     
-  div#cart_list
+  div#cart_lines
     h2#cart_notice
       display: none
       font-size: 20px
       text-align: center
       margin: 20px 0px
       
-    ul#cart_items
-      > li.cart_item
+    ul#cart_lines
+      > li.cart_line
         margin-bottom: 10px
         padding: 10px
         background-color: $lighter_gray
@@ -65,7 +65,7 @@ section#cart
           &:last-child
             margin-top: 5px
         
-          hgroup.cart_item_information
+          hgroup.cart_line_information
             float: left
             
             h3
@@ -83,7 +83,7 @@ section#cart
               font-family: LatinModernMonoLight10Regular, Tacoma, serif
               font-size: 12px
           
-          h4.cart_item_subtotal
+          h4.cart_line_subtotal
             float: right
             padding: 0px 20px
             font-family: LatinModernMonoLight10Bold, Tacoma, serif
@@ -92,7 +92,7 @@ section#cart
             color: $white
             @include border-radius(5px)
           
-          ul.cart_item_quantity
+          ul.cart_line_quantity
             float: left
             margin-right: 10px
             
@@ -112,10 +112,10 @@ section#cart
                 padding: 0px 4px
                 text-align: center
             
-          ul.cart_item_action
+          ul.cart_line_action
             float: left
           
-          ul.cart_item_sell_control
+          ul.cart_line_sell_control
             float: right
             padding: 0px 10px
             background-color: $black
@@ -126,7 +126,7 @@ section#cart
               float: left
               margin-right: 10px
               
-              ul.cart_item_sell_condition
+              ul.cart_line_sell_condition
                 li
                   a
                     border: 1px $white solid

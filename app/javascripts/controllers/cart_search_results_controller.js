@@ -18,7 +18,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     this.cart_table_controller.update(Item.search(query));
   },
   
-  onCart: function(id) {
-    this.notifyObservers(Item.find(id));
+  onItem: function(id) {
+    this.notifyObservers([Item.find(id)]);
   }
 });

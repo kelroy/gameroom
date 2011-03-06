@@ -10,14 +10,14 @@
   %h2{:id => 'cart_summary'} 0 item(s): $0.00
 %ul{:id => 'cart_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#cart_list', :class => 'cart_list selected'} Cart
+    %a{:href => '#cart_lines', :class => 'cart_lines selected'} Cart
   %li
     %a{:href => '#cart_form', :class => 'cart_form'} Add Item(s)
   %li
     %a{:href => '#cart_search_results', :class => 'cart_search_results'} Search Results
 %div{:id => 'cart_pages', :class => 'page_container'}
-  %div{:id => 'cart_list'}
-    = render :partial => 'cart_list'
+  %div{:id => 'cart_lines'}
+    = render :partial => 'cart_lines'
   %div{:id => 'cart_form'}
     = render :partial => 'cart_form'
   %div{:id => 'cart_search_results'}

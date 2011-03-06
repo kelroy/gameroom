@@ -115,7 +115,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updateSummary: function(transaction) {
-    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.items.length + ' item(s) in cart');
+    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.lines.length + ' item(s) in cart');
     $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total));

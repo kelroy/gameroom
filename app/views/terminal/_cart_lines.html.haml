@@ -1,8 +1,8 @@
 %h2{:id => 'cart_notice'} No items in cart.
-%ul{:id => 'cart_items'}
-  %li{:class => 'cart_item'}
+%ul{:id => 'cart_lines'}
+  %li{:class => 'cart_line'}
     %div
-      %ul{:class => 'cart_item_quantity button_nav'}
+      %ul{:class => 'cart_line_quantity button_nav'}
         %li
           %a{:href => '#remove', :class => 'button'} X
         %li
@@ -15,27 +15,27 @@
           %a{:href => '#plus', :class => 'button'} +
         %li
           %a{:href => '#info', :class => 'button'} ?
-      %hgroup{:class => 'cart_item_information'}
+      %hgroup{:class => 'cart_line_information'}
         %h3 Title
         %h4 Lorem Ipsum...
-      %h4{:class => 'cart_item_subtotal'} Subtotal: $0.00
+      %h4{:class => 'cart_line_subtotal'} Subtotal: $0.00
     %div
-      %ul{:class => 'cart_item_action group_nav'}
+      %ul{:class => 'cart_line_action group_nav'}
         %li
           %a{:href => '#purchase', :class => 'selected'} Purchase From Store
         %li
           %a{:href => '#sell'} Sell To Store
-      %ul{:class => 'cart_item_sell_control'}
+      %ul{:class => 'cart_line_sell_control'}
         %li
           %span Item Condition:
         %li
-          %ul{:class => 'cart_item_sell_condition group_nav'}
+          %ul{:class => 'cart_line_sell_condition group_nav'}
             - (1..5).each do |n|
               %li
                 - unless n == 5
-                  %a{:href => '#cart_item_sell_condition'}= n
+                  %a{:href => '#cart_line_sell_condition'}= n
                 - else
-                  %a{:href => '#cart_item_sell_condition', :class => 'selected'}= n
+                  %a{:href => '#cart_line_sell_condition', :class => 'selected'}= n
         %li
           %span Store Credit Value: $20.00
         %li

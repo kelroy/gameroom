@@ -1,6 +1,6 @@
 //= require "view_controller"
 
-var CartListController = new JS.Class(ViewController, {
+var CartLinesController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
@@ -12,6 +12,6 @@ var CartListController = new JS.Class(ViewController, {
   },
   
   update: function(items) {
-    // Do cart update
+    // Turn items in update into lines
   }
 });

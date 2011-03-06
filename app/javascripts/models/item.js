@@ -1,19 +1,27 @@
 var Item = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('customer');
+      return Factory.build('item');
     },
     
     search: function(query) {
-      return [];
+      results = [];
+      for(i = 0; i < 5; i++){
+        results.push(Factory.build('Item'));
+      }
+      return results;
     }
   },
   
   initialize: function() {
-    this.quantity = 3;
-    this.title = 'blak';
-    this.description = 'Lorem...';
-    this.sku = '11121222';
-    this.price = 1234;
+    this.properties = [];
+    this.title = null;
+    this.description = null;
+    this.sku = null;
+    this.price = 0;
+    this.taxable = false;
+    this.discountable = false;
+    this.locked = false;
+    this.active = false;
   },
 });

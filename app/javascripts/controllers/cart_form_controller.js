@@ -37,11 +37,18 @@ var CartFormController = new JS.Class(FormController, {
       line.item.properties.push(cash_property);
       lines.push(line);
     });
-    for(line in lines) {
-      if(lines[line].valid()) {
-        this.notifyObservers(lines);
-      }
+    console.log(lines);
+    if(this.valid(lines)) {
+      this.notifyObservers(lines);
     }
+  },
+  
+  valid: function(lines) {
+    valid = false;
+    for(line in lines) {
+      valid = lines[line].valid();
+    }
+    return valid;
   },
   
   reset: function() {

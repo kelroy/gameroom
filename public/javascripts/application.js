@@ -337,6 +337,7 @@ Factory.define('Customer', {
 var Person = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.first_name = null;
     this.middle_name = null;
     this.last_name = null;
@@ -496,26 +497,43 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    $('ul#cart_lines > li').remove();
+    this.clearLines();
     this.showCartNotice();
   },
 
-  update: function(lines) {
-    this.reset();
+  add: function(lines) {
+    this.clearLines();
     for(line in lines) {
       this.lines.push(lines[line]);
     }
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+
+  replace: function(lines) {
+    this.clearLines();
+    this.lines = lines;
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+
+  setLines: function(lines) {
     this.line_controllers = [];
-    for(line in this.lines) {
-      new_line = new CartLineController(this.line.clone(), this.lines[line]);
+    for(line in lines) {
+      new_line = new CartLineController(this.line.clone(), lines[line]);
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
       $('ul#cart_lines', this.view).append(new_line.view);
     }
-    if(this.lines.length > 0) {
+    if(lines.length > 0) {
       this.hideCartNotice();
+    } else {
+      this.showCartNotice();
     }
-    this.notifyObservers(this.lines);
+  },
+
+  clearLines: function() {
+    $('ul#cart_lines > li').remove();
   },
 
   updateLine: function(updated_line) {
@@ -528,7 +546,7 @@ var CartLinesController = new JS.Class(ViewController, {
         }
       }
     }
-    this.update(this.lines);
+    this.replace(this.lines);
   },
 
   showCartNotice: function() {
@@ -542,6 +560,7 @@ var CartLinesController = new JS.Class(ViewController, {
 var Line = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.transaction = null;
     this.item = null;
     this.quantity = 0;
@@ -568,6 +587,7 @@ var Item = new JS.Class({
   },
 
   initialize: function() {
+    this.id = null;
     this.properties = [];
     this.title = null;
     this.description = null;
@@ -586,6 +606,7 @@ var Item = new JS.Class({
 var Property = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.key = null;
     this.value = null;
   },
@@ -629,11 +650,18 @@ var CartFormController = new JS.Class(FormController, {
       line.item.properties.push(cash_property);
       lines.push(line);
     });
-    for(line in lines) {
-      if(lines[line].valid()) {
-        this.notifyObservers(lines);
-      }
+    console.log(lines);
+    if(this.valid(lines)) {
+      this.notifyObservers(lines);
     }
+  },
+
+  valid: function(lines) {
+    valid = false;
+    for(line in lines) {
+      valid = lines[line].valid();
+    }
+    return valid;
   },
 
   reset: function() {
@@ -698,13 +726,15 @@ var CartTableController = new JS.Class(TableController, {
       $('td.sku', new_row).html(items[item].sku);
       $('td.price', new_row).html(Currency.pretty(items[item].price));
       $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
+      $('td.credit_price', new_row).html(Currency.pretty(0));
+      $('td.cash_price', new_row).html(Currency.pretty(0));
       for(property in items[item].properties) {
         switch(items[item].properties[property].key) {
           case 'credit_price':
-            $('td.credit_price', new_row).html(items[item].properties[property].value);
+            $('td.credit_price', new_row).html(Currency.pretty(items[item].properties[property].value));
             break;
           case 'cash_price':
-            $('td.cash_price', new_row).html(items[item].properties[property].value);
+            $('td.cash_price', new_row).html(Currency.pretty(items[item].properties[property].value));
             break;
           default:
             break;
@@ -734,6 +764,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
 
   onItem: function(id) {
     line = new Line();
+    line.id = id;
     line.item = Item.find(id);
     line.quantity = 1;
     this.notifyObservers([line]);
@@ -781,7 +812,7 @@ var CartController = new JS.Class(ViewController, {
 
   addLines: function(lines) {
     this.showLinesSection();
-    this.cart_lines_controller.update(lines);
+    this.cart_lines_controller.add(lines);
   },
 
   setLines: function(lines) {
@@ -957,6 +988,7 @@ var Receipt = new JS.Class({
 var Payment = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.type = 'cash';
     this.amount = 0;
   },
@@ -969,6 +1001,7 @@ var Payment = new JS.Class({
 var Transaction = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.till = new Till();
     this.customer = new Customer();
     this.receipt = new Receipt();
@@ -1572,6 +1605,7 @@ Factory.define('Property', {
 var Address = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.first_line = null;
     this.second_line = null;
     this.city = null;
@@ -1592,6 +1626,7 @@ var Address = new JS.Class({
 var Email = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.address = null;
   },
 
@@ -1606,7 +1641,12 @@ var Email = new JS.Class({
 var Entry = new JS.Class({
 
   initialize: function() {
-
+    this.id = null;
+    this.title = null;
+    this.description = null;
+    this.time = new Date();
+    this.amount = 0;
+    this.action = 'debit';
   },
 
   valid: function() {
@@ -1616,6 +1656,7 @@ var Entry = new JS.Class({
 var Phone = new JS.Class({
 
   initialize: function() {
+    this.id = null;
     this.title = null;
     this.number = null;
   },

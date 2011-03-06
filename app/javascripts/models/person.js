@@ -1,6 +1,7 @@
 var Person = new JS.Class({
   
   initialize: function() {
+    this.id = null;
     this.first_name = null;
     this.middle_name = null;
     this.last_name = null;

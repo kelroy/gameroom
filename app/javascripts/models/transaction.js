@@ -7,6 +7,7 @@
 var Transaction = new JS.Class({
   
   initialize: function() {
+    this.id = null;
     this.till = new Till();
     this.customer = new Customer();
     this.receipt = new Receipt();

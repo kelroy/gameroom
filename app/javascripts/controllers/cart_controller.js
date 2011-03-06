@@ -45,7 +45,7 @@ var CartController = new JS.Class(ViewController, {
   
   addLines: function(lines) {
     this.showLinesSection();
-    this.cart_lines_controller.update(lines);
+    this.cart_lines_controller.add(lines);
   },
   
   setLines: function(lines) {

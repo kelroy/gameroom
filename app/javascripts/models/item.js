@@ -14,6 +14,7 @@ var Item = new JS.Class({
   },
   
   initialize: function() {
+    this.id = null;
     this.properties = [];
     this.title = null;
     this.description = null;

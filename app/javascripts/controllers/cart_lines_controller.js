@@ -12,26 +12,43 @@ var CartLinesController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    $('ul#cart_lines > li').remove();
+    this.clearLines();
     this.showCartNotice();
   },
   
-  update: function(lines) {
-    this.reset();
+  add: function(lines) {
+    this.clearLines();
     for(line in lines) {
       this.lines.push(lines[line]);
     }
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+  
+  replace: function(lines) {
+    this.clearLines();
+    this.lines = lines;
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+  
+  setLines: function(lines) {
     this.line_controllers = [];
-    for(line in this.lines) {
-      new_line = new CartLineController(this.line.clone(), this.lines[line]);
+    for(line in lines) {
+      new_line = new CartLineController(this.line.clone(), lines[line]);
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
       $('ul#cart_lines', this.view).append(new_line.view);
     }
-    if(this.lines.length > 0) {
+    if(lines.length > 0) {
       this.hideCartNotice();
+    } else {
+      this.showCartNotice();
     }
-    this.notifyObservers(this.lines);
+  },
+  
+  clearLines: function() {
+    $('ul#cart_lines > li').remove();
   },
   
   updateLine: function(updated_line) {
@@ -44,7 +61,7 @@ var CartLinesController = new JS.Class(ViewController, {
         }
       }
     }
-    this.update(this.lines);
+    this.replace(this.lines);
   },
   
   showCartNotice: function() {

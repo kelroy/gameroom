@@ -43,7 +43,6 @@ section#cart
       margin: 20px 0px
       
     ul#cart_lines
-      display: none
       
       > li.cart_line
         margin-bottom: 10px
@@ -117,9 +116,11 @@ section#cart
             float: left
           
           ul.cart_line_sell_control
+            display: none
             float: right
             padding: 0px 10px
             background-color: $black
+            font-size: 14px
             color: $white
             @include border-radius(5px)
             

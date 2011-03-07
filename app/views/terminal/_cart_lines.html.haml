@@ -1,7 +1,7 @@
 %h2{:id => 'cart_notice'} No items in cart.
 %ul{:id => 'cart_lines'}
   %li{:class => 'cart_line'}
-    %div
+    %div{:class => 'cart_main'}
       %ul{:class => 'cart_line_quantity button_nav'}
         %li
           %a{:href => '#remove', :class => 'button remove'} X
@@ -19,10 +19,10 @@
         %h3
         %h4
       %h4{:class => 'cart_line_subtotal'}
-    %div
+    %div{:class => 'cart_info'}
       %ul{:class => 'cart_line_action group_nav'}
         %li
-          %a{:href => '#purchase', :class => 'purchase selected'} Purchase From Store
+          %a{:href => '#purchase', :class => 'purchase'} Purchase From Store
         %li
           %a{:href => '#sell', :class => 'sell'} Sell To Store
       %ul{:class => 'cart_line_sell_control'}
@@ -32,12 +32,9 @@
           %ul{:class => 'cart_line_sell_condition group_nav'}
             - (1..5).each do |n|
               %li
-                - unless n == 5
-                  %a{:href => '#cart_line_sell_condition'}= n
-                - else
-                  %a{:href => '#cart_line_sell_condition', :class => 'selected'}= n
+                %a{:href => '#cart_line_sell_condition', :'data-condition' => "#{n}"}= n
         %li
-          %span Store Credit Value: $20.00
+          %span{:class => 'cart_line_credit_value'}
         %li
-          %span Cash Value: $10.00
+          %span{:class => 'cart_line_cash_value'}
         

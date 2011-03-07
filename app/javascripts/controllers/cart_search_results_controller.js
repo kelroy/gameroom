@@ -23,7 +23,10 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     line = new Line();
     line.id = id;
     line.item = Item.find(id);
+    line.sell = false;
+    line.condition = 5;
     line.quantity = 1;
+    line.price = line.item.price;
     this.notifyObservers([line]);
   }
 });

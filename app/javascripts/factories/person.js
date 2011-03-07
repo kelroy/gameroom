@@ -13,8 +13,8 @@ Factory.define('Person', {
   addresses: {
     factories: 'Address'
   },
-  first_name: 'First',
-  middle_name: 'Middle',
-  last_name: 'Last',
+  first_name: 'Joe',
+  middle_name: 'T',
+  last_name: 'Customer',
   date_of_birth: new Date()
 });

@@ -33,9 +33,19 @@ var CartLinesController = new JS.Class(ViewController, {
   },
   
   setLines: function(lines) {
+    opened = [];
+    for(controller in this.line_controllers) {
+      if(this.line_controllers[controller].isOpen()) {
+        opened.push(controller);
+      }
+    }
     this.line_controllers = [];
     for(line in lines) {
-      new_line = new CartLineController(this.line.clone(), lines[line]);
+      if(line in opened) {
+        new_line = new CartLineController(this.line.clone(), lines[line], true);
+      } else {
+        new_line = new CartLineController(this.line.clone(), lines[line], false);
+      }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
       $('ul#cart_lines', this.view).append(new_line.view);

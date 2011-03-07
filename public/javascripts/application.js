@@ -468,15 +468,94 @@ var CustomerController = new JS.Class(ViewController, {
 var CartLineController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  initialize: function(view, line) {
+  initialize: function(view, line, open) {
     this.callSuper();
     this.line = line;
-    this.update(this.line);
+    this.open = open;
+    this.set(this.line);
     $('a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
+    $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
+    $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
+    $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
   },
 
-  update: function(line) {
+  set: function(line) {
+    $('input#quantity_amount', this.view).val(line.quantity);
+    $('hgroup.cart_line_information h3', this.view).html(line.item.title);
+    $('hgroup.cart_line_information h4', this.view).html(line.item.description);
+    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.calculatePrice()));
+    $('ul.cart_line_action li a', this.view).removeClass('selected');
+    for(property in line.item.properties) {
+      switch(line.item.properties[property].key) {
+        case 'credit_price':
+          $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(line.item.properties[property].value * (line.condition / 5)));
+          break;
+        case 'cash_price':
+          $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(line.item.properties[property].value * (line.condition / 5)));
+          break;
+        default:
+          break;
+      }
+    }
+    $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
+    $('ul.cart_line_sell_condition li a', this.view).eq(line.condition - 1).addClass('selected');
+    if(line.sell) {
+      $('ul.cart_line_action li a.sell', this.view).addClass('selected');
+      this.showControls();
+    } else {
+      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      this.hideControls();
+    }
+    if(this.isOpen()) {
+      $('div.cart_info', this.view).css('display', 'block');
+    }
+  },
 
+  isOpen: function() {
+    return this.open;
+  },
+
+  onCondition: function(event) {
+    index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
+    event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
+    event.data.instance.notifyObservers(event.data.instance.line);
+    event.preventDefault();
+  },
+
+  onInfo: function(event) {
+    $('div.cart_info', event.data.instance.view).toggle();
+    event.data.instance.open = !event.data.instance.open;
+    event.preventDefault();
+  },
+
+  onPlus: function(event) {
+    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    event.data.instance.line.quantity = parseInt(quantity) + 1;
+    event.data.instance.notifyObservers(event.data.instance.line);
+    event.preventDefault();
+  },
+
+  onMinus: function(event) {
+    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    if(quantity > 1) {
+      event.data.instance.line.quantity = parseInt(quantity) - 1;
+      event.data.instance.notifyObservers(event.data.instance.line);
+    }
+    event.preventDefault();
+  },
+
+  onAction: function(event) {
+    index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
+    if(index == 0) {
+      event.data.instance.line.sell = false;
+    } else {
+      event.data.instance.line.sell = true;
+    }
+    event.data.instance.line.calculatePrice();
+    event.data.instance.notifyObservers(event.data.instance.line);
+    event.preventDefault();
   },
 
   onRemove: function(event) {
@@ -484,6 +563,14 @@ var CartLineController = new JS.Class(ViewController, {
     event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
+
+  showControls: function() {
+    $('ul.cart_line_sell_control', this.view).css('display', 'block');
+  },
+
+  hideControls: function() {
+    $('ul.cart_line_sell_control', this.view).hide();
+  }
 });
 
 var CartLinesController = new JS.Class(ViewController, {
@@ -518,9 +605,19 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   setLines: function(lines) {
+    opened = [];
+    for(controller in this.line_controllers) {
+      if(this.line_controllers[controller].isOpen()) {
+        opened.push(controller);
+      }
+    }
     this.line_controllers = [];
     for(line in lines) {
-      new_line = new CartLineController(this.line.clone(), lines[line]);
+      if(line in opened) {
+        new_line = new CartLineController(this.line.clone(), lines[line], true);
+      } else {
+        new_line = new CartLineController(this.line.clone(), lines[line], false);
+      }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
       $('ul#cart_lines', this.view).append(new_line.view);
@@ -563,8 +660,29 @@ var Line = new JS.Class({
     this.id = null;
     this.transaction = null;
     this.item = null;
+    this.sell = false;
+    this.condition = 5;
     this.quantity = 0;
     this.price = 0;
+  },
+
+  calculatePrice: function() {
+    if(this.sell) {
+      for(property in this.item.properties) {
+        switch(this.item.properties[property].key) {
+          case 'credit_price':
+            var credit_price = parseInt(this.item.properties[property].value);
+            break;
+          case 'default':
+            break;
+        }
+      }
+      this.price = (credit_price * (this.condition / 5)) * this.quantity * -1;
+      return this.price;
+    } else {
+      this.price = this.quantity * Math.abs(this.item.price);
+      return this.price;
+    }
   },
 
   valid: function() {
@@ -574,13 +692,31 @@ var Line = new JS.Class({
 var Item = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('Item');
+      credit = new Property();
+      credit.key = 'credit_price';
+      credit.value = 800;
+      cash = new Property();
+      cash.key = 'cash_price';
+      cash.value = 500;
+      return Factory.build('Item', {properties: [
+        credit,
+        cash
+      ]});
     },
 
     search: function(query) {
       results = [];
+      credit = new Property();
+      credit.key = 'credit_price';
+      credit.value = 800;
+      cash = new Property();
+      cash.key = 'cash_price';
+      cash.value = 500;
       for(i = 0; i < 5; i++){
-        results.push(Factory.build('Item'));
+        results.push(Factory.build('Item', {properties: [
+          credit,
+          cash
+        ]}));
       }
       return results;
     }
@@ -645,7 +781,10 @@ var CartFormController = new JS.Class(FormController, {
       cash_property.value = parseInt(Currency.toPennies($('input#item_cash', this).val()));
 
       line.item = item;
+      line.sell = false;
+      line.condition = 5;
       line.quantity = parseInt($('input#item_quantity', this).val());
+      line.price = line.item.price * line.quantity;
       line.item.properties.push(credit_property);
       line.item.properties.push(cash_property);
       lines.push(line);
@@ -766,7 +905,10 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     line = new Line();
     line.id = id;
     line.item = Item.find(id);
+    line.sell = false;
+    line.condition = 5;
     line.quantity = 1;
+    line.price = line.item.price;
     this.notifyObservers([line]);
   }
 });
@@ -1586,9 +1728,9 @@ Factory.define('Person', {
   addresses: {
     factories: 'Address'
   },
-  first_name: 'First',
-  middle_name: 'Middle',
-  last_name: 'Last',
+  first_name: 'Joe',
+  middle_name: 'T',
+  last_name: 'Customer',
   date_of_birth: new Date()
 });
 

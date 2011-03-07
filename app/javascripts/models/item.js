@@ -1,13 +1,31 @@
 var Item = new JS.Class({
   extend: {
     find: function(id) {
-      return Factory.build('Item');
+      credit = new Property();
+      credit.key = 'credit_price';
+      credit.value = 800;
+      cash = new Property();
+      cash.key = 'cash_price';
+      cash.value = 500;
+      return Factory.build('Item', {properties: [
+        credit,
+        cash
+      ]});
     },
     
     search: function(query) {
       results = [];
+      credit = new Property();
+      credit.key = 'credit_price';
+      credit.value = 800;
+      cash = new Property();
+      cash.key = 'cash_price';
+      cash.value = 500;
       for(i = 0; i < 5; i++){
-        results.push(Factory.build('Item'));
+        results.push(Factory.build('Item', {properties: [
+          credit,
+          cash
+        ]}));
       }
       return results;
     }

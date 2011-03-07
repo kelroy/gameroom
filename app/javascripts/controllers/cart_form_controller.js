@@ -32,7 +32,10 @@ var CartFormController = new JS.Class(FormController, {
       cash_property.value = parseInt(Currency.toPennies($('input#item_cash', this).val()));
       
       line.item = item;
+      line.sell = false;
+      line.condition = 5;
       line.quantity = parseInt($('input#item_quantity', this).val());
+      line.price = line.item.price * line.quantity;
       line.item.properties.push(credit_property);
       line.item.properties.push(cash_property);
       lines.push(line);

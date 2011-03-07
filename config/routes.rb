@@ -18,7 +18,7 @@ GameroomlincolnTerminal::Application.routes.draw do
   end
   resources :tills
   resources :users
-  resources :user_sessions, :except => [:index, :show]
+  resource :user_sessions, :except => [:index, :show]
   
   root :to => 'terminal#index'
   

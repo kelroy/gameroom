@@ -48,6 +48,7 @@ var Transaction = new JS.Class({
   },
   
   save: function() {
+    this.id = 1;
     return true;
   },
   

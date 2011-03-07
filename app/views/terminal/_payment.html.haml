@@ -28,7 +28,7 @@
     %li
       = form_for :store_credit, :method => 'get', :url => root_path do |f|
         %div
-          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'store_credit'
+          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_gift_card', :class => 'payment_line'}
@@ -39,7 +39,7 @@
     %li
       = form_for :gift_card, :method => 'get', :url => root_path do |f|
         %div
-          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'gift_card'
+          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'gift_card'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_check', :class => 'payment_line'}
@@ -50,7 +50,7 @@
     %li
       = form_for :check, :method => 'get', :url => root_path do |f|
         %div
-          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'check'
+          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'check'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_credit_card', :class => 'payment_line'}
@@ -61,7 +61,7 @@
     %li
       = form_for :credit_card, :method => 'get', :method => 'get', :url => root_path do |f|
         %div
-          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'credit_card'
+          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'credit_card'
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_cash', :class => 'payment_line'}
@@ -72,7 +72,7 @@
     %li
       = form_for :cash, :method => 'get', :url => root_path do |f|
         %div
-          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-type" => 'cash'
+          = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'cash'
 %div{:id => 'payment_action', :class => 'payment_line'}
   = form_for :payment_action, :method => 'get', :url => root_path do |f|
     %ul{:id => 'payment_change_container'}

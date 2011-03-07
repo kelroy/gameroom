@@ -26,7 +26,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     line.sell = false;
     line.condition = 5;
     line.quantity = 1;
-    line.price = line.item.price;
+    line.calculatePrice();
     this.notifyObservers([line]);
   }
 });

@@ -10,12 +10,13 @@ var PaymentController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.transaction = new Transaction();
-    this.scale_controller = new ScaleController('div#ul_payment_scale_container');
+    this.scale_controller = new ScaleController('ul#payment_scale_container');
     this.store_credit_controller = new StoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
     this.cash_controller = new PaymentLineController('div#payment_cash');
+    this.scale_controller.addObserver(this.setPayment, this);
     this.store_credit_controller.addObserver(this.setPayment, this);
     this.gift_card_controller.addObserver(this.setPayment, this);
     this.check_controller.addObserver(this.setPayment, this);
@@ -55,10 +56,10 @@ var PaymentController = new JS.Class(ViewController, {
     this.scale_controller.reset();
   },
   
-  findPayment: function(type) {
+  findPayment: function(form) {
     payment = null;
     for(p in this.payments) {
-      if(this.payments[p].type == type) {
+      if(this.payments[p].form == form) {
         payment = this.payments[p];
       }
     }
@@ -66,9 +67,9 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   setPayment: function(payment) {
-    existing_payment = this.findPayment(payment.type);
+    existing_payment = this.findPayment(payment.form);
     if(existing_payment != null) {
-      this.removePayment(existing_payment.type);
+      this.removePayment(existing_payment.form);
     }
     if(payment.amount != null && payment.amount != 0) {
       this.payments.push(payment);
@@ -76,9 +77,9 @@ var PaymentController = new JS.Class(ViewController, {
     this.notifyObservers(this.payments);
   },
   
-  removePayment: function(type) {
+  removePayment: function(form) {
     for(p in this.payments) {
-      if(this.payments[p].type == type) {
+      if(this.payments[p].form == form) {
         this.payments.splice(p, 1);
         return true;
       }
@@ -107,7 +108,7 @@ var PaymentController = new JS.Class(ViewController, {
     this.store_credit_controller.setTransaction(transaction);
     this.scale_controller.setTransaction(transaction);
     this.updateSummary(transaction);
-    if(transaction.total > 0) {
+    if(transaction.total() > 0) {
       this.enableBuyFromStore();
     } else {
       this.enableSellToStore();
@@ -115,10 +116,15 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updateSummary: function(transaction) {
-    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.lines.length + ' item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal));
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax));
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total));
+    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.itemCount() + ' item(s) in cart');
+    $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
+    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
+    $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
+    if(transaction.change() >= 0) {
+      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(transaction.change()));
+    } else {
+      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(Math.abs(transaction.change())));
+    }
   },
   
   enableBuyFromStore: function() {

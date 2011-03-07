@@ -41,7 +41,13 @@ var CartLinesController = new JS.Class(ViewController, {
     }
     this.line_controllers = [];
     for(line in lines) {
-      if(line in opened) {
+      is_open = false;
+      for(index in opened) {
+        if(line == opened[index]) {
+          is_open = true;
+        }
+      }
+      if(is_open) {
         new_line = new CartLineController(this.line.clone(), lines[line], true);
       } else {
         new_line = new CartLineController(this.line.clone(), lines[line], false);

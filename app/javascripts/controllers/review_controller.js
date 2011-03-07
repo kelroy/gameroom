@@ -18,6 +18,7 @@ var ReviewController = new JS.Class(ViewController, {
     $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
   },
   
   update: function(transaction) {
@@ -31,19 +32,25 @@ var ReviewController = new JS.Class(ViewController, {
       $('td.description', new_line).html(transaction.lines[line].item.description);
       $('td.sku', new_line).html(transaction.lines[line].item.sku);
       $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
-      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].price * transaction.lines[line].quantity));
+      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].calculateSubtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
     for(payment in transaction.payments) {
       var new_payment_row = this.payment_row.clone();
-      $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].type.replace('_', ' ')));
+      $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
       $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
       $('div#review_summary table tbody tr#change').before(new_payment_row);
     }
-    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal));
-    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax));
-    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total));
-    $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(transaction.change));
+    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
+    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
+    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
+    if(transaction.change() >= 0) {
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(transaction.change()));
+    } else {
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(transaction.change())));
+    }
   },
   
   onReceiptQuantityChanged: function(event) {

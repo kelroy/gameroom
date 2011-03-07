@@ -21,12 +21,14 @@ var Line = new JS.Class({
             break;
         }
       }
-      this.price = (credit_price * (this.condition / 5)) * this.quantity * -1;
-      return this.price;
+      this.price = credit_price * (this.condition / 5) * -1;
     } else {
-      this.price = this.quantity * Math.abs(this.item.price);
-      return this.price;
+      this.price = this.item.price;
     }
+  },
+  
+  calculateSubtotal: function() {
+    return this.quantity * this.price;
   },
   
   valid: function() {

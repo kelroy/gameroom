@@ -13,8 +13,8 @@ var StoreCreditController = new JS.Class(PaymentLineController, {
   },
   
   onApply: function(event) {
-    if(event.data.instance.transaction.customer.credit > event.data.instance.transaction.total) {
-      amount = event.data.instance.transaction.total;
+    if(event.data.instance.transaction.customer.credit > event.data.instance.transaction.total()) {
+      amount = event.data.instance.transaction.total();
     } else {
       amount = event.data.instance.transaction.customer.credit;
     }
@@ -28,7 +28,7 @@ var StoreCreditController = new JS.Class(PaymentLineController, {
     if(!isNaN($(this).val())) {
       amount = Currency.toPennies($(this).val());
       credit = event.data.instance.transaction.customer.credit;
-      total = event.data.instance.transaction.total;
+      total = event.data.instance.transaction.total();
       
       if(amount > credit) {
         event.data.instance.payment.amount = credit;

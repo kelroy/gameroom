@@ -5,7 +5,7 @@ var PaymentLineController = new JS.Class(ViewController, {
     $('input.payment', view).bind('change', {instance: this}, this.onChange);
     $('a.clear', view).bind('click', {instance: this}, this.onClear);
     this.payment = new Payment();
-    this.payment.type = $('input.payment', view).attr('data-payment-type');
+    this.payment.form = $('input.payment', view).attr('data-payment-form');
     this.disable();
     this.reset();
     this.callSuper();

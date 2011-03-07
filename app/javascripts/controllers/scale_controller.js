@@ -34,11 +34,13 @@ var ScaleController = new JS.Class(ViewController, {
       if(credit_offset_payment == null) {
         this.payment = new Payment;
         this.payment.form = 'store_credit';
-        this.payment.amount = transaction.total();
-        this.notifyObservers(this.payment);
       } else {
         this.payment = credit_offset_payment;
+      }
+      
+      if(this.payment.amount != transaction.total()) {
         this.payment.amount = transaction.total();
+        this.notifyObservers(this.payment);
       }
     } else {
       for(payment in this.transaction.payments) {

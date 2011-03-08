@@ -75,7 +75,6 @@ var Transaction = new JS.Class({
         this.payments[payment] = updated_payment;
       }
     }
-    console.log(this.payments);
   },
   
   save: function() {

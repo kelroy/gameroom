@@ -26,12 +26,10 @@ var PaymentFieldController = new JS.Class(ViewController, {
   
   update: function(due, amount) {
     this.due = due;
-    
-    if(amount > 0) {
-      $('input.payment', this.view).val(Currency.format(amount));
-    } else {
-      $('input.payment', this.view).val(null);
-    }
+    // Something is broken right here...
+    // Only cash amounts showing up here...
+    console.log(amount);
+    //$('input.payment', this.view).val(Currency.format(10));
   },
   
   onChange: function(event) {

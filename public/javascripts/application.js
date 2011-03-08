@@ -1016,12 +1016,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
 
   update: function(due, amount) {
     this.due = due;
-
-    if(amount > 0) {
-      $('input.payment', this.view).val(Currency.format(amount));
-    } else {
-      $('input.payment', this.view).val(null);
-    }
+    console.log(amount);
   },
 
   onChange: function(event) {
@@ -1220,7 +1215,6 @@ var Transaction = new JS.Class({
         this.payments[payment] = updated_payment;
       }
     }
-    console.log(this.payments);
   },
 
   save: function() {
@@ -1367,6 +1361,10 @@ var PaymentController = new JS.Class(ViewController, {
           this.store_credit_controller.update(transaction.change(), transaction.payments[payment].amount);
           this.store_credit_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
           break;
+        case 'cash':
+          this.cash_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.cash_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
+          break;
         case 'gift_card':
           this.gift_card_controller.update(transaction.change(), transaction.payments[payment].amount);
           break;
@@ -1376,26 +1374,21 @@ var PaymentController = new JS.Class(ViewController, {
         case 'check':
           this.check_controller.update(transaction.change(), transaction.payments[payment].amount);
           break;
-        case 'cash':
-          this.cash_controller.update(transaction.change(), transaction.payments[payment].amount);
-          this.cash_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
-          break;
-        default:
-          break;
       }
     }
 
-    /*this.scale_controller.update(transaction);
+    this.scale_controller.update(transaction);
     this.updateSummary(transaction);
 
     if(transaction.total() >= 0) {
       this.enableBuyFromStore();
     } else {
       this.enableSellToStore();
-    }*/
+    }
   },
 
   updatePayment: function(payment) {
+    console.log(payment);
     this.notifyObservers(payment);
   },
 

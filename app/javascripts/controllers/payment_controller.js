@@ -79,6 +79,10 @@ var PaymentController = new JS.Class(ViewController, {
           this.store_credit_controller.update(transaction.change(), transaction.payments[payment].amount);
           this.store_credit_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
           break;
+        case 'cash':
+          this.cash_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.cash_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
+          break;
         case 'gift_card':
           this.gift_card_controller.update(transaction.change(), transaction.payments[payment].amount);
           break;
@@ -87,12 +91,6 @@ var PaymentController = new JS.Class(ViewController, {
           break;
         case 'check':
           this.check_controller.update(transaction.change(), transaction.payments[payment].amount);
-          break;
-        case 'cash':
-          this.cash_controller.update(transaction.change(), transaction.payments[payment].amount);
-          this.cash_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
-          break;
-        default:
           break;
       }
     }
@@ -108,6 +106,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updatePayment: function(payment) {
+    console.log(payment);
     this.notifyObservers(payment);
   },
   

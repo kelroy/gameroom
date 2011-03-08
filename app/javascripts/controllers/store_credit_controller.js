@@ -1,12 +1,12 @@
 var StoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
-    $('a.apply', view).hide().bind('click', {instance: this}, this.onApply);
-    this.setTransaction(new Transaction());
+    //$('a.apply', view).hide().bind('click', {instance: this}, this.onApply);
+    //this.setTransaction(new Transaction());
     this.callSuper();
   },
   
-  enable: function() {
+  /*enable: function() {
     if(this.transaction.customer.id != null) {
       this.callSuper();
     }
@@ -49,13 +49,13 @@ var StoreCreditController = new JS.Class(PaymentLineController, {
     }
   },
   
-  setTransaction: function(transaction) {
+  update: function(due, transaction) {
     this.transaction = transaction;
     if(transaction.customer.id != null) {
       $('div#payment_store_credit span#payment_customer').html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name + ': ' + Currency.pretty(transaction.customer.credit));
       $('div#payment_store_credit a.apply').show();
       this.enable();
     }
-  }
+  }*/
   
 });

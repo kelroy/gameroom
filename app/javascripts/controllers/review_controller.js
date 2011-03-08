@@ -36,10 +36,12 @@ var ReviewController = new JS.Class(ViewController, {
       $('div#review_lines table tbody').append(new_line);
     }
     for(payment in transaction.payments) {
-      var new_payment_row = this.payment_row.clone();
-      $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
-      $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
-      $('div#review_summary table tbody tr#change').before(new_payment_row);
+      if(transaction.payments[payment].amount != 0) {
+        var new_payment_row = this.payment_row.clone();
+        $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
+        $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
+        $('div#review_summary table tbody tr#change').before(new_payment_row);
+      }
     }
     $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));

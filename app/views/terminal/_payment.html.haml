@@ -22,7 +22,7 @@
     %li
       %span{:id => 'payment_customer', :class => 'payment_plain'}
     %li
-      %a{:href => '#apply', :class => 'button apply'} Apply Credit
+      %a{:href => '#apply', :class => 'button apply'} Apply
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
@@ -35,6 +35,8 @@
   %h3 Gift Card
   %ul
     %li
+      %a{:href => '#apply', :class => 'button apply'} Apply
+    %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
       = form_for :gift_card, :method => 'get', :url => root_path do |f|
@@ -45,6 +47,8 @@
 %div{:id => 'payment_check', :class => 'payment_line'}
   %h3 Check
   %ul
+    %li
+      %a{:href => '#apply', :class => 'button apply'} Apply
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
@@ -57,6 +61,8 @@
   %h3 Credit Card
   %ul
     %li
+      %a{:href => '#apply', :class => 'button apply'} Apply
+    %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
       = form_for :credit_card, :method => 'get', :method => 'get', :url => root_path do |f|
@@ -67,6 +73,8 @@
 %div{:id => 'payment_cash', :class => 'payment_line'}
   %h3 Cash
   %ul
+    %li
+      %a{:href => '#apply', :class => 'button apply'} Apply
     %li
       %a{:href => '#clear', :class => 'button clear'} Clear
     %li
@@ -83,12 +91,12 @@
     %ul{:id => 'payment_scale_container'}
       %li
         %span{:class => 'payment_pill'} Credit Applied
-      %li
-        = f.text_field :credit_value, :placeholder => '0.00', :class => 'scale'
+      %li{:id => 'payment_scale_store_credit'}
+        = f.text_field :credit_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
       - (1..11).each do |n|
         %li
           %a{:href => '#payment_scale', :class => 'button dark'} *
-      %li
-        = f.text_field :cash_value, :placeholder => '0.00', :class => 'scale'
+      %li{:id => 'payment_scale_cash'}
+        = f.text_field :cash_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'cash'
       %li 
         %span{:class => 'payment_pill'} Cash Given

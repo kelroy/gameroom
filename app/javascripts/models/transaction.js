@@ -50,7 +50,7 @@ var Transaction = new JS.Class({
     for(payment in this.payments) {
       payment_total += this.payments[payment].amount;
     }
-    return payment_total - this.total();
+    return this.total() - payment_total;
   },
   
   ratio: function() {
@@ -69,8 +69,13 @@ var Transaction = new JS.Class({
     this.lines = lines;
   },
   
-  setPayments: function() {
-    this.payments = payments;
+  updatePayment: function(updated_payment) {
+    for(payment in this.payments) {
+      if(this.payments[payment].form == updated_payment.form) {
+        this.payments[payment] = updated_payment;
+      }
+    }
+    console.log(this.payments);
   },
   
   save: function() {
@@ -85,4 +90,33 @@ var Transaction = new JS.Class({
       return false;
     }
   }
+  
+  /*onCreditChange: function(event) {
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    credit = Currency.toPennies($(this).val());
+    if(credit > Math.abs(total)) {
+      credit = Math.abs(total);
+    }
+    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
+    $('input#payment_action_cash_value', this.view).val(Currency.format(cash));
+    $(this).val(Currency.format(credit));
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },
+  
+  onCashChange: function(event) {
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    cash = Currency.toPennies($(this).val());
+    cash_subtotal = event.data.instance.transaction.cashSubtotal();
+    if(cash > cash_subtotal) {
+      cash = cash_subtotal;
+    }
+    credit = (1.0 / ratio) * (cash_subtotal - cash);
+    $('input#payment_action_credit_value', this.view).val(Currency.format(credit));
+    $(this).val(Currency.format(cash));
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },*/
 });

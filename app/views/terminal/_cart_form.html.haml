@@ -10,8 +10,8 @@
           %a{:href => '#clear', :class => 'button clear'} Clear
         %li
           %a{:href => '#save', :class => 'button save'} Add
-  %ul{:class => 'item_elements'}
-    - (1..5).each do
+  - (1..5).each do
+    %ul{:class => 'item_elements'}
       %li
         = g.label :quantity, "Qty."
         = g.text_field :quantity
@@ -33,3 +33,6 @@
       %li
         = g.label :taxable
         = check_box_tag :item_taxable, 1, true
+      %li
+        = g.label :clear
+        %a{:href => '#clear', :class => 'button clear_row'} Clear

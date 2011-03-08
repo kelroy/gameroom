@@ -7,6 +7,7 @@ var FormController = new JS.Class(ViewController, {
     this.callSuper();
     this.reset();
     
+    $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
@@ -29,6 +30,17 @@ var FormController = new JS.Class(ViewController, {
   
   onClear: function(event) {
     event.data.instance.reset();
+    event.preventDefault();
+  },
+  
+  onClearRow: function(event) {
+    $(this)
+      .closest('ul')
+      .find(':input')
+      .not(':button, :submit, :reset, :hidden')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
     event.preventDefault();
   },
   

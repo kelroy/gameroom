@@ -16,19 +16,17 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
     this.cash_controller = new PaymentLineController('div#payment_cash');
-    this.scale_controller.addObserver(this.setPayment, this);
+    this.scale_controller.addObserver(this.updatePayments, this);
     this.store_credit_controller.addObserver(this.setPayment, this);
     this.gift_card_controller.addObserver(this.setPayment, this);
     this.check_controller.addObserver(this.setPayment, this);
     this.credit_card_controller.addObserver(this.setPayment, this);
     this.cash_controller.addObserver(this.setPayment, this);
-    this.payments = [];
     this.reset();
     this.callSuper();
   },
   
   reset: function() {
-    this.payments = [];
     this.resetSummary();
     this.resetPaymentFields();
     this.resetScaleFields();
@@ -87,6 +85,10 @@ var PaymentController = new JS.Class(ViewController, {
     return false;
   },
   
+  updateOffsets: function() {
+    this.notifyObservers(this.payments);
+  },
+  
   enablePaymentFields: function() {
     this.store_credit_controller.enable();
     this.gift_card_controller.enable();
@@ -116,7 +118,15 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updateSummary: function(transaction) {
-    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.itemCount() + ' item(s) in cart');
+    if(this.store_credit_offset_payment.amount == 0 && transaction.total() < 0) {
+      this.store_credit_offset_payment.amount = transaction.total();
+      this.payments.push(this.store_credit_offset_payment);
+      this.payments.push(this.cash_offset_payment);
+      this.scale_controller.setCredit(transaction.total());
+      console.log(this.payments);
+      this.notifyObservers(this.payments);
+    }
+    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.countItems() + ' item(s) in cart');
     $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));

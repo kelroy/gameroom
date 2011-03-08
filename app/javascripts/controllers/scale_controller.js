@@ -8,11 +8,10 @@ var ScaleController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.total = 0;
-    this.payment = new Payment();
     this.transaction = new Transaction();
-    this.setTransaction(new Transaction());
     $('input#payment_action_credit_value', view).bind('change', {instance: this}, this.onCreditChange);
     $('input#payment_action_cash_value', view).bind('change', {instance: this}, this.onCashChange);
+    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale)
   },
   
   reset: function() {
@@ -28,59 +27,53 @@ var ScaleController = new JS.Class(ViewController, {
     this.view.hide();
   },
   
+  onScale: function(event) {
+    index = parseFloat($('ul#payment_scale_container li a.button').index(this));
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    credit = total * ((10 - index) / 10.0);
+    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
+    $('input#payment_action_cash_value', this.view).val(Currency.format(Math.abs(cash)));
+    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(credit)));
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },
+  
   onCreditChange: function(event) {
-    credit = Currency.toPennies(parseInt($(this).val())) * -1;
-    if(credit < event.data.instance.transaction.total()) {
-      credit = event.data.instance.transaction.total();
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    credit = Currency.toPennies($(this).val());
+    if(credit > Math.abs(total)) {
+      credit = Math.abs(total);
     }
-    event.data.instance.payment.amount = credit;
-    event.data.instance.notifyObservers(event.data.instance.payment);
+    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
+    $('input#payment_action_cash_value', this.view).val(Currency.format(cash));
+    $(this).val(Currency.format(credit));
+    event.data.instance.notifyObservers();
     event.preventDefault();
   },
   
   onCashChange: function(event) {
-    this.notifyObservers(this.payment);
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    cash = Currency.toPennies($(this).val());
+    cash_subtotal = event.data.instance.transaction.cashSubtotal();
+    if(cash > cash_subtotal) {
+      cash = cash_subtotal;
+    }
+    credit = (1.0 / ratio) * (cash_subtotal - cash);
+    $('input#payment_action_credit_value', this.view).val(Currency.format(credit));
+    $(this).val(Currency.format(cash));
+    event.data.instance.notifyObservers();
     event.preventDefault();
   },
   
+  setCredit: function(amount) {
+    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(amount)));
+  },
+  
   setTransaction: function(transaction) {
-    new_total = false;
-    if(transaction.total() != this.total) {
-      this.total = transaction.total();
-      new_total = true;
-    }
     this.transaction = transaction;
-    
-    if(this.transaction.total() < 0) {
-      credit_offset_payment = null;
-      for(payment in this.transaction.payments) {
-        if(this.transaction.payments[payment].form == 'store_credit') {
-          credit_offset_payment = this.transaction.payments[payment];
-        }
-      }
-      
-      if(credit_offset_payment == null) {
-        this.payment = new Payment();
-        this.payment.form = 'store_credit';
-        this.payment.amount = this.transaction.total();
-        this.notifyObservers(this.payment);
-      } else {
-        this.payment = credit_offset_payment;
-        if(new_total) {
-          this.payment.amount = transaction.total();
-          this.notifyObservers(this.payment);
-        }
-      }
-      
-      $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(this.payment.amount)));
-    } else {
-      for(payment in this.transaction.payments) {
-        if(this.transaction.payments[payment].form == 'store_credit' && this.transaction.payments[payment].amount < 0) {
-          this.transaction.payments[payment].amount = 0;
-          this.notifyObservers(this.transaction.payments[payment]);
-        }
-      }
-    }
   }
   
 });

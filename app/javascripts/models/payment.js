@@ -1,6 +1,6 @@
 var Payment = new JS.Class({
   
-  initialize: function() {
+  initialize: function(form, amount) {
     this.id = null;
     this.form = 'cash';
     this.amount = 0;

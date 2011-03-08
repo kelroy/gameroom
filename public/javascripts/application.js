@@ -696,6 +696,19 @@ var Line = new JS.Class({
     return this.quantity * this.price;
   },
 
+  calculateCashSubtotal: function() {
+    for(property in this.item.properties) {
+      switch(this.item.properties[property].key) {
+        case 'cash_price':
+          cash_price = parseInt(this.item.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return this.quantity * cash_price;
+  },
+
   valid: function() {
     return true;
   }
@@ -956,7 +969,7 @@ var CartController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.itemCount() + ' item(s) in cart: ' + Currency.pretty(transaction.subtotal()));
+    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s) in cart: ' + Currency.pretty(transaction.subtotal()));
   },
 
   showLinesSection: function() {
@@ -1150,6 +1163,14 @@ var Transaction = new JS.Class({
     return subtotal;
   },
 
+  cash_subtotal: function() {
+    subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].calculateCashSubtotal();
+    }
+    return subtotal;
+  },
+
   total: function() {
     return this.subtotal() + this.tax();
   },
@@ -1171,12 +1192,16 @@ var Transaction = new JS.Class({
     return payment_total - this.total();
   },
 
+  ratio: function() {
+    return 1.0 / Math.abs(this.subtotal() / this.cash_subtotal());
+  },
+
   save: function() {
     this.id = 1;
     return true;
   },
 
-  itemCount: function() {
+  countItems: function() {
     count = 0;
     for(line in this.lines) {
       count += this.lines[line].quantity;
@@ -1195,11 +1220,10 @@ var ScaleController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.total = 0;
-    this.payment = new Payment();
     this.transaction = new Transaction();
-    this.setTransaction(new Transaction());
     $('input#payment_action_credit_value', view).bind('change', {instance: this}, this.onCreditChange);
     $('input#payment_action_cash_value', view).bind('change', {instance: this}, this.onCashChange);
+    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale)
   },
 
   reset: function() {
@@ -1215,57 +1239,53 @@ var ScaleController = new JS.Class(ViewController, {
     this.view.hide();
   },
 
+  onScale: function(event) {
+    credit_amount = this.transaction.total;
+    cash_amount = 0;
+    $('input#payment_action_cash_value', this.view).val(Currency.format(Math.abs(Currency.format(credit_amount))));
+    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(Currency.format(cash_amount))));
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },
+
   onCreditChange: function(event) {
-    credit = Currency.toPennies(parseInt($(this).val())) * -1;
-    if(credit < event.data.instance.transaction.total()) {
-      credit = event.data.instance.transaction.total();
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    credit = Currency.toPennies($(this).val());
+    if(credit > Math.abs(total)) {
+      credit = Math.abs(total);
     }
-    event.data.instance.payment.amount = credit;
-    event.data.instance.notifyObservers(event.data.instance.payment);
+    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
+    $('input#payment_action_cash_value', this.view).val(Currency.format(cash));
+    $(this).val(Currency.format(credit));
+    event.data.instance.notifyObservers();
     event.preventDefault();
   },
 
   onCashChange: function(event) {
-    this.notifyObservers(this.payment);
+    ratio = event.data.instance.transaction.ratio();
+    total = event.data.instance.transaction.total();
+    cash = Currency.toPennies($(this).val());
+    if(cash > Math.abs(total)) {
+      cash = Math.abs(total);
+      credit = 0;
+    } else {
+      credit = (1 / ratio) * (total - cash);
+    }
+    $('input#payment_action_credit_value', this.view).val(Currency.format(credit));
+    $(this).val(Currency.format(cash));
+    event.data.instance.notifyObservers();
     event.preventDefault();
   },
 
   setTransaction: function(transaction) {
-    new_total = false;
-    if(transaction.total() != this.total) {
-      this.total = transaction.total();
-      new_total = true;
-    }
     this.transaction = transaction;
-
-    if(this.transaction.total() < 0) {
-      credit_offset_payment = null;
-      for(payment in this.transaction.payments) {
-        if(this.transaction.payments[payment].form == 'store_credit') {
-          credit_offset_payment = this.transaction.payments[payment];
-        }
+    for(payment in this.transaction.payments) {
+      if(this.transactions.payments[payment].form == 'cash' && this.transactions.payments[payment].amount < 0) {
+        $('input#payment_action_cash_value', this.view).val(Math.abs(Currency.format(this.transactions.payments[payment].amount)));
       }
-
-      if(credit_offset_payment == null) {
-        this.payment = new Payment();
-        this.payment.form = 'store_credit';
-        this.payment.amount = this.transaction.total();
-        this.notifyObservers(this.payment);
-      } else {
-        this.payment = credit_offset_payment;
-        if(new_total) {
-          this.payment.amount = transaction.total();
-          this.notifyObservers(this.payment);
-        }
-      }
-
-      $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(this.payment.amount)));
-    } else {
-      for(payment in this.transaction.payments) {
-        if(this.transaction.payments[payment].form == 'store_credit' && this.transaction.payments[payment].amount < 0) {
-          this.transaction.payments[payment].amount = 0;
-          this.notifyObservers(this.transaction.payments[payment]);
-        }
+      if(this.transactions.payments[payment].form == 'store_credit' && this.transactions.payments[payment].amount < 0) {
+        $('input#payment_action_credit_value', this.view).val(Math.abs(Currency.format(this.transactions.payments[payment].amount)));
       }
     }
   }
@@ -1283,12 +1303,14 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
     this.cash_controller = new PaymentLineController('div#payment_cash');
-    this.scale_controller.addObserver(this.setPayment, this);
+    this.scale_controller.addObserver(this.updateRatio, this);
     this.store_credit_controller.addObserver(this.setPayment, this);
     this.gift_card_controller.addObserver(this.setPayment, this);
     this.check_controller.addObserver(this.setPayment, this);
     this.credit_card_controller.addObserver(this.setPayment, this);
     this.cash_controller.addObserver(this.setPayment, this);
+    this.store_credit_offset_payment = new Payment();
+    this.cash_offset_payment = new Payment();
     this.payments = [];
     this.reset();
     this.callSuper();
@@ -1354,6 +1376,10 @@ var PaymentController = new JS.Class(ViewController, {
     return false;
   },
 
+  updateRatio: function() {
+    this.notifyObservers(this.payments);
+  },
+
   enablePaymentFields: function() {
     this.store_credit_controller.enable();
     this.gift_card_controller.enable();
@@ -1383,7 +1409,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   updateSummary: function(transaction) {
-    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.itemCount() + ' item(s) in cart');
+    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.countItems() + ' item(s) in cart');
     $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
@@ -1548,7 +1574,7 @@ var SummaryController = new JS.Class(ViewController, {
 
   update: function(transaction) {
     this.setCustomer(transaction.customer);
-    this.setItemCount(transaction.itemCount());
+    this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
   },
 

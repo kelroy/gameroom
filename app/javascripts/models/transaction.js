@@ -12,7 +12,13 @@ var Transaction = new JS.Class({
     this.customer = new Customer();
     this.receipt = new Receipt();
     this.lines = [];
-    this.payments = [];
+    this.payments = [
+      new Payment('store_credit', 0),
+      new Payment('gift_card', 0),
+      new Payment('credit_card', 0),
+      new Payment('check', 0),
+      new Payment('cash', 0)
+    ];
     this.tax_rate = 0.07;
     this.complete = false;
     this.locked = false;
@@ -47,12 +53,11 @@ var Transaction = new JS.Class({
     return payment_total - this.total();
   },
   
-  save: function() {
-    this.id = 1;
-    return true;
+  ratio: function() {
+    return 1.0 / Math.abs(this.subtotal() / this.cashSubtotal());
   },
   
-  itemCount: function() {
+  countItems: function() {
     count = 0;
     for(line in this.lines) {
       count += this.lines[line].quantity;
@@ -60,7 +65,24 @@ var Transaction = new JS.Class({
     return count;
   },
   
-  valid: function() {
+  setLines: function(lines) {
+    this.lines = lines;
+  },
+  
+  setPayments: function() {
+    this.payments = payments;
+  },
+  
+  save: function() {
+    this.id = 1;
     return true;
+  },
+  
+  valid: function() {
+    if(this.change() == 0 && this.customer.valid()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 });

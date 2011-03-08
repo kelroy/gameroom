@@ -32,6 +32,6 @@ var Customer = new JS.Class({
   },
   
   valid: function() {
-    return true;
+    return this.id != null;
   }
 });

@@ -31,6 +31,19 @@ var Line = new JS.Class({
     return this.quantity * this.price;
   },
   
+  calculateCashSubtotal: function() {
+    for(property in this.item.properties) {
+      switch(this.item.properties[property].key) {
+        case 'cash_price':
+          cash_price = parseInt(this.item.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return this.quantity * cash_price;
+  },
+  
   valid: function() {
     return true;
   }

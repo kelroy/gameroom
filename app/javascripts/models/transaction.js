@@ -83,11 +83,14 @@ var Transaction = new JS.Class({
   },
   
   valid: function() {
-    if(this.change() == 0 && this.customer.valid()) {
+    if(this.total() > 0 && this.change() == 0) {
       return true;
-    } else {
-      return false;
+    } else if(this.total() < 0) {
+      if(this.customer.valid()) {
+        return true;
+      }
     }
+    return false;
   }
   
   /*onCreditChange: function(event) {

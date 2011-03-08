@@ -3,12 +3,12 @@ class Transaction < ActiveRecord::Base
   
   belongs_to  :till
   belongs_to  :customer
-  has_many    :items
+  has_many    :lines
   has_many    :payments
-  has_many    :goods,    :through => :items
+  has_many    :items,    :through => :lines
   
   accepts_nested_attributes_for :customer
-  accepts_nested_attributes_for :items
+  accepts_nested_attributes_for :lines
   accepts_nested_attributes_for :payments
   
   # Is transaction complete?

@@ -7,7 +7,7 @@ var gameroomlincoln_terminal = {
   run: function() {
     
     new TerminalController();
-    
+
   }
   
 };

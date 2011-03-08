@@ -1,26 +1,26 @@
 //= require "view_controller"
 
-var CustomerSearchController = new JS.Class(ViewController, {
+var SearchController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
     this.callSuper();
-    this.reset();
     
     this.query = $('input.query', this.view);
     this.query.bind('change', {instance: this}, this.onChange);
-    this.alphabet_controller = new AlphabetController('ul.alphabet_nav', this.view);
+    this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear)
+    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    this.reset();
   },
   
   reset: function() {
-    $(this.query).val(null);
+    this.query.val(null);
   },
   
   onLetter: function(letter) {
-    $(this.query).val(letter);
-    $(this.query).trigger('change');
+    this.query.val(letter);
+    this.query.trigger('change');
   },
   
   onClear: function(event) {

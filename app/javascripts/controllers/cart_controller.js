@@ -1,7 +1,7 @@
 //= require "view_controller"
+//= require "search_controller"
 //= require "cart_lines_controller"
 //= require "cart_form_controller"
-//= require "cart_search_controller"
 //= require "cart_search_results_controller"
 
 var CartController = new JS.Class(ViewController, {
@@ -11,7 +11,7 @@ var CartController = new JS.Class(ViewController, {
     this.callSuper();
     this.cart_lines_controller = new CartLinesController('div#cart_lines');
     this.cart_form_controller = new CartFormController('div#cart_form');
-    this.cart_search_controller = new CartSearchController('div#cart_search');
+    this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
     this.cart_page_controller = new PageController('ul#cart_nav', [
       this.cart_lines_controller.view,
@@ -48,7 +48,6 @@ var CartController = new JS.Class(ViewController, {
   },
   
   addLines: function(lines) {
-    this.showLinesSection();
     this.cart_lines_controller.add(lines);
   },
   

@@ -112,7 +112,7 @@ var TransactionController = new JS.Class({
     if(this.current_transaction.save()) {
       id = this.current_transaction.id;
       url = '/transactions/' + id + '/receipt';
-      window.open(url);
+      window.open(url, "transaction_receipt", "toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=260");
     }
   }
 });

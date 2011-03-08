@@ -60,7 +60,7 @@ var CartFormController = new JS.Class(FormController, {
   },
   
   onMore: function(event) {
-    $('ul.item_nav', event.data.instance.view).before(event.data.instance.row.clone());
+    $('form', event.data.instance.view).append(event.data.instance.row.clone());
     event.preventDefault();
   },
   

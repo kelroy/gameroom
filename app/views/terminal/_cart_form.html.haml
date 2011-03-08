@@ -1,26 +1,4 @@
 = form_for :item, :method => 'get', :url => root_path do |g|
-  %ul{:class => 'item_elements'}
-    %li
-      = g.label :quantity, "Qty."
-      = g.text_field :quantity
-    %li
-      = g.label :title, "Title"
-      = g.text_field :title
-    %li
-      = g.label :description, "Description"
-      = g.text_field :description
-    %li
-      = g.label :price, "Base Price"
-      = g.text_field :price, :placeholder => '0.00'
-    %li
-      = g.label :credit, "Store Credit Price"
-      = g.text_field :credit, :placeholder => '0.00'
-    %li
-      = g.label :cash, "Cash Price"
-      = g.text_field :cash, :placeholder => '0.00'
-    %li
-      = g.label :taxable
-      = check_box_tag :item_taxable, 1, true
   %ul{:class => 'item_nav'}
     %li
       %ul{:class => 'button_nav'}
@@ -32,3 +10,26 @@
           %a{:href => '#clear', :class => 'button clear'} Clear
         %li
           %a{:href => '#save', :class => 'button save'} Add
+  %ul{:class => 'item_elements'}
+    - (1..5).each do
+      %li
+        = g.label :quantity, "Qty."
+        = g.text_field :quantity
+      %li
+        = g.label :title, "Title"
+        = g.text_field :title
+      %li
+        = g.label :description, "Description"
+        = g.text_field :description
+      %li
+        = g.label :price, "Base Price"
+        = g.text_field :price, :placeholder => '0.00'
+      %li
+        = g.label :credit, "Store Credit Price"
+        = g.text_field :credit, :placeholder => '0.00'
+      %li
+        = g.label :cash, "Cash Price"
+        = g.text_field :cash, :placeholder => '0.00'
+      %li
+        = g.label :taxable
+        = check_box_tag :item_taxable, 1, true

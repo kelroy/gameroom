@@ -4,9 +4,10 @@
       - ('A'..'Z').each do |letter|
         %li
           %a{:href => "##{letter}", :class => 'button dark'}= letter
-    = form_for :customer_search, :method => 'get', :url => root_path do |f|
+    %form{:action => '/', :method => 'get'}
       %div
-        = f.text_field :body_contains, :id => 'customer_query', :placeholder => 'Search for a customer...'
+        = text_field_tag :query, nil, :class => 'query', :placeholder => 'Search for a customer...'
+        %a{:href => '#clear', :class => 'button clear'} X
 %ul{:id => 'customer_nav', :class => 'tab_nav'}
   %li
     %a{:href => '#customer_review', :class => 'customer_review'} Customer

@@ -1,6 +1,6 @@
 //= require "view_controller"
+//= require "search_controller"
 //= require "customer_form_controller"
-//= require "customer_search_controller"
 //= require "customer_search_results_controller"
 
 var CustomerController = new JS.Class(ViewController, {
@@ -10,7 +10,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.callSuper();
     this.customer_review_controller = new CustomerReviewController('div#customer_review');
     this.customer_form_controller = new CustomerFormController('div#customer_form');
-    this.customer_search_controller = new CustomerSearchController('div#customer_search');
+    this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
     this.customer_page_controller = new PageController('ul#customer_nav', [
       this.customer_review_controller.view,

@@ -10,21 +10,22 @@ section#cart
       background-color: $light_gray
       border: 2px $black solid
       @include border-radius(10px)
-      
-      a#cart_scan
-        position: absolute
-        top: 10px
-        right: 10px
-        width: 180px
-        height: 62px
-        font-size: 20px
-        text-align: center
-        line-height: 62px
         
       form
-        input
-          font-size: 20px
-          width: 586px
+        div
+          background-color: $white
+          border: 2px $black solid
+          @include border-radius(5px)
+          
+          a.clear
+            float: right
+            margin-top: 8px
+            margin-right: 8px
+            
+          input
+            width: 546px
+            font-size: 20px
+            border: none
         
     h2#cart_summary
       float: right

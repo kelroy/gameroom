@@ -1,7 +1,28 @@
 class Item < ActiveRecord::Base
-  attr_readonly           :transaction_id
-  validates_presence_of   :title, :price, :quantity
+  validates_presence_of   :title, :sku
+  validates_uniqueness_of :sku
   
-  belongs_to              :transaction
-  belongs_to              :good
+  has_many                :properties
+  has_many                :lines
+  has_many                :transactions,  :through => :lines
+  
+  # Is good taxable?
+  def taxable?
+    self.taxable
+  end
+  
+  # Is good discountable?
+  def discountable?
+    self.discountable
+  end
+  
+  # Is good locked?
+  def locked?
+    self.locked
+  end
+  
+  # Is good active?
+  def active?
+    self.active
+  end
 end

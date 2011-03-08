@@ -1,12 +1,14 @@
 class CreateItems < ActiveRecord::Migration
   def self.up
     create_table :items do |t|
-      t.integer :transaction_id,  :null => false
-      t.integer :good_id
-      t.string  :title,           :null => false
+      t.string  :title,                 :null => false
       t.string  :description
-      t.integer :price,           :null => false, :default => 0
-      t.integer :quantity,        :null => false, :default => 0
+      t.string  :sku,                   :null => false, :unique => true
+      t.integer :price,                 :null => false, :default => 0
+      t.boolean :taxable,               :null => false, :default => true
+      t.boolean :discountable,          :null => false, :default => true
+      t.boolean :locked,                :null => false, :default => false
+      t.boolean :active,                :null => false, :default => false
 
       t.timestamps
     end

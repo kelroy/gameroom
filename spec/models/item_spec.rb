@@ -8,13 +8,15 @@ describe Item do
   context "when given valid item data" do
     it "should be valid" do
       valid_data = {
-        :transaction_id => 1,
         :title => 'Title',
-        :description => 'Lorem Ipsum...',
-        :price => 0,
-        :quantity => 0
+        :sku => 0001
       }
       Item.new(valid_data).should be_valid
     end
+  end
+  
+  it "should have a unique sku" do
+    item = Factory.create(:item)
+    Factory.build(:item, :sku => item.sku).should_not be_valid
   end
 end

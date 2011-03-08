@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110226220356) do
+ActiveRecord::Schema.define(:version => 20110308214821) do
 
   create_table "addresses", :force => true do |t|
     t.integer  "person_id",   :null => false
@@ -54,14 +54,14 @@ ActiveRecord::Schema.define(:version => 20110226220356) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-02-27 21:59:28', :null => false
+    t.datetime "time",        :default => '2011-03-08 22:36:25', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "goods", :force => true do |t|
+  create_table "items", :force => true do |t|
     t.string   "title",                           :null => false
     t.string   "description"
     t.string   "sku",                             :null => false
@@ -74,13 +74,11 @@ ActiveRecord::Schema.define(:version => 20110226220356) do
     t.datetime "updated_at"
   end
 
-  create_table "items", :force => true do |t|
-    t.integer  "transaction_id",                :null => false
-    t.integer  "good_id"
-    t.string   "title",                         :null => false
-    t.string   "description"
-    t.integer  "price",          :default => 0, :null => false
-    t.integer  "quantity",       :default => 0, :null => false
+  create_table "lines", :force => true do |t|
+    t.integer  "transaction_id"
+    t.integer  "item_id"
+    t.integer  "quantity",       :null => false
+    t.integer  "price",          :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -114,7 +112,7 @@ ActiveRecord::Schema.define(:version => 20110226220356) do
   end
 
   create_table "properties", :force => true do |t|
-    t.integer  "good_id",    :null => false
+    t.integer  "item_id",    :null => false
     t.string   "key",        :null => false
     t.string   "value",      :null => false
     t.datetime "created_at"

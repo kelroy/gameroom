@@ -3,8 +3,8 @@ class Transaction < ActiveRecord::Base
   
   belongs_to  :till
   belongs_to  :customer
-  has_many    :lines
   has_many    :payments
+  has_many    :lines
   has_many    :items,    :through => :lines
   
   accepts_nested_attributes_for :customer

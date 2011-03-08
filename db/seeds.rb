@@ -26,12 +26,12 @@ unless Rails.env.production?
   till.entries << Factory.create(:entry, :till => till)
   till.users << user
 
-  good = Factory.create(:good)
-  good.properties << Factory.create(:property, :good => good)
-  good.properties << Factory.create(:property, :good => good)
-
+  item = Factory.create(:item)
+  item.properties << Factory.create(:property, :item => item)
+  item.properties << Factory.create(:property, :item => item)
+  
   transaction = Factory.create(:transaction, :till => till, :customer => customer)
-  transaction.items << Factory.create(:item, :good => good, :transaction => transaction)
+  transaction.lines << Factory.create(:line, :item => item, :transaction => transaction)
   transaction.payments << Factory.create(:payment, :transaction => transaction)
   transaction.payments << Factory.create(:payment, :transaction => transaction)
   

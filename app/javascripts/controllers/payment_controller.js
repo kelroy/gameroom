@@ -9,6 +9,7 @@ var PaymentController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
+    this.callSuper();
     this.scale_controller = new ScaleController('ul#payment_scale_container');
     this.store_credit_controller = new StoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
@@ -25,7 +26,6 @@ var PaymentController = new JS.Class(ViewController, {
     this.store_credit_payout_controller.addObserver(this.updatePayment, this);
     this.cash_payout_controller.addObserver(this.updatePayment, this);
     this.reset();
-    this.callSuper();
   },
   
   reset: function() {
@@ -73,24 +73,25 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
+    amount_due = transaction.change();
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
-          this.store_credit_controller.update(transaction.change(), transaction.payments[payment].amount);
-          this.store_credit_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due);
+          this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'cash':
-          this.cash_controller.update(transaction.change(), transaction.payments[payment].amount);
-          this.cash_payout_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.cash_controller.update(transaction.payments[payment].amount, amount_due);
+          this.cash_payout_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'gift_card':
-          this.gift_card_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.gift_card_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'credit_card':
-          this.credit_card_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.credit_card_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'check':
-          this.check_controller.update(transaction.change(), transaction.payments[payment].amount);
+          this.check_controller.update(transaction.payments[payment].amount, amount_due);
           break;
       }
     }
@@ -106,7 +107,6 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updatePayment: function(payment) {
-    console.log(payment);
     this.notifyObservers(payment);
   },
   

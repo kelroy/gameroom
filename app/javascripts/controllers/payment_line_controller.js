@@ -10,7 +10,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
   
   onApply: function(event) {
     input = $('input.payment', event.data.instance.view);
-    input.val(Currency.format(event.data.instance.due));
+    input.val(Currency.format(event.data.instance.amount_due));
     input.trigger('change');
     event.preventDefault();
   },

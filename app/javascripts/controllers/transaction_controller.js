@@ -59,6 +59,7 @@ var TransactionController = new JS.Class({
     this.review_controller.reset();
     this.section_controller.reset();
     this.summary_controller.reset();
+    this.finish_controller.view.show();
     this.section_controller.view.show();
   },
 

@@ -27,6 +27,7 @@ var PaymentController = new JS.Class(ViewController, {
     this.cash_controller.addObserver(this.updatePayment, this);
     this.store_credit_payout_controller.addObserver(this.updatePayment, this);
     this.cash_payout_controller.addObserver(this.updatePayment, this);
+    this.scale_controller.addObserver(this.onScale, this);
     this.reset();
   },
   
@@ -79,7 +80,7 @@ var PaymentController = new JS.Class(ViewController, {
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
-          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due);
+          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due, transaction.customer);
           this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'cash':
@@ -106,6 +107,10 @@ var PaymentController = new JS.Class(ViewController, {
     } else {
       this.enableSellToStore();
     }
+  },
+  
+  onScale: function(amount) {
+    this.store_credit_payout_controller.set(amount);
   },
   
   updatePayment: function(payment) {

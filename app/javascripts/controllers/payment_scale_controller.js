@@ -12,14 +12,9 @@ var PaymentScaleController = new JS.Class(ViewController, {
   },
   
   onScale: function(event) {
-    index = parseFloat($('ul#payment_scale_container li a.button').index(this));
-    /*ratio = event.data.instance.transaction.ratio();
-    total = event.data.instance.transaction.total();
-    credit = total * ((10 - index) / 10.0);
-    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
-    $('input#payment_action_cash_value', this.view).val(Currency.format(Math.abs(cash)));
-    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(credit)));
-    event.data.instance.notifyObservers();*/
+    index = parseFloat($(this).attr('data-index'));
+    amount = Currency.format(Math.abs(event.data.instance.transaction.storeCreditTotal()) * (index / 10.0));
+    event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },
   

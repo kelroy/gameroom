@@ -26,8 +26,19 @@ a.button
 
     &:hover
       border: 1px $white solid
-          
+    
   &:active,
   &:hover
     background-color: $black
-    color: $white
+    +link_colors($white)
+    
+  &.disabled
+    background-color: $light_gray
+    border: 1px $light_gray solid
+    +link_colors($black)
+    
+    &:active,
+    &:hover
+      background-color: $light_gray
+      border: 1px $light_gray solid
+      +link_colors($black)

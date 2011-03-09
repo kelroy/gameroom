@@ -10,6 +10,7 @@ var CartLinesController = new JS.Class(ViewController, {
     this.line_controllers = [];
     this.line = $('li.cart_line', view).detach();
     this.hideCartNav();
+    $('ul#cart_lines_nav a.remove', view).bind('click', {instance: this}, this.onRemove);
     $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
     $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
     $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
@@ -18,6 +19,7 @@ var CartLinesController = new JS.Class(ViewController, {
   reset: function() {
     this.clearLines();
     this.showCartNotice();
+    this.hideCartNav();
   },
   
   add: function(lines) {
@@ -84,6 +86,14 @@ var CartLinesController = new JS.Class(ViewController, {
       }
     }
     this.replace(this.lines);
+  },
+  
+  onRemove: function(event) {
+    event.data.instance.reset();
+    event.data.instance.lines = [];
+    event.data.instance.line_controllers = [];
+    event.data.instance.notifyObservers(event.data.instance.lines);
+    event.preventDefault();
   },
   
   onInfo: function(event) {

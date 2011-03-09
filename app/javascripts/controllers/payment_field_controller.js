@@ -24,6 +24,12 @@ var PaymentFieldController = new JS.Class(ViewController, {
     $('input.payment', this.view).attr('disabled', true);
   },
   
+  set: function(amount) {
+    console.log(amount);
+    $('input.payment', this.view).val(Math.abs(amount));
+    $('input.payment', this.view).trigger('change');
+  },
+  
   update: function(amount, amount_due) {
     this.amount_due = amount_due;
 
@@ -36,7 +42,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
   
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies($(this).val())));
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()))));
     } else {
       $(this).val(null);
     }

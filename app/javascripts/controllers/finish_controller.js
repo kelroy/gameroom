@@ -4,18 +4,33 @@ var FinishController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
-    $('a', view).bind('click', {instance: this}, this.finish)
     this.callSuper();
+    this.enabled = false;
+    $('a', view).bind('click', {instance: this}, this.finish);
+  },
+  
+  enable: function() {
+    $('a', this.view).removeClass('disabled');
+    this.enabled = true;
+  },
+  
+  disable: function() {
+    $('a', this.view).addClass('disabled');
+    this.enabled = false;
   },
   
   finish: function(event) {
-    event.data.instance.notifyObservers();
+    if(event.data.instance.enabled) {
+      event.data.instance.notifyObservers();
+    }
     event.preventDefault();
   },
   
   update: function(transaction) {
     if(transaction.valid()) {
-      this.view.show();
+      this.enable();
+    } else {
+      this.disable();
     }
   }
 });

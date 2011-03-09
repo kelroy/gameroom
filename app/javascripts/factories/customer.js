@@ -7,7 +7,7 @@ Factory.define('Customer', {
   person: {
     factory: 'Person'
   },
-  credit: 0,
+  credit: 1000,
   drivers_license_number: 'H12000000',
   drivers_license_state: 'NE',
   notes: 'Lorem Ipsum...',

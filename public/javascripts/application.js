@@ -347,7 +347,7 @@ Factory.define('Customer', {
   person: {
     factory: 'Person'
   },
-  credit: 0,
+  credit: 1000,
   drivers_license_number: 'H12000000',
   drivers_license_state: 'NE',
   notes: 'Lorem Ipsum...',
@@ -624,6 +624,7 @@ var CartLinesController = new JS.Class(ViewController, {
     this.line_controllers = [];
     this.line = $('li.cart_line', view).detach();
     this.hideCartNav();
+    $('ul#cart_lines_nav a.remove', view).bind('click', {instance: this}, this.onRemove);
     $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
     $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
     $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
@@ -632,6 +633,7 @@ var CartLinesController = new JS.Class(ViewController, {
   reset: function() {
     this.clearLines();
     this.showCartNotice();
+    this.hideCartNav();
   },
 
   add: function(lines) {
@@ -698,6 +700,14 @@ var CartLinesController = new JS.Class(ViewController, {
       }
     }
     this.replace(this.lines);
+  },
+
+  onRemove: function(event) {
+    event.data.instance.reset();
+    event.data.instance.lines = [];
+    event.data.instance.line_controllers = [];
+    event.data.instance.notifyObservers(event.data.instance.lines);
+    event.preventDefault();
   },
 
   onInfo: function(event) {
@@ -910,7 +920,6 @@ var CartFormController = new JS.Class(FormController, {
       line.item.properties.push(cash_property);
       lines.push(line);
     });
-    console.log(lines);
     if(this.valid(lines)) {
       this.notifyObservers(lines);
     }
@@ -1086,6 +1095,12 @@ var PaymentFieldController = new JS.Class(ViewController, {
     $('input.payment', this.view).attr('disabled', true);
   },
 
+  set: function(amount) {
+    console.log(amount);
+    $('input.payment', this.view).val(Math.abs(amount));
+    $('input.payment', this.view).trigger('change');
+  },
+
   update: function(amount, amount_due) {
     this.amount_due = amount_due;
 
@@ -1098,7 +1113,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
 
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies($(this).val())));
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()))));
     } else {
       $(this).val(null);
     }
@@ -1167,60 +1182,51 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
+    this.customer = new Customer();
     this.callSuper();
   },
 
-  /*enable: function() {
-    if(this.transaction.customer.id != null) {
+  enable: function() {
+    if(this.customer.id != null) {
       this.callSuper();
+    } else {
+      this.disable();
     }
   },
 
-  onApply: function(event) {
-    if(event.data.instance.transaction.customer.credit > event.data.instance.transaction.total()) {
-      amount = event.data.instance.transaction.total();
-    } else {
-      amount = event.data.instance.transaction.customer.credit;
+  update: function(amount, amount_due, customer) {
+    if(customer.id != null) {
+      this.customer = customer;
+      $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
+      this.enable();
     }
-    $('div#payment_store_credit input#store_credit_amount').val(Currency.format(amount));
-    event.data.instance.payment.amount = amount;
-    event.data.instance.notifyObservers(event.data.instance.payment);
+    this.callSuper(amount, amount_due);
+  },
+
+  onApply: function(event) {
+    if(event.data.instance.amount_due != 0 && event.data.instance.enabled) {
+      input = $('input.payment', event.data.instance.view);
+      if(event.data.instance.amount_due > event.data.instance.customer.credit) {
+        input.val(Currency.format(event.data.instance.customer.credit));
+      } else {
+        input.val(Currency.format(event.data.instance.amount_due));
+      }
+      input.trigger('change');
+    }
     event.preventDefault();
   },
 
   onChange: function(event) {
-    if(!isNaN($(this).val())) {
-      amount = Currency.toPennies($(this).val());
-      credit = event.data.instance.transaction.customer.credit;
-      total = event.data.instance.transaction.total();
-
-      if(amount > credit) {
-        event.data.instance.payment.amount = credit;
-      } else {
-        event.data.instance.payment.amount = amount;
+    amount = $(this).val();
+    if(!isNaN(amount)) {
+      if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
+        amount = Currency.format(event.data.instance.customer.credit);
       }
-      if(event.data.instance.payment.amount > total) {
-        event.data.instance.payment.amount = total;
-      }
-      if(event.data.instance.payment.amount != 0) {
-        $(this).val(Currency.format(event.data.instance.payment.amount));
-      } else {
-        $(this).val(null);
-      }
-      event.data.instance.notifyObservers(event.data.instance.payment);
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs(amount))));
     } else {
       $(this).val(null);
     }
-  },
-
-  update: function(due, transaction) {
-    this.transaction = transaction;
-    if(transaction.customer.id != null) {
-      $('div#payment_store_credit span#payment_customer').html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name + ': ' + Currency.pretty(transaction.customer.credit));
-      $('div#payment_store_credit a.apply').show();
-      this.enable();
-    }
-  }*/
+  }
 
 });
 
@@ -1243,7 +1249,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
 
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies($(this).val() * -1)));
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()) * -1)));
     } else {
       $(this).val(null);
     }
@@ -1325,11 +1331,25 @@ var Transaction = new JS.Class({
   },
 
   amountDue: function() {
-    payment_total = 0;
-    for(payment in this.payments) {
-      payment_total += this.payments[payment].amount;
+    if(this.subtotal() >= 0) {
+      payment_total = 0;
+      for(payment in this.payments) {
+        payment_total += this.payments[payment].amount;
+      }
+      return this.total() - payment_total;
+    } else {
+      cash_payment = new Payment('cash', 0);
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'cash') {
+          cash_payment = this.payments[payment];
+        }
+      }
+      if(cash_payment.amount != 0) {
+        return cash_payment.amount;
+      } else {
+        return 0;
+      }
     }
-    return this.total() - payment_total;
   },
 
   ratio: function() {
@@ -1346,6 +1366,18 @@ var Transaction = new JS.Class({
 
   setLines: function(lines) {
     this.lines = lines;
+    subtotal = this.subtotal();
+    for(payment in this.payments) {
+      if(subtotal < 0 && this.payments[payment].amount > 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].amount < 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].form == 'store_credit' && this.payments[payment].amount > this.total()) {
+        this.payments[payment].amount = 0;
+      }
+    }
   },
 
   storeCreditTotal: function() {
@@ -1365,19 +1397,19 @@ var Transaction = new JS.Class({
   },
 
   updatePayment: function(updated_payment) {
-    if(updated_payment.amount < 0) {
+    if(this.subtotal() < 0) {
       switch(updated_payment.form) {
         case 'store_credit':
           store_credit_total = this.storeCreditTotal();
-          if(updated_payment.amount < store_credit_total) {
-            updated_payment.amount == store_credit_total;
+          if(Math.abs(updated_payment.amount) > Math.abs(store_credit_total)) {
+            updated_payment.amount = store_credit_total * -1;
           }
           this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
           break;
         case 'cash':
           cash_total = this.cashTotal();
-          if(updated_payment.amount < cash_total) {
-            updated_payment.amount == cash_total;
+          if(Math.abs(updated_payment.amount) > Math.abs(cash_total)) {
+            updated_payment.amount = cash_total * -1;
           }
           this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
           break;
@@ -1431,14 +1463,9 @@ var PaymentScaleController = new JS.Class(ViewController, {
   },
 
   onScale: function(event) {
-    index = parseFloat($('ul#payment_scale_container li a.button').index(this));
-    /*ratio = event.data.instance.transaction.ratio();
-    total = event.data.instance.transaction.total();
-    credit = total * ((10 - index) / 10.0);
-    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
-    $('input#payment_action_cash_value', this.view).val(Currency.format(Math.abs(cash)));
-    $('input#payment_action_credit_value', this.view).val(Currency.format(Math.abs(credit)));
-    event.data.instance.notifyObservers();*/
+    index = parseFloat($(this).attr('data-index'));
+    amount = Currency.format(Math.abs(event.data.instance.transaction.storeCreditTotal()) * (index / 10.0));
+    event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },
 
@@ -1468,6 +1495,7 @@ var PaymentController = new JS.Class(ViewController, {
     this.cash_controller.addObserver(this.updatePayment, this);
     this.store_credit_payout_controller.addObserver(this.updatePayment, this);
     this.cash_payout_controller.addObserver(this.updatePayment, this);
+    this.scale_controller.addObserver(this.onScale, this);
     this.reset();
   },
 
@@ -1520,7 +1548,7 @@ var PaymentController = new JS.Class(ViewController, {
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
-          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due);
+          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due, transaction.customer);
           this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'cash':
@@ -1547,6 +1575,10 @@ var PaymentController = new JS.Class(ViewController, {
     } else {
       this.enableSellToStore();
     }
+  },
+
+  onScale: function(amount) {
+    this.store_credit_payout_controller.set(amount);
   },
 
   updatePayment: function(payment) {
@@ -1753,18 +1785,33 @@ var FinishController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
-    $('a', view).bind('click', {instance: this}, this.finish)
     this.callSuper();
+    this.enabled = false;
+    $('a', view).bind('click', {instance: this}, this.finish);
+  },
+
+  enable: function() {
+    $('a', this.view).removeClass('disabled');
+    this.enabled = true;
+  },
+
+  disable: function() {
+    $('a', this.view).addClass('disabled');
+    this.enabled = false;
   },
 
   finish: function(event) {
-    event.data.instance.notifyObservers();
+    if(event.data.instance.enabled) {
+      event.data.instance.notifyObservers();
+    }
     event.preventDefault();
   },
 
   update: function(transaction) {
     if(transaction.valid()) {
-      this.view.show();
+      this.enable();
+    } else {
+      this.disable();
     }
   }
 });
@@ -1819,6 +1866,7 @@ var TransactionController = new JS.Class({
     this.review_controller.reset();
     this.section_controller.reset();
     this.summary_controller.reset();
+    this.finish_controller.view.show();
     this.section_controller.view.show();
   },
 

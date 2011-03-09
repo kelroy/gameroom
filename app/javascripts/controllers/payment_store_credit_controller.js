@@ -1,61 +1,50 @@
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
-    //$('a.apply', view).hide().bind('click', {instance: this}, this.onApply);
-    //this.setTransaction(new Transaction());
+    this.customer = new Customer();
     this.callSuper();
   },
   
-  /*enable: function() {
-    if(this.transaction.customer.id != null) {
+  enable: function() {
+    if(this.customer.id != null) {
       this.callSuper();
+    } else {
+      this.disable();
     }
   },
   
-  onApply: function(event) {
-    if(event.data.instance.transaction.customer.credit > event.data.instance.transaction.total()) {
-      amount = event.data.instance.transaction.total();
-    } else {
-      amount = event.data.instance.transaction.customer.credit;
+  update: function(amount, amount_due, customer) {
+    if(customer.id != null) {
+      this.customer = customer;
+      $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
+      this.enable();
     }
-    $('div#payment_store_credit input#store_credit_amount').val(Currency.format(amount));
-    event.data.instance.payment.amount = amount;
-    event.data.instance.notifyObservers(event.data.instance.payment);
+    this.callSuper(amount, amount_due);
+  },
+  
+  onApply: function(event) {
+    if(event.data.instance.amount_due != 0 && event.data.instance.enabled) {
+      input = $('input.payment', event.data.instance.view);
+      if(event.data.instance.amount_due > event.data.instance.customer.credit) {
+        input.val(Currency.format(event.data.instance.customer.credit));
+      } else {
+        input.val(Currency.format(event.data.instance.amount_due));
+      }
+      input.trigger('change');
+    }
     event.preventDefault();
   },
   
   onChange: function(event) {
-    if(!isNaN($(this).val())) {
-      amount = Currency.toPennies($(this).val());
-      credit = event.data.instance.transaction.customer.credit;
-      total = event.data.instance.transaction.total();
-      
-      if(amount > credit) {
-        event.data.instance.payment.amount = credit;
-      } else {
-        event.data.instance.payment.amount = amount;
+    amount = $(this).val();
+    if(!isNaN(amount)) {
+      if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
+        amount = Currency.format(event.data.instance.customer.credit);
       }
-      if(event.data.instance.payment.amount > total) {
-        event.data.instance.payment.amount = total;
-      }
-      if(event.data.instance.payment.amount != 0) {
-        $(this).val(Currency.format(event.data.instance.payment.amount));
-      } else {
-        $(this).val(null);
-      }
-      event.data.instance.notifyObservers(event.data.instance.payment);
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs(amount))));
     } else {
       $(this).val(null);
     }
-  },
-  
-  update: function(due, transaction) {
-    this.transaction = transaction;
-    if(transaction.customer.id != null) {
-      $('div#payment_store_credit span#payment_customer').html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name + ': ' + Currency.pretty(transaction.customer.credit));
-      $('div#payment_store_credit a.apply').show();
-      this.enable();
-    }
-  }*/
+  }
   
 });

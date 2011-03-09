@@ -40,7 +40,6 @@ var CartFormController = new JS.Class(FormController, {
       line.item.properties.push(cash_property);
       lines.push(line);
     });
-    console.log(lines);
     if(this.valid(lines)) {
       this.notifyObservers(lines);
     }

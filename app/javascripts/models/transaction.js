@@ -46,11 +46,25 @@ var Transaction = new JS.Class({
   },
   
   amountDue: function() {
-    payment_total = 0;
-    for(payment in this.payments) {
-      payment_total += this.payments[payment].amount;
+    if(this.subtotal() >= 0) {
+      payment_total = 0;
+      for(payment in this.payments) {
+        payment_total += this.payments[payment].amount;
+      }
+      return this.total() - payment_total;
+    } else {
+      cash_payment = new Payment('cash', 0);
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'cash') {
+          cash_payment = this.payments[payment];
+        }
+      }
+      if(cash_payment.amount != 0) {
+        return cash_payment.amount;
+      } else {
+        return 0;
+      }
     }
-    return this.total() - payment_total;
   },
   
   ratio: function() {
@@ -67,6 +81,18 @@ var Transaction = new JS.Class({
   
   setLines: function(lines) {
     this.lines = lines;
+    subtotal = this.subtotal();
+    for(payment in this.payments) {
+      if(subtotal < 0 && this.payments[payment].amount > 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].amount < 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].form == 'store_credit' && this.payments[payment].amount > this.total()) {
+        this.payments[payment].amount = 0;
+      }
+    }
   },
   
   storeCreditTotal: function() {
@@ -86,19 +112,19 @@ var Transaction = new JS.Class({
   },
   
   updatePayment: function(updated_payment) {
-    if(updated_payment.amount < 0) {
+    if(this.subtotal() < 0) {
       switch(updated_payment.form) {
         case 'store_credit':
           store_credit_total = this.storeCreditTotal();
-          if(updated_payment.amount < store_credit_total) {
-            updated_payment.amount == store_credit_total;
+          if(Math.abs(updated_payment.amount) > Math.abs(store_credit_total)) {
+            updated_payment.amount = store_credit_total * -1;
           }
           this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
           break;
         case 'cash':
           cash_total = this.cashTotal();
-          if(updated_payment.amount < cash_total) {
-            updated_payment.amount == cash_total;
+          if(Math.abs(updated_payment.amount) > Math.abs(cash_total)) {
+            updated_payment.amount = cash_total * -1;
           }
           this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
           break;

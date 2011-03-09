@@ -115,9 +115,9 @@
         %span{:class => 'payment_pill'} Credit Applied
       %li{:id => 'payment_scale_store_credit'}
         = f.text_field :credit_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
-      - (1..11).each do |n|
+      - (0..10).each do |n|
         %li
-          %a{:href => '#payment_scale', :class => 'button dark'} *
+          %a{:href => '#payment_scale', :class => 'button dark', :"data-index" => "#{10 - n}"} *
       %li{:id => 'payment_scale_cash'}
         = f.text_field :cash_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'cash'
       %li 

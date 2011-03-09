@@ -623,6 +623,7 @@ var CartLinesController = new JS.Class(ViewController, {
     this.lines = [];
     this.line_controllers = [];
     this.line = $('li.cart_line', view).detach();
+    this.hideCartNav();
     $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
     $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
     $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
@@ -674,8 +675,10 @@ var CartLinesController = new JS.Class(ViewController, {
       $('ul#cart_lines', this.view).append(new_line.view);
     }
     if(lines.length > 0) {
+      this.showCartNav();
       this.hideCartNotice();
     } else {
+      this.hideCartNav();
       this.showCartNotice();
     }
   },
@@ -716,6 +719,14 @@ var CartLinesController = new JS.Class(ViewController, {
       event.data.instance.line_controllers[controller].setSell();
     }
     event.preventDefault();
+  },
+
+  showCartNav: function() {
+    $('ul#cart_lines_nav', this.view).show();
+  },
+
+  hideCartNav: function() {
+    $('ul#cart_lines_nav', this.view).hide();
   },
 
   showCartNotice: function() {
@@ -1531,6 +1542,13 @@ var ReviewController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
+
+    if(transaction.customer.id == null) {
+      $('h2#review_customer', this.view).html("No customer");
+    } else {
+      $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+    }
+
     $('div#review_summary table > tbody > tr#payment', this.view).remove()
     $('div#review_lines table > tbody > tr', this.view).remove();
 
@@ -1634,7 +1652,7 @@ var SummaryController = new JS.Class(ViewController, {
 
   setCustomer: function(customer) {
     if(customer.id == null) {
-      $('h2#summary_customer', this.view).html("Select a customer...");
+      $('h2#summary_customer', this.view).html("No customer");
     } else {
       $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
     }

@@ -22,7 +22,7 @@ var SummaryController = new JS.Class(ViewController, {
   
   setCustomer: function(customer) {
     if(customer.id == null) {
-      $('h2#summary_customer', this.view).html("Select a customer...");
+      $('h2#summary_customer', this.view).html("No customer");
     } else {
       $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
     }

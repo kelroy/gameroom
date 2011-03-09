@@ -22,6 +22,13 @@ var ReviewController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
+    
+    if(transaction.customer.id == null) {
+      $('h2#review_customer', this.view).html("No customer");
+    } else {
+      $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+    }
+    
     $('div#review_summary table > tbody > tr#payment', this.view).remove()
     $('div#review_lines table > tbody > tr', this.view).remove();
     

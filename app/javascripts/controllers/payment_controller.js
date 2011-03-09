@@ -1,7 +1,8 @@
 //= require "view_controller"
 //= require "payment_line_controller"
-//= require "store_credit_controller"
-//= require "scale_controller"
+//= require "payment_cash_controller"
+//= require "payment_store_credit_controller"
+//= require "payment_scale_controller"
 //= require "../models/transaction"
 //= require "../models/customer"
 
@@ -10,12 +11,12 @@ var PaymentController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.scale_controller = new ScaleController('ul#payment_scale_container');
-    this.store_credit_controller = new StoreCreditController('div#payment_store_credit');
+    this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
+    this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
-    this.cash_controller = new PaymentLineController('div#payment_cash');
+    this.cash_controller = new PaymentCashController('div#payment_cash');
     this.store_credit_payout_controller = new PaymentFieldController('li#payment_scale_store_credit');
     this.cash_payout_controller = new PaymentFieldController('li#payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);

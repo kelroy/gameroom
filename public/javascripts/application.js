@@ -1048,7 +1048,27 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     event.preventDefault();
   }
 });
-var StoreCreditController = new JS.Class(PaymentLineController, {
+
+var PaymentCashController = new JS.Class(PaymentLineController, {
+
+  initialize: function(view) {
+    this.callSuper();
+    $('a.denomination', this.view).bind('click', {instance: this}, this.onDenomination);
+  },
+
+  onDenomination: function(event) {
+    input = $('input.payment', event.data.instance.view);
+    amount = parseFloat($(this).attr('data-denomination'));
+    current_amount = parseFloat(input.val());
+    if(isNaN(current_amount)) {
+      current_amount = 0;
+    }
+    input.val(Currency.format(Currency.toPennies(amount + current_amount)));
+    input.trigger('change');
+    event.preventDefault();
+  }
+});
+var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
     this.callSuper();
@@ -1260,13 +1280,13 @@ var Transaction = new JS.Class({
   },*/
 });
 
-var ScaleController = new JS.Class(ViewController, {
+var PaymentScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.transaction = new Transaction();
-    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale)
+    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
   },
 
   onScale: function(event) {
@@ -1292,12 +1312,12 @@ var PaymentController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.scale_controller = new ScaleController('ul#payment_scale_container');
-    this.store_credit_controller = new StoreCreditController('div#payment_store_credit');
+    this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
+    this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
-    this.cash_controller = new PaymentLineController('div#payment_cash');
+    this.cash_controller = new PaymentCashController('div#payment_cash');
     this.store_credit_payout_controller = new PaymentFieldController('li#payment_scale_store_credit');
     this.cash_payout_controller = new PaymentFieldController('li#payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);

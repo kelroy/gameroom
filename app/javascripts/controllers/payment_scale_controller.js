@@ -2,13 +2,13 @@
 //= require "../models/transaction"
 //= require "../models/payment"
 
-var ScaleController = new JS.Class(ViewController, {
+var PaymentScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
     this.callSuper();
     this.transaction = new Transaction();
-    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale)
+    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
   },
   
   onScale: function(event) {

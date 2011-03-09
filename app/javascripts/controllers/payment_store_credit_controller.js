@@ -1,4 +1,4 @@
-var StoreCreditController = new JS.Class(PaymentLineController, {
+var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
     //$('a.apply', view).hide().bind('click', {instance: this}, this.onApply);

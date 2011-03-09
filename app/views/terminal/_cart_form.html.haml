@@ -23,13 +23,13 @@
         = g.text_field :description
       %li
         = g.label :price, "Base Price"
-        = g.text_field :price, :placeholder => '0.00'
+        = g.text_field :price, :placeholder => '0.00', :class => 'price'
       %li
         = g.label :credit, "Store Credit Price"
-        = g.text_field :credit, :placeholder => '0.00'
+        = g.text_field :credit, :placeholder => '0.00', :class => 'price'
       %li
         = g.label :cash, "Cash Price"
-        = g.text_field :cash, :placeholder => '0.00'
+        = g.text_field :cash, :placeholder => '0.00', :class => 'price'
       %li
         = g.label :taxable
         = check_box_tag :item_taxable, 1, true

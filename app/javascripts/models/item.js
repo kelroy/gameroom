@@ -45,6 +45,6 @@ var Item = new JS.Class({
   },
   
   valid: function() {
-    return true;
+    return this.title != '' && this.price > 0;
   }
 });

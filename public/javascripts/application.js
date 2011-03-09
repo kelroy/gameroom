@@ -817,7 +817,7 @@ var Line = new JS.Class({
   },
 
   valid: function() {
-    return true;
+    return this.quantity > 0 && this.price > 0 && this.item.valid();
   }
 });
 var Item = new JS.Class({
@@ -867,7 +867,7 @@ var Item = new JS.Class({
   },
 
   valid: function() {
-    return true;
+    return this.title != '' && this.price > 0;
   }
 });
 var Property = new JS.Class({
@@ -891,6 +891,7 @@ var CartFormController = new JS.Class(FormController, {
 
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
+    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
   },
 
   save: function() {
@@ -907,18 +908,30 @@ var CartFormController = new JS.Class(FormController, {
       item.taxable = $('input#item_taxable', this).attr('checked');
 
       credit_property.key = 'credit_price';
-      credit_property.value = parseInt(Currency.toPennies($('input#item_credit', this).val()));
+      credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
+      if(credit_price > 0) {
+        credit_property.value = credit_price;
+      } else {
+        credit_property.value = 0;
+      }
       cash_property.key = 'cash_price'
-      cash_property.value = parseInt(Currency.toPennies($('input#item_cash', this).val()));
+      cash_price = parseInt(Currency.toPennies($('input#item_cash', this).val()));
+      if(cash_price > 0) {
+        cash_property.value = cash_price;
+      } else {
+        cash_property.value = 0;
+      }
 
       line.item = item;
       line.sell = false;
       line.condition = 5;
-      line.quantity = parseInt($('input#item_quantity', this).val());
-      line.price = line.item.price * line.quantity;
+      line.quantity = parseInt(Math.abs($('input#item_quantity', this).val()));
+      line.calculatePrice();
       line.item.properties.push(credit_property);
       line.item.properties.push(cash_property);
-      lines.push(line);
+      if(line.valid()) {
+        lines.push(line);
+      }
     });
     if(this.valid(lines)) {
       this.notifyObservers(lines);
@@ -936,6 +949,10 @@ var CartFormController = new JS.Class(FormController, {
   reset: function() {
     this.callSuper();
     $('input#item_taxable', this.view).attr('checked', true);
+  },
+
+  onPrice: function(event) {
+    $(this).val(Currency.format(Currency.toPennies(Math.abs($(this).val()))));
   },
 
   onMore: function(event) {

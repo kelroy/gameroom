@@ -68,6 +68,6 @@ var Line = new JS.Class({
   },
   
   valid: function() {
-    return true;
+    return this.quantity > 0 && this.price > 0 && this.item.valid();
   }
 });

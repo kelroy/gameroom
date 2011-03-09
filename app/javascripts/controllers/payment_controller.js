@@ -37,7 +37,7 @@ var PaymentController = new JS.Class(ViewController, {
   
   resetSummary: function() {
     $('div#payment_summary span#payment_summary_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00 ($0.00)');
+    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00');
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
     $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');

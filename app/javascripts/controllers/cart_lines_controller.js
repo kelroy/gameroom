@@ -9,6 +9,9 @@ var CartLinesController = new JS.Class(ViewController, {
     this.lines = [];
     this.line_controllers = [];
     this.line = $('li.cart_line', view).detach();
+    $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
+    $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
   },
   
   reset: function() {
@@ -80,11 +83,32 @@ var CartLinesController = new JS.Class(ViewController, {
     this.replace(this.lines);
   },
   
+  onInfo: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].toggleInfo();
+    }
+    event.preventDefault();
+  },
+  
+  onPurchase: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setPurchase();
+    }
+    event.preventDefault();
+  },
+  
+  onSell: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setSell();
+    }
+    event.preventDefault();
+  },
+  
   showCartNotice: function() {
-    $('h2#cart_notice', this.view).show();
+    $('h2#cart_lines_notice', this.view).show();
   },
   
   hideCartNotice: function() {
-    $('h2#cart_notice', this.view).hide();
+    $('h2#cart_lines_notice', this.view).hide();
   }
 });

@@ -1,4 +1,13 @@
-%h2{:id => 'cart_notice'} No items in cart.
+%ul{:id => 'cart_lines_nav'}
+  %li
+    %ul{:class => 'button_nav'}
+      %li
+        %a{:href => '#purchase', :class => 'button purchase'} Purchase From Store
+      %li
+        %a{:href => '#sell', :class => 'button sell'} Sell To Store
+      %li
+        %a{:href => '#info', :class => 'button info'} ?
+%h2{:id => 'cart_lines_notice'} No items in cart.
 %ul{:id => 'cart_lines'}
   %li{:class => 'cart_line'}
     %div{:class => 'cart_main'}

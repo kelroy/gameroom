@@ -74,7 +74,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
-    amount_due = transaction.change();
+    amount_due = transaction.amountDue();
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
@@ -112,14 +112,15 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   updateSummary: function(transaction) {
+    amount_due = transaction.amountDue();
     $('div#payment_summary span#payment_summary_items', this.view).html(transaction.countItems() + ' item(s) in cart');
     $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
-    if(transaction.change() >= 0) {
-      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(transaction.change()));
+    if(amount_due >= 0) {
+      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
     } else {
-      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(Math.abs(transaction.change())));
+      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
     }
   },
   

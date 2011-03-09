@@ -46,12 +46,13 @@ var ReviewController = new JS.Class(ViewController, {
     $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
     $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
-    if(transaction.change() >= 0) {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(transaction.change()));
-    } else {
+    amount_due = transaction.amountDue();
+    if(amount_due >= 0) {
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(transaction.change())));
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
+    } else {
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
   },
   

@@ -45,7 +45,7 @@ var Transaction = new JS.Class({
     }
   },
   
-  change: function() {
+  amountDue: function() {
     payment_total = 0;
     for(payment in this.payments) {
       payment_total += this.payments[payment].amount;
@@ -83,7 +83,7 @@ var Transaction = new JS.Class({
   },
   
   valid: function() {
-    if(this.total() > 0 && this.change() == 0) {
+    if(this.total() > 0 && this.amountDue() == 0) {
       return true;
     } else if(this.total() < 0) {
       if(this.customer.valid()) {

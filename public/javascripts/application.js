@@ -536,6 +536,28 @@ var CartLineController = new JS.Class(ViewController, {
     return this.open;
   },
 
+  toggleInfo: function() {
+    if(this.open) {
+      this.open = false;
+      $('div.cart_info', this.view).hide();
+    } else {
+      this.open = true;
+      $('div.cart_info', this.view).show();
+    }
+  },
+
+  setPurchase: function() {
+    this.line.sell = false;
+    this.line.calculatePrice();
+    this.notifyObservers(this.line);
+  },
+
+  setSell: function() {
+    this.line.sell = true;
+    this.line.calculatePrice();
+    this.notifyObservers(this.line);
+  },
+
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
     event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
@@ -571,12 +593,10 @@ var CartLineController = new JS.Class(ViewController, {
   onAction: function(event) {
     index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
     if(index == 0) {
-      event.data.instance.line.sell = false;
+      event.data.instance.setPurchase();
     } else {
-      event.data.instance.line.sell = true;
+      event.data.instance.setSell();
     }
-    event.data.instance.line.calculatePrice();
-    event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
 
@@ -603,6 +623,9 @@ var CartLinesController = new JS.Class(ViewController, {
     this.lines = [];
     this.line_controllers = [];
     this.line = $('li.cart_line', view).detach();
+    $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
+    $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
   },
 
   reset: function() {
@@ -674,12 +697,33 @@ var CartLinesController = new JS.Class(ViewController, {
     this.replace(this.lines);
   },
 
+  onInfo: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].toggleInfo();
+    }
+    event.preventDefault();
+  },
+
+  onPurchase: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setPurchase();
+    }
+    event.preventDefault();
+  },
+
+  onSell: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setSell();
+    }
+    event.preventDefault();
+  },
+
   showCartNotice: function() {
-    $('h2#cart_notice', this.view).show();
+    $('h2#cart_lines_notice', this.view).show();
   },
 
   hideCartNotice: function() {
-    $('h2#cart_notice', this.view).hide();
+    $('h2#cart_lines_notice', this.view).hide();
   }
 });
 var Line = new JS.Class({
@@ -1202,7 +1246,7 @@ var Transaction = new JS.Class({
     }
   },
 
-  change: function() {
+  amountDue: function() {
     payment_total = 0;
     for(payment in this.payments) {
       payment_total += this.payments[payment].amount;
@@ -1240,7 +1284,7 @@ var Transaction = new JS.Class({
   },
 
   valid: function() {
-    if(this.total() > 0 && this.change() == 0) {
+    if(this.total() > 0 && this.amountDue() == 0) {
       return true;
     } else if(this.total() < 0) {
       if(this.customer.valid()) {
@@ -1375,7 +1419,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    amount_due = transaction.change();
+    amount_due = transaction.amountDue();
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
@@ -1413,14 +1457,15 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   updateSummary: function(transaction) {
+    amount_due = transaction.amountDue();
     $('div#payment_summary span#payment_summary_items', this.view).html(transaction.countItems() + ' item(s) in cart');
     $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
-    if(transaction.change() >= 0) {
-      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(transaction.change()));
+    if(amount_due >= 0) {
+      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
     } else {
-      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(Math.abs(transaction.change())));
+      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
     }
   },
 
@@ -1510,12 +1555,13 @@ var ReviewController = new JS.Class(ViewController, {
     $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
     $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
-    if(transaction.change() >= 0) {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(transaction.change()));
-    } else {
+    amount_due = transaction.amountDue();
+    if(amount_due >= 0) {
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(transaction.change())));
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
+    } else {
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
+      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
   },
 

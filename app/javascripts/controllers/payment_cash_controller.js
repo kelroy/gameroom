@@ -8,14 +8,16 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
   },
   
   onDenomination: function(event) {
-    input = $('input.payment', event.data.instance.view);
-    amount = parseFloat($(this).attr('data-denomination'));
-    current_amount = parseFloat(input.val());
-    if(isNaN(current_amount)) {
-      current_amount = 0;
+    if(event.data.instance.enabled) {
+      input = $('input.payment', event.data.instance.view);
+      amount = parseFloat($(this).attr('data-denomination'));
+      current_amount = parseFloat(input.val());
+      if(isNaN(current_amount)) {
+        current_amount = 0;
+      }
+      input.val(Currency.format(Currency.toPennies(amount + current_amount)));
+      input.trigger('change');
     }
-    input.val(Currency.format(Currency.toPennies(amount + current_amount)));
-    input.trigger('change');
     event.preventDefault();
   }
 });

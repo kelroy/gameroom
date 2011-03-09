@@ -31,17 +31,40 @@ var Line = new JS.Class({
     return this.quantity * this.price;
   },
   
-  calculateCashSubtotal: function() {
-    for(property in this.item.properties) {
-      switch(this.item.properties[property].key) {
-        case 'cash_price':
-          cash_price = parseInt(this.item.properties[property].value);
-          break;
-        case 'default':
-          break;
+  calculateStoreCreditSubtotal: function() {
+    if(this.sell) {
+      var store_credit_price = 0;
+      for(property in this.item.properties) {
+        switch(this.item.properties[property].key) {
+          case 'credit_price':
+            store_credit_price = parseInt(this.item.properties[property].value);
+            break;
+          case 'default':
+            break;
+        }
       }
+      return this.quantity * store_credit_price;
+    } else {
+      return 0;
     }
-    return this.quantity * cash_price;
+  },
+  
+  calculateCashSubtotal: function() {
+    if(this.sell) {
+      var cash_price = 0;
+      for(property in this.item.properties) {
+        switch(this.item.properties[property].key) {
+          case 'cash_price':
+            cash_price = parseInt(this.item.properties[property].value);
+            break;
+          case 'default':
+            break;
+        }
+      }
+      return this.quantity * cash_price;
+    } else {
+      return 0;
+    }
   },
   
   valid: function() {

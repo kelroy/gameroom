@@ -5,6 +5,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
+    this.enabled = false;
     this.amount_due = 0;
     $('input.payment', this.view).bind('change', {instance: this}, this.onChange);
   },
@@ -14,10 +15,12 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
   
   enable: function() {
+    this.enabled = true;
     $('input.payment', this.view).attr('disabled', false);
   },
   
   disable: function() {
+    this.enabled = false;
     $('input.payment', this.view).attr('disabled', true);
   },
   

@@ -770,17 +770,40 @@ var Line = new JS.Class({
     return this.quantity * this.price;
   },
 
-  calculateCashSubtotal: function() {
-    for(property in this.item.properties) {
-      switch(this.item.properties[property].key) {
-        case 'cash_price':
-          cash_price = parseInt(this.item.properties[property].value);
-          break;
-        case 'default':
-          break;
+  calculateStoreCreditSubtotal: function() {
+    if(this.sell) {
+      var store_credit_price = 0;
+      for(property in this.item.properties) {
+        switch(this.item.properties[property].key) {
+          case 'credit_price':
+            store_credit_price = parseInt(this.item.properties[property].value);
+            break;
+          case 'default':
+            break;
+        }
       }
+      return this.quantity * store_credit_price;
+    } else {
+      return 0;
     }
-    return this.quantity * cash_price;
+  },
+
+  calculateCashSubtotal: function() {
+    if(this.sell) {
+      var cash_price = 0;
+      for(property in this.item.properties) {
+        switch(this.item.properties[property].key) {
+          case 'cash_price':
+            cash_price = parseInt(this.item.properties[property].value);
+            break;
+          case 'default':
+            break;
+        }
+      }
+      return this.quantity * cash_price;
+    } else {
+      return 0;
+    }
   },
 
   valid: function() {
@@ -1044,6 +1067,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.enabled = false;
     this.amount_due = 0;
     $('input.payment', this.view).bind('change', {instance: this}, this.onChange);
   },
@@ -1053,10 +1077,12 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
 
   enable: function() {
+    this.enabled = true;
     $('input.payment', this.view).attr('disabled', false);
   },
 
   disable: function() {
+    this.enabled = false;
     $('input.payment', this.view).attr('disabled', true);
   },
 
@@ -1083,12 +1109,23 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.enabled = false;
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.apply', this.view).bind('click', {instance: this}, this.onApply);
   },
 
+  enable: function() {
+    this.enabled = true;
+    this.callSuper();
+  },
+
+  disable: function() {
+    this.enabled = true;
+    this.callSuper();
+  },
+
   onApply: function(event) {
-    if(event.data.instance.amount_due != 0) {
+    if(event.data.instance.amount_due != 0 && event.data.instance.enabled) {
       input = $('input.payment', event.data.instance.view);
       input.val(Currency.format(event.data.instance.amount_due));
       input.trigger('change');
@@ -1097,9 +1134,11 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
   },
 
   onClear: function(event) {
-    input = $('input.payment', event.data.instance.view);
-    input.val(null);
-    input.trigger('change');
+    if(event.data.instance.enabled) {
+      input = $('input.payment', event.data.instance.view);
+      input.val(null);
+      input.trigger('change');
+    }
     event.preventDefault();
   }
 });
@@ -1112,14 +1151,16 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
   },
 
   onDenomination: function(event) {
-    input = $('input.payment', event.data.instance.view);
-    amount = parseFloat($(this).attr('data-denomination'));
-    current_amount = parseFloat(input.val());
-    if(isNaN(current_amount)) {
-      current_amount = 0;
+    if(event.data.instance.enabled) {
+      input = $('input.payment', event.data.instance.view);
+      amount = parseFloat($(this).attr('data-denomination'));
+      current_amount = parseFloat(input.val());
+      if(isNaN(current_amount)) {
+        current_amount = 0;
+      }
+      input.val(Currency.format(Currency.toPennies(amount + current_amount)));
+      input.trigger('change');
     }
-    input.val(Currency.format(Currency.toPennies(amount + current_amount)));
-    input.trigger('change');
     event.preventDefault();
   }
 });
@@ -1181,6 +1222,32 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
     }
   }*/
 
+});
+
+var PaymentPayoutController = new JS.Class(PaymentFieldController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  update: function(amount, amount_due) {
+    this.amount_due = amount_due;
+
+    if(amount < 0) {
+      $('input.payment', this.view).val(Currency.format(amount * -1));
+    } else {
+      $('input.payment', this.view).val(null);
+    }
+  },
+
+  onChange: function(event) {
+    if(!isNaN($(this).val())) {
+      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies($(this).val() * -1)));
+    } else {
+      $(this).val(null);
+    }
+  }
 });
 var Till = new JS.Class({
 
@@ -1266,7 +1333,7 @@ var Transaction = new JS.Class({
   },
 
   ratio: function() {
-    return 1.0 / Math.abs(this.subtotal() / this.cashSubtotal());
+    return 1.0 / Math.abs(this.storeCreditTotal() / this.cashTotal());
   },
 
   countItems: function() {
@@ -1281,12 +1348,60 @@ var Transaction = new JS.Class({
     this.lines = lines;
   },
 
+  storeCreditTotal: function() {
+    total = 0;
+    for(line in this.lines) {
+      total += this.lines[line].calculateStoreCreditSubtotal();
+    }
+    return total;
+  },
+
+  cashTotal: function() {
+    total = 0;
+    for(line in this.lines) {
+      total += this.lines[line].calculateCashSubtotal();
+    }
+    return total;
+  },
+
   updatePayment: function(updated_payment) {
+    if(updated_payment.amount < 0) {
+      switch(updated_payment.form) {
+        case 'store_credit':
+          store_credit_total = this.storeCreditTotal();
+          if(updated_payment.amount < store_credit_total) {
+            updated_payment.amount == store_credit_total;
+          }
+          this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
+          break;
+        case 'cash':
+          cash_total = this.cashTotal();
+          if(updated_payment.amount < cash_total) {
+            updated_payment.amount == cash_total;
+          }
+          this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
+          break;
+        default:
+          break;
+      }
+    }
+    this._updatePayment(updated_payment.form, updated_payment);
+  },
+
+  _updatePayment: function(form, updated_payment) {
     for(payment in this.payments) {
-      if(this.payments[payment].form == updated_payment.form) {
+      if(this.payments[payment].form == form) {
         this.payments[payment] = updated_payment;
       }
     }
+  },
+
+  _calculateStoreCreditPayout: function(cash_amount) {
+    return (1.0 / this.ratio()) * (this.cashTotal() - cash_amount);
+  },
+
+  _calculateCashPayout: function(store_credit_amount) {
+    return (this.storeCreditTotal() - store_credit_amount) * this.ratio();
   },
 
   save: function() {
@@ -1304,35 +1419,6 @@ var Transaction = new JS.Class({
     }
     return false;
   }
-
-  /*onCreditChange: function(event) {
-    ratio = event.data.instance.transaction.ratio();
-    total = event.data.instance.transaction.total();
-    credit = Currency.toPennies($(this).val());
-    if(credit > Math.abs(total)) {
-      credit = Math.abs(total);
-    }
-    cash = (Math.abs(total) - Math.abs(credit)) * ratio;
-    $('input#payment_action_cash_value', this.view).val(Currency.format(cash));
-    $(this).val(Currency.format(credit));
-    event.data.instance.notifyObservers();
-    event.preventDefault();
-  },
-
-  onCashChange: function(event) {
-    ratio = event.data.instance.transaction.ratio();
-    total = event.data.instance.transaction.total();
-    cash = Currency.toPennies($(this).val());
-    cash_subtotal = event.data.instance.transaction.cashSubtotal();
-    if(cash > cash_subtotal) {
-      cash = cash_subtotal;
-    }
-    credit = (1.0 / ratio) * (cash_subtotal - cash);
-    $('input#payment_action_credit_value', this.view).val(Currency.format(credit));
-    $(this).val(Currency.format(cash));
-    event.data.instance.notifyObservers();
-    event.preventDefault();
-  },*/
 });
 
 var PaymentScaleController = new JS.Class(ViewController, {
@@ -1373,8 +1459,8 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller = new PaymentLineController('div#payment_check');
     this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
     this.cash_controller = new PaymentCashController('div#payment_cash');
-    this.store_credit_payout_controller = new PaymentFieldController('li#payment_scale_store_credit');
-    this.cash_payout_controller = new PaymentFieldController('li#payment_scale_cash');
+    this.store_credit_payout_controller = new PaymentPayoutController('li#payment_scale_store_credit');
+    this.cash_payout_controller = new PaymentPayoutController('li#payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);
     this.gift_card_controller.addObserver(this.updatePayment, this);
     this.check_controller.addObserver(this.updatePayment, this);
@@ -1393,7 +1479,7 @@ var PaymentController = new JS.Class(ViewController, {
 
   resetSummary: function() {
     $('div#payment_summary span#payment_summary_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00 ($0.00)');
+    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00');
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
     $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');

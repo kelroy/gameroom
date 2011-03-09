@@ -27,7 +27,7 @@ var Transaction = new JS.Class({
   subtotal: function() {
     subtotal = 0;
     for(line in this.lines) {
-      subtotal += this.lines[line].calculateSubtotal();
+      subtotal += this.lines[line].subtotal();
     }
     return subtotal;
   },
@@ -95,20 +95,28 @@ var Transaction = new JS.Class({
     }
   },
   
-  storeCreditTotal: function() {
-    total = 0;
+  purchaseSubtotal: function() {
+    subtotal = 0;
     for(line in this.lines) {
-      total += this.lines[line].calculateStoreCreditSubtotal();
+      subtotal += this.lines[line].purchaseSubtotal();
     }
-    return total;
+    return subtotal;
   },
   
-  cashTotal: function() {
-    total = 0;
+  creditSubtotal: function() {
+    subtotal = 0;
     for(line in this.lines) {
-      total += this.lines[line].calculateCashSubtotal();
+      subtotal += this.lines[line].creditSubtotal();
     }
-    return total;
+    return this.purchaseTotal() - subtotal;
+  },
+  
+  cashSubtotal: function() {
+    subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].cashSubtotal();
+    }
+    return this.purchaseTotal() - subtotal;
   },
   
   updatePayment: function(updated_payment) {

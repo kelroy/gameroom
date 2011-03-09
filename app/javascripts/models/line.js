@@ -10,64 +10,48 @@ var Line = new JS.Class({
     this.price = 0;
   },
   
-  calculatePrice: function() {
+  subtotal: function() {
+    return this.quantity * this._price();
+  },
+  
+  _price: function() {
     if(this.sell) {
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'credit_price':
-            var credit_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      this.price = credit_price * (this.condition / 5) * -1;
+      this.price = this.item.creditPrice() * (this.condition / 5) * -1;
     } else {
       this.price = this.item.price;
     }
+    return this.price;
   },
   
-  calculateSubtotal: function() {
-    return this.quantity * this.price;
-  },
-  
-  calculateStoreCreditSubtotal: function() {
+  purchaseSubtotal: function() {
     if(this.sell) {
-      var store_credit_price = 0;
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'credit_price':
-            store_credit_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      return this.quantity * store_credit_price;
+      return 0;
+    } else {
+      return this._price();
+    }
+  },
+  
+  creditSubtotal: function() {
+    if(this.sell && this.item != null) {
+      return this.quantity * this.item.creditPrice();
     } else {
       return 0;
     }
   },
   
-  calculateCashSubtotal: function() {
-    if(this.sell) {
-      var cash_price = 0;
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'cash_price':
-            cash_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      return this.quantity * cash_price;
+  cashSubtotal: function() {
+    if(this.sell && this.item != null) {
+      return this.quantity * this.item.cashPrice();
     } else {
       return 0;
     }
   },
   
   valid: function() {
-    return this.quantity > 0 && this.price > 0 && this.item.valid();
+    if(this.item != null) {
+      return this.quantity > 0 && this.price > 0 && this.item.valid();
+    } else {
+      return this.quantity > 0 && this.price > 0;
+    }
   }
 });

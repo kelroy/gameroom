@@ -504,7 +504,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('input#quantity_amount', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3', this.view).html(line.item.title);
     $('hgroup.cart_line_information h4', this.view).html(line.item.description);
-    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.calculateSubtotal()));
+    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
     for(property in line.item.properties) {
       switch(line.item.properties[property].key) {
@@ -548,20 +548,17 @@ var CartLineController = new JS.Class(ViewController, {
 
   setPurchase: function() {
     this.line.sell = false;
-    this.line.calculatePrice();
     this.notifyObservers(this.line);
   },
 
   setSell: function() {
     this.line.sell = true;
-    this.line.calculatePrice();
     this.notifyObservers(this.line);
   },
 
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
     event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
-    event.data.instance.line.calculatePrice();
     event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
@@ -575,7 +572,6 @@ var CartLineController = new JS.Class(ViewController, {
   onPlus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     event.data.instance.line.quantity = parseInt(quantity) + 1;
-    event.data.instance.line.calculatePrice();
     event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
@@ -584,7 +580,6 @@ var CartLineController = new JS.Class(ViewController, {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
       event.data.instance.line.quantity = parseInt(quantity) - 1;
-      event.data.instance.line.calculatePrice();
       event.data.instance.notifyObservers(event.data.instance.line);
     }
     event.preventDefault();
@@ -759,65 +754,49 @@ var Line = new JS.Class({
     this.price = 0;
   },
 
-  calculatePrice: function() {
+  subtotal: function() {
+    return this.quantity * this._price();
+  },
+
+  _price: function() {
     if(this.sell) {
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'credit_price':
-            var credit_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      this.price = credit_price * (this.condition / 5) * -1;
+      this.price = this.item.creditPrice() * (this.condition / 5) * -1;
     } else {
       this.price = this.item.price;
     }
+    return this.price;
   },
 
-  calculateSubtotal: function() {
-    return this.quantity * this.price;
-  },
-
-  calculateStoreCreditSubtotal: function() {
+  purchaseSubtotal: function() {
     if(this.sell) {
-      var store_credit_price = 0;
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'credit_price':
-            store_credit_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      return this.quantity * store_credit_price;
+      return 0;
+    } else {
+      return this._price();
+    }
+  },
+
+  creditSubtotal: function() {
+    if(this.sell && this.item != null) {
+      return this.quantity * this.item.creditPrice();
     } else {
       return 0;
     }
   },
 
-  calculateCashSubtotal: function() {
-    if(this.sell) {
-      var cash_price = 0;
-      for(property in this.item.properties) {
-        switch(this.item.properties[property].key) {
-          case 'cash_price':
-            cash_price = parseInt(this.item.properties[property].value);
-            break;
-          case 'default':
-            break;
-        }
-      }
-      return this.quantity * cash_price;
+  cashSubtotal: function() {
+    if(this.sell && this.item != null) {
+      return this.quantity * this.item.cashPrice();
     } else {
       return 0;
     }
   },
 
   valid: function() {
-    return this.quantity > 0 && this.price > 0 && this.item.valid();
+    if(this.item != null) {
+      return this.quantity > 0 && this.price > 0 && this.item.valid();
+    } else {
+      return this.quantity > 0 && this.price > 0;
+    }
   }
 });
 var Item = new JS.Class({
@@ -864,6 +843,34 @@ var Item = new JS.Class({
     this.discountable = false;
     this.locked = false;
     this.active = false;
+  },
+
+  creditPrice: function() {
+    var credit_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'credit_price':
+          credit_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return credit_price;
+  },
+
+  cashPrice: function() {
+    var cash_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'cash_price':
+          cash_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return cash_price;
   },
 
   valid: function() {
@@ -926,7 +933,6 @@ var CartFormController = new JS.Class(FormController, {
       line.sell = false;
       line.condition = 5;
       line.quantity = parseInt(Math.abs($('input#item_quantity', this).val()));
-      line.calculatePrice();
       line.item.properties.push(credit_property);
       line.item.properties.push(cash_property);
       if(line.valid()) {
@@ -1031,7 +1037,6 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     line.sell = false;
     line.condition = 5;
     line.quantity = 1;
-    line.calculatePrice();
     this.notifyObservers([line]);
   }
 });
@@ -1113,7 +1118,6 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
 
   set: function(amount) {
-    console.log(amount);
     $('input.payment', this.view).val(Math.abs(amount));
     $('input.payment', this.view).trigger('change');
   },
@@ -1329,7 +1333,7 @@ var Transaction = new JS.Class({
   subtotal: function() {
     subtotal = 0;
     for(line in this.lines) {
-      subtotal += this.lines[line].calculateSubtotal();
+      subtotal += this.lines[line].subtotal();
     }
     return subtotal;
   },
@@ -1397,20 +1401,28 @@ var Transaction = new JS.Class({
     }
   },
 
-  storeCreditTotal: function() {
-    total = 0;
+  purchaseSubtotal: function() {
+    subtotal = 0;
     for(line in this.lines) {
-      total += this.lines[line].calculateStoreCreditSubtotal();
+      subtotal += this.lines[line].purchaseSubtotal();
     }
-    return total;
+    return subtotal;
   },
 
-  cashTotal: function() {
-    total = 0;
+  creditSubtotal: function() {
+    subtotal = 0;
     for(line in this.lines) {
-      total += this.lines[line].calculateCashSubtotal();
+      subtotal += this.lines[line].creditSubtotal();
     }
-    return total;
+    return this.purchaseTotal() - subtotal;
+  },
+
+  cashSubtotal: function() {
+    subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].cashSubtotal();
+    }
+    return this.purchaseTotal() - subtotal;
   },
 
   updatePayment: function(updated_payment) {

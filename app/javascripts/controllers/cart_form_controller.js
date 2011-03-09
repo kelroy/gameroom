@@ -46,7 +46,6 @@ var CartFormController = new JS.Class(FormController, {
       line.sell = false;
       line.condition = 5;
       line.quantity = parseInt(Math.abs($('input#item_quantity', this).val()));
-      line.calculatePrice();
       line.item.properties.push(credit_property);
       line.item.properties.push(cash_property);
       if(line.valid()) {

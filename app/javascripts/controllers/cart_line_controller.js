@@ -20,7 +20,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('input#quantity_amount', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3', this.view).html(line.item.title);
     $('hgroup.cart_line_information h4', this.view).html(line.item.description);
-    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.calculateSubtotal()));
+    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
     for(property in line.item.properties) {
       switch(line.item.properties[property].key) {
@@ -64,20 +64,17 @@ var CartLineController = new JS.Class(ViewController, {
   
   setPurchase: function() {
     this.line.sell = false;
-    this.line.calculatePrice();
     this.notifyObservers(this.line);
   },
   
   setSell: function() {
     this.line.sell = true;
-    this.line.calculatePrice();
     this.notifyObservers(this.line);
   },
   
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
     event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
-    event.data.instance.line.calculatePrice();
     event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
@@ -91,7 +88,6 @@ var CartLineController = new JS.Class(ViewController, {
   onPlus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     event.data.instance.line.quantity = parseInt(quantity) + 1;
-    event.data.instance.line.calculatePrice();
     event.data.instance.notifyObservers(event.data.instance.line);
     event.preventDefault();
   },
@@ -100,7 +96,6 @@ var CartLineController = new JS.Class(ViewController, {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
       event.data.instance.line.quantity = parseInt(quantity) - 1;
-      event.data.instance.line.calculatePrice();
       event.data.instance.notifyObservers(event.data.instance.line);
     }
     event.preventDefault();

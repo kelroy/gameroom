@@ -25,7 +25,6 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
   
   set: function(amount) {
-    console.log(amount);
     $('input.payment', this.view).val(Math.abs(amount));
     $('input.payment', this.view).trigger('change');
   },

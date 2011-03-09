@@ -44,6 +44,34 @@ var Item = new JS.Class({
     this.active = false;
   },
   
+  creditPrice: function() {
+    var credit_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'credit_price':
+          credit_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return credit_price;
+  },
+  
+  cashPrice: function() {
+    var cash_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'cash_price':
+          cash_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return cash_price;
+  },
+  
   valid: function() {
     return this.title != '' && this.price > 0;
   }

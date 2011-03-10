@@ -1396,6 +1396,7 @@ var Transaction = new JS.Class({
 
   setLines: function(lines) {
     this.lines = lines;
+
     subtotal = this.subtotal();
     for(payment in this.payments) {
       if(subtotal < 0 && this.payments[payment].amount > 0) {
@@ -1406,6 +1407,10 @@ var Transaction = new JS.Class({
       }
       if(subtotal >= 0 && this.payments[payment].form == 'store_credit' && this.payments[payment].amount > this.total()) {
         this.payments[payment].amount = 0;
+      }
+      if(subtotal < 0 && this.payments[payment].form == 'store_credit') {
+        this.payments[payment].amount = this._calculateStoreCreditPayout(0) * -1;
+        this._updatePayment('cash', new Payment('cash', 0));
       }
     }
   },

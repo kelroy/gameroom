@@ -1,3 +1,6 @@
+//= require "payment_line_controller"
+//= require "../../models/customer"
+
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {

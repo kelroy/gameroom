@@ -1,4 +1,4 @@
-//= require "view_controller"
+//= require "../view_controller"
 //= require "cart_line_controller"
 
 var CartLinesController = new JS.Class(ViewController, {

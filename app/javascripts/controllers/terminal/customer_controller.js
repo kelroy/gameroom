@@ -1,5 +1,5 @@
-//= require "view_controller"
-//= require "search_controller"
+//= require "../view_controller"
+//= require "../search_controller"
 //= require "customer_form_controller"
 //= require "customer_search_results_controller"
 

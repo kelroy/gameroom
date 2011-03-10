@@ -1,5 +1,5 @@
 //= require "customer_table_controller"
-//= require "../models/customer"
+//= require "../../models/customer"
 
 var CustomerSearchResultsController = new JS.Class(ViewController, {
   include: JS.Observable,

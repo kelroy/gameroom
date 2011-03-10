@@ -1,4 +1,4 @@
-//= require "table_controller"
+//= require "../table_controller"
 
 var CartTableController = new JS.Class(TableController, {
   

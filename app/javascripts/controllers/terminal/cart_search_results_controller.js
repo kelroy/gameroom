@@ -1,6 +1,6 @@
 //= require "cart_table_controller"
-//= require "../models/line"
-//= require "../models/item"
+//= require "../../models/line"
+//= require "../../models/item"
 
 var CartSearchResultsController = new JS.Class(ViewController, {
   include: JS.Observable,

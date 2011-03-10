@@ -1,7 +1,7 @@
-//= require "view_controller"
-//= require "../currency"
+//= require "../view_controller"
+//= require "../../currency"
 
-var SummaryController = new JS.Class(ViewController, {
+var TerminalSummaryController = new JS.Class(ViewController, {
   
   reset: function() {
     this.setCustomer(new Customer());

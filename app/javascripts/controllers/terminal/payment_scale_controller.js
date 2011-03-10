@@ -1,6 +1,6 @@
-//= require "view_controller"
-//= require "../models/transaction"
-//= require "../models/payment"
+//= require "../view_controller"
+//= require "../../models/transaction"
+//= require "../../models/payment"
 
 var PaymentScaleController = new JS.Class(ViewController, {
   include: JS.Observable,

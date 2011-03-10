@@ -1,5 +1,5 @@
-//= require "view_controller"
-//= require "search_controller"
+//= require "../view_controller"
+//= require "../search_controller"
 //= require "cart_lines_controller"
 //= require "cart_form_controller"
 //= require "cart_search_results_controller"

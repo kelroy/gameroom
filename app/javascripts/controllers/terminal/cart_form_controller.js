@@ -1,7 +1,7 @@
-//= require "form_controller"
-//= require "../models/line"
-//= require "../models/item"
-//= require "../models/property"
+//= require "../form_controller"
+//= require "../../models/line"
+//= require "../../models/item"
+//= require "../../models/property"
 
 var CartFormController = new JS.Class(FormController, {
   

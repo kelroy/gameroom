@@ -1,6 +1,6 @@
-//= require "view_controller"
-//= require "../currency"
-//= require "../string"
+//= require "../view_controller"
+//= require "../../currency"
+//= require "../../string"
 
 var ReviewController = new JS.Class(ViewController, {
   include: JS.Observable,

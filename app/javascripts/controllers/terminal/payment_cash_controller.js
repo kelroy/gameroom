@@ -1,4 +1,4 @@
-//= require "view_controller"
+//= require "../view_controller"
 
 var PaymentCashController = new JS.Class(PaymentLineController, {
   

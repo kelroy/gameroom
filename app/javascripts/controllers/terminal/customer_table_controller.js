@@ -1,5 +1,5 @@
-//= require "table_controller"
-//= require "../boolean"
+//= require "../table_controller"
+//= require "../../boolean"
 
 var CustomerTableController = new JS.Class(TableController, {
   

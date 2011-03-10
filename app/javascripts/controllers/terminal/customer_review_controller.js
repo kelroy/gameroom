@@ -1,5 +1,5 @@
-//= require "view_controller"
-//= require "../boolean"
+//= require "../view_controller"
+//= require "../../boolean"
 
 var CustomerReviewController = new JS.Class(ViewController, {
   

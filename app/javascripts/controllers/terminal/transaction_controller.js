@@ -2,12 +2,12 @@
 //= require "cart_controller"
 //= require "payment_controller"
 //= require "review_controller"
-//= require "page_controller"
-//= require "summary_controller"
-//= require "finish_controller"
-//= require "../models/till"
-//= require "../models/transaction"
-//= require "../currency"
+//= require "terminal_summary_controller"
+//= require "terminal_finish_controller"
+//= require "../page_controller"
+//= require "../../models/till"
+//= require "../../models/transaction"
+//= require "../../currency"
 
 var TransactionController = new JS.Class({
   include: JS.Observable,
@@ -29,8 +29,8 @@ var TransactionController = new JS.Class({
       this.payment_controller.view,
       this.review_controller.view
     ]);
-    this.summary_controller = new SummaryController('ul#summary');
-    this.finish_controller = new FinishController('ul#finish');
+    this.summary_controller = new TerminalSummaryController('ul#summary');
+    this.finish_controller = new TerminalFinishController('ul#finish');
     
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);

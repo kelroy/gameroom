@@ -20,6 +20,12 @@ GameroomlincolnTerminal::Application.routes.draw do
   resources :users
   resource :user_sessions, :except => [:index, :show]
   
+  constraints :subdomain => 'terminal' do
+    #match 'search' => 'articles#search', :via => [:get, :post], :as => :docs_search
+    #get ':token' => 'articles#show'
+    #root :to => 'articles#index', :as => :docs
+  end
+  
   root :to => 'terminal#index'
   
   # The priority is based upon order of creation:

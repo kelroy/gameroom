@@ -1,6 +1,6 @@
 /* Gameroom Terminal */
 
-//= require "controllers/terminal_controller"
+//= require "controllers/terminal/terminal_controller"
 
 var gameroomlincoln_terminal = {
   

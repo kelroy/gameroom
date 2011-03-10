@@ -1,6 +1,6 @@
-//= require "view_controller"
+//= require "../view_controller"
 
-var FinishController = new JS.Class(ViewController, {
+var TerminalFinishController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {

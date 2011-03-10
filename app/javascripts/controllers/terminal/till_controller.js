@@ -1,4 +1,4 @@
-//= require "view_controller"
+//= require "../view_controller"
 
 var TillController = new JS.Class(ViewController, {
   include: JS.Observable,

@@ -1,4 +1,4 @@
-class TerminalController < ApplicationController
+class Terminal::TerminalController < ApplicationController
   before_filter :authenticate
   layout 'terminal'
   

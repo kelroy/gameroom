@@ -1,4 +1,4 @@
-//= require "form_controller"
+//= require "../form_controller"
 
 var CustomerFormController = new JS.Class(FormController, {
   

@@ -1205,6 +1205,7 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
     event.preventDefault();
   }
 });
+
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
@@ -1763,40 +1764,7 @@ var ReviewController = new JS.Class(ViewController, {
   }
 });
 
-var PageController = new JS.Class(ViewController, {
-
-  initialize: function(view, sections) {
-    this.callSuper();
-    this.sections = sections;
-    this.reset();
-    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
-  },
-
-  doClick: function(event) {
-    index = $('li > a', event.data.view).index(this);
-    event.data.instance.showSection(index);
-    event.preventDefault();
-  },
-
-  showSection: function(index) {
-    this.hideSections();
-    this.sections[index].show();
-    $('li > a', this.view).removeClass('selected');
-    $('li', this.view).eq(index).find('a').addClass('selected');
-  },
-
-  hideSections: function() {
-    for(section in this.sections) {
-      $(this.sections[section]).hide();
-    }
-  },
-
-  reset: function() {
-    this.showSection(0);
-  }
-});
-
-var SummaryController = new JS.Class(ViewController, {
+var TerminalSummaryController = new JS.Class(ViewController, {
 
   reset: function() {
     this.setCustomer(new Customer());
@@ -1828,7 +1796,7 @@ var SummaryController = new JS.Class(ViewController, {
   }
 });
 
-var FinishController = new JS.Class(ViewController, {
+var TerminalFinishController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -1863,6 +1831,39 @@ var FinishController = new JS.Class(ViewController, {
   }
 });
 
+var PageController = new JS.Class(ViewController, {
+
+  initialize: function(view, sections) {
+    this.callSuper();
+    this.sections = sections;
+    this.reset();
+    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
+  },
+
+  doClick: function(event) {
+    index = $('li > a', event.data.view).index(this);
+    event.data.instance.showSection(index);
+    event.preventDefault();
+  },
+
+  showSection: function(index) {
+    this.hideSections();
+    this.sections[index].show();
+    $('li > a', this.view).removeClass('selected');
+    $('li', this.view).eq(index).find('a').addClass('selected');
+  },
+
+  hideSections: function() {
+    for(section in this.sections) {
+      $(this.sections[section]).hide();
+    }
+  },
+
+  reset: function() {
+    this.showSection(0);
+  }
+});
+
 var TransactionController = new JS.Class({
   include: JS.Observable,
 
@@ -1883,8 +1884,8 @@ var TransactionController = new JS.Class({
       this.payment_controller.view,
       this.review_controller.view
     ]);
-    this.summary_controller = new SummaryController('ul#summary');
-    this.finish_controller = new FinishController('ul#finish');
+    this.summary_controller = new TerminalSummaryController('ul#summary');
+    this.finish_controller = new TerminalFinishController('ul#finish');
 
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);

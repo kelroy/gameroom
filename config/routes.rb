@@ -43,7 +43,7 @@ Gameroom::Application.routes.draw do
   end
   
   root :to => redirect {|params, request| "http://dashboard.#{request.domain}" }
-  match '*path', :to => redirect {|params, request| "dashboard.#{request.domain}" }
+  match '*path', :to => redirect {|params, request| "http://dashboard.#{request.domain}" }
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

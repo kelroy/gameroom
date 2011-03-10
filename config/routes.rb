@@ -1,32 +1,49 @@
-GameroomlincolnTerminal::Application.routes.draw do
+Gameroom::Application.routes.draw do
   
   match 'login' => "user_sessions#new",      :as => :login
   match 'logout' => "user_sessions#destroy", :as => :logout
-  
-  resources :customers
-  resources :employees
-  resources :goods do
-    resources :properties
-  end
-  resources :people do
-    resources :addresses
-    resources :phones
-    resources :emails
-  end
-  resources :transactions do
-    resource :receipt, :only => :show
-  end
-  resources :tills
-  resources :users
   resource :user_sessions, :except => [:index, :show]
   
-  constraints :subdomain => 'terminal' do
-    #match 'search' => 'articles#search', :via => [:get, :post], :as => :docs_search
-    #get ':token' => 'articles#show'
-    #root :to => 'articles#index', :as => :docs
+  constraints :subdomain => 'api' do
+    scope :module => 'api' do
+      resources :customers
+      resources :employees
+      resources :goods do
+        resources :properties
+      end
+      resources :people do
+        resources :addresses
+        resources :phones
+        resources :emails
+      end
+      resources :transactions do
+        resource :receipt, :only => :show
+      end
+      resources :tills
+      resources :users
+    end
   end
   
-  root :to => 'terminal#index'
+  constraints :subdomain => 'terminal' do
+    scope :module => 'terminal' do
+      root :to => 'terminal#index'
+    end
+  end
+  
+  constraints :subdomain => 'reports' do
+    scope :module => 'reports' do
+      root :to => 'reports#index'
+    end
+  end
+  
+  constraints :subdomain => 'dashboard' do
+    scope :module => 'dashboard' do
+      root :to => 'dashboard#index'
+    end
+  end
+  
+  root :to => redirect {|params, request| "http://dashboard.#{request.domain}" }
+  match '*path', :to => redirect {|params, request| "dashboard.#{request.domain}" }
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

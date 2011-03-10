@@ -1,4 +1,4 @@
-class EmailsController < ApplicationController
+class Api::EmailsController < ApplicationController
   before_filter :set_parent
   
   # Set the parent resource based on route param

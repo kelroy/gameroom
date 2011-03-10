@@ -1,4 +1,4 @@
-class ItemsController < ApplicationController
+class Api::ItemsController < ApplicationController
   
   # GET /items
   # GET /items.xml

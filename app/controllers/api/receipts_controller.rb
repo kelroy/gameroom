@@ -1,4 +1,4 @@
-class ReceiptsController < ApplicationController
+class Api::ReceiptsController < ApplicationController
   before_filter :set_parent
   layout 'receipt'
   

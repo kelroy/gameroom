@@ -1,5 +1,4 @@
-/* Gameroom Terminal */
-
+/* Gameroom */
 var ViewController = new JS.Class({
 
   initialize: function(view) {
@@ -1997,11 +1996,27 @@ var TerminalController = new JS.Class({
   }
 });
 
-var gameroomlincoln_terminal = {
+var terminal = {
 
   run: function() {
 
     new TerminalController();
+
+  }
+
+};
+
+var dashboard = {
+
+  run: function() {
+
+  }
+
+};
+
+var reports = {
+
+  run: function() {
 
   }
 

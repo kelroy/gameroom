@@ -1,4 +1,4 @@
-class PropertiesController < ApplicationController
+class Api::PropertiesController < ApplicationController
   before_filter :set_parent
   
   # Set the parent resource based on route param

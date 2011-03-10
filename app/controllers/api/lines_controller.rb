@@ -1,4 +1,4 @@
-class LinesController < ApplicationController
+class Api::LinesController < ApplicationController
   before_filter :set_parent
   
   # Set the parent resource based on route param

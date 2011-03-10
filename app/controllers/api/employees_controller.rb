@@ -1,4 +1,4 @@
-class EmployeesController < ApplicationController
+class Api::EmployeesController < ApplicationController
   
   # GET /employees
   # GET /employees.json

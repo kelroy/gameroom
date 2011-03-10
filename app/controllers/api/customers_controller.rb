@@ -1,4 +1,4 @@
-class CustomersController < ApplicationController
+class Api::CustomersController < ApplicationController
   
   # GET /customers
   # GET /customers.xml

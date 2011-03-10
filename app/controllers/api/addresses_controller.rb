@@ -1,4 +1,4 @@
-class AddressesController < ApplicationController
+class Api::AddressesController < ApplicationController
   before_filter :set_parent
   
   # Set the parent resource based on route param

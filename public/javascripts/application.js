@@ -784,14 +784,6 @@ var Line = new JS.Class({
     }
   },
 
-  purchaseCashSubtotal: function() {
-    if(this.sell) {
-      return 0;
-    } else {
-      return this.quantity * this._cashPrice();
-    }
-  },
-
   creditSubtotal: function() {
     if(this.sell) {
       return this.quantity * this._creditPrice();
@@ -1426,12 +1418,12 @@ var Transaction = new JS.Class({
     return subtotal;
   },
 
-  purchaseCashSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].purchaseCashSubtotal();
-    }
-    return subtotal;
+  payoutCreditSubtotal: function() {
+    return this.creditSubtotal() - this.purchaseCreditSubtotal();
+  },
+
+  payoutCashSubtotal: function() {
+    return this.payoutCreditSubtotal() * this.ratio();
   },
 
   creditSubtotal: function() {
@@ -1439,7 +1431,7 @@ var Transaction = new JS.Class({
     for(line in this.lines) {
       subtotal += this.lines[line].creditSubtotal();
     }
-    return Math.abs(this.purchaseCreditSubtotal() - Math.abs(subtotal));
+    return Math.abs(subtotal);
   },
 
   cashSubtotal: function() {
@@ -1447,22 +1439,21 @@ var Transaction = new JS.Class({
     for(line in this.lines) {
       subtotal += this.lines[line].cashSubtotal();
     }
-    console.log(subtotal);
-    return Math.abs(this.purchaseCashSubtotal() - Math.abs(subtotal));
+    return Math.abs(subtotal);
   },
 
   updatePayment: function(updated_payment) {
     if(this.subtotal() < 0) {
       switch(updated_payment.form) {
         case 'store_credit':
-          store_credit_subtotal = this.creditSubtotal();
+          store_credit_subtotal = this.payoutCreditSubtotal();
           if(Math.abs(updated_payment.amount) > store_credit_subtotal) {
             updated_payment.amount = store_credit_subtotal * -1;
           }
           this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
           break;
         case 'cash':
-          cash_subtotal = this.cashSubtotal();
+          cash_subtotal = this.payoutCashSubtotal();
           if(Math.abs(updated_payment.amount) > cash_subtotal) {
             updated_payment.amount = cash_subtotal * -1;
           }
@@ -1484,19 +1475,11 @@ var Transaction = new JS.Class({
   },
 
   _calculateStoreCreditPayout: function(cash_amount) {
-    console.log('Ratio: ' + this.ratio());
-    console.log('Cash Amount: ' + cash_amount);
-    console.log('Cash Subtotal: ' + this.cashSubtotal());
-    console.log('Store Credit Payout: ' + ((1.0 / this.ratio()) * (this.cashSubtotal() - cash_amount)));
-    return (1.0 / this.ratio()) * (this.cashSubtotal() - cash_amount);
+    return (1.0 / this.ratio()) * (this.payoutCashSubtotal() - cash_amount);
   },
 
   _calculateCashPayout: function(store_credit_amount) {
-    console.log('Ratio: ' + this.ratio());
-    console.log('Store Credit Amount: ' + store_credit_amount);
-    console.log('Store Credit Subtotal: ' + this.creditSubtotal());
-    console.log('Cash Payout: ' + ((this.creditSubtotal() - store_credit_amount) * this.ratio()));
-    return (this.creditSubtotal() - store_credit_amount) * this.ratio();
+    return (this.payoutCreditSubtotal() - store_credit_amount) * this.ratio();
   },
 
   save: function() {
@@ -1527,7 +1510,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
 
   onScale: function(event) {
     index = parseFloat($(this).attr('data-index'));
-    amount = Currency.format(Math.abs(event.data.instance.transaction.creditSubtotal()) * (index / 10.0));
+    amount = Currency.format(Math.abs(event.data.instance.transaction.payoutCreditSubtotal()) * (index / 10.0));
     event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },

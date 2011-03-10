@@ -40,14 +40,6 @@ var Line = new JS.Class({
     }
   },
   
-  purchaseCashSubtotal: function() {
-    if(this.sell) {
-      return 0;
-    } else {
-      return this.quantity * this._cashPrice();
-    }
-  },
-  
   creditSubtotal: function() {
     if(this.sell) {
       return this.quantity * this._creditPrice();

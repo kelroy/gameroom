@@ -13,7 +13,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
   
   onScale: function(event) {
     index = parseFloat($(this).attr('data-index'));
-    amount = Currency.format(Math.abs(event.data.instance.transaction.creditSubtotal()) * (index / 10.0));
+    amount = Currency.format(Math.abs(event.data.instance.transaction.payoutCreditSubtotal()) * (index / 10.0));
     event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },

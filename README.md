@@ -1,4 +1,4 @@
-gameroomlincoln_terminal
+Gameroom
 ========================
 
-Shh... :)
+This is the main project for all Gameroom operations software.

@@ -755,10 +755,10 @@ var Line = new JS.Class({
   },
 
   subtotal: function() {
-    return this.quantity * this._price();
+    return this.quantity * this._creditPrice();
   },
 
-  _price: function() {
+  _creditPrice: function() {
     if(this.sell) {
       this.price = this.item.creditPrice() * (this.condition / 5) * -1;
     } else {
@@ -767,25 +767,42 @@ var Line = new JS.Class({
     return this.price;
   },
 
-  purchaseSubtotal: function() {
+  _cashPrice: function() {
+    if(this.sell) {
+      this.price = this.item.cashPrice() * (this.condition / 5) * -1;
+    } else {
+      this.price = this.item.price;
+    }
+    return this.price;
+  },
+
+  purchaseCreditSubtotal: function() {
     if(this.sell) {
       return 0;
     } else {
-      return this._price();
+      return this.quantity * this._creditPrice();
+    }
+  },
+
+  purchaseCashSubtotal: function() {
+    if(this.sell) {
+      return 0;
+    } else {
+      return this.quantity * this._cashPrice();
     }
   },
 
   creditSubtotal: function() {
-    if(this.sell && this.item != null) {
-      return this.quantity * this.item.creditPrice();
+    if(this.sell) {
+      return this.quantity * this._creditPrice();
     } else {
       return 0;
     }
   },
 
   cashSubtotal: function() {
-    if(this.sell && this.item != null) {
-      return this.quantity * this.item.cashPrice();
+    if(this.sell) {
+      return this.quantity * this._cashPrice();
     } else {
       return 0;
     }
@@ -1374,7 +1391,7 @@ var Transaction = new JS.Class({
   },
 
   ratio: function() {
-    return 1.0 / Math.abs(this.storeCreditTotal() / this.cashTotal());
+    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
   },
 
   countItems: function() {
@@ -1401,44 +1418,53 @@ var Transaction = new JS.Class({
     }
   },
 
-  purchaseSubtotal: function() {
-    subtotal = 0;
+  purchaseCreditSubtotal: function() {
+    var subtotal = 0;
     for(line in this.lines) {
-      subtotal += this.lines[line].purchaseSubtotal();
+      subtotal += this.lines[line].purchaseCreditSubtotal();
+    }
+    return subtotal;
+  },
+
+  purchaseCashSubtotal: function() {
+    var subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].purchaseCashSubtotal();
     }
     return subtotal;
   },
 
   creditSubtotal: function() {
-    subtotal = 0;
+    var subtotal = 0;
     for(line in this.lines) {
       subtotal += this.lines[line].creditSubtotal();
     }
-    return this.purchaseTotal() - subtotal;
+    return Math.abs(this.purchaseCreditSubtotal() - Math.abs(subtotal));
   },
 
   cashSubtotal: function() {
-    subtotal = 0;
+    var subtotal = 0;
     for(line in this.lines) {
       subtotal += this.lines[line].cashSubtotal();
     }
-    return this.purchaseTotal() - subtotal;
+    console.log(subtotal);
+    return Math.abs(this.purchaseCashSubtotal() - Math.abs(subtotal));
   },
 
   updatePayment: function(updated_payment) {
     if(this.subtotal() < 0) {
       switch(updated_payment.form) {
         case 'store_credit':
-          store_credit_total = this.storeCreditTotal();
-          if(Math.abs(updated_payment.amount) > Math.abs(store_credit_total)) {
-            updated_payment.amount = store_credit_total * -1;
+          store_credit_subtotal = this.creditSubtotal();
+          if(Math.abs(updated_payment.amount) > store_credit_subtotal) {
+            updated_payment.amount = store_credit_subtotal * -1;
           }
           this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
           break;
         case 'cash':
-          cash_total = this.cashTotal();
-          if(Math.abs(updated_payment.amount) > Math.abs(cash_total)) {
-            updated_payment.amount = cash_total * -1;
+          cash_subtotal = this.cashSubtotal();
+          if(Math.abs(updated_payment.amount) > cash_subtotal) {
+            updated_payment.amount = cash_subtotal * -1;
           }
           this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
           break;
@@ -1458,11 +1484,19 @@ var Transaction = new JS.Class({
   },
 
   _calculateStoreCreditPayout: function(cash_amount) {
-    return (1.0 / this.ratio()) * (this.cashTotal() - cash_amount);
+    console.log('Ratio: ' + this.ratio());
+    console.log('Cash Amount: ' + cash_amount);
+    console.log('Cash Subtotal: ' + this.cashSubtotal());
+    console.log('Store Credit Payout: ' + ((1.0 / this.ratio()) * (this.cashSubtotal() - cash_amount)));
+    return (1.0 / this.ratio()) * (this.cashSubtotal() - cash_amount);
   },
 
   _calculateCashPayout: function(store_credit_amount) {
-    return (this.storeCreditTotal() - store_credit_amount) * this.ratio();
+    console.log('Ratio: ' + this.ratio());
+    console.log('Store Credit Amount: ' + store_credit_amount);
+    console.log('Store Credit Subtotal: ' + this.creditSubtotal());
+    console.log('Cash Payout: ' + ((this.creditSubtotal() - store_credit_amount) * this.ratio()));
+    return (this.creditSubtotal() - store_credit_amount) * this.ratio();
   },
 
   save: function() {
@@ -1493,7 +1527,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
 
   onScale: function(event) {
     index = parseFloat($(this).attr('data-index'));
-    amount = Currency.format(Math.abs(event.data.instance.transaction.storeCreditTotal()) * (index / 10.0));
+    amount = Currency.format(Math.abs(event.data.instance.transaction.creditSubtotal()) * (index / 10.0));
     event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },
@@ -1706,7 +1740,7 @@ var ReviewController = new JS.Class(ViewController, {
       $('td.description', new_line).html(transaction.lines[line].item.description);
       $('td.sku', new_line).html(transaction.lines[line].item.sku);
       $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
-      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].calculateSubtotal()));
+      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
     for(payment in transaction.payments) {

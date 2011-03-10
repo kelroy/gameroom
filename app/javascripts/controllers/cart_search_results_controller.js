@@ -21,7 +21,6 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   
   onItem: function(id) {
     line = new Line();
-    line.id = id;
     line.item = Item.find(id);
     line.sell = false;
     line.condition = 5;

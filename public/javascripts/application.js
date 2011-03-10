@@ -487,8 +487,9 @@ var CustomerController = new JS.Class(ViewController, {
 var CartLineController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  initialize: function(view, line, open) {
+  initialize: function(view, index, line, open) {
     this.callSuper();
+    this.line_index = index;
     this.line = line;
     this.open = open;
     this.set(this.line);
@@ -548,18 +549,18 @@ var CartLineController = new JS.Class(ViewController, {
 
   setPurchase: function() {
     this.line.sell = false;
-    this.notifyObservers(this.line);
+    this.notifyObservers(this.line_index, this.line);
   },
 
   setSell: function() {
     this.line.sell = true;
-    this.notifyObservers(this.line);
+    this.notifyObservers(this.line_index, this.line);
   },
 
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
     event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
-    event.data.instance.notifyObservers(event.data.instance.line);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
@@ -572,7 +573,7 @@ var CartLineController = new JS.Class(ViewController, {
   onPlus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     event.data.instance.line.quantity = parseInt(quantity) + 1;
-    event.data.instance.notifyObservers(event.data.instance.line);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
@@ -580,7 +581,7 @@ var CartLineController = new JS.Class(ViewController, {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
       event.data.instance.line.quantity = parseInt(quantity) - 1;
-      event.data.instance.notifyObservers(event.data.instance.line);
+      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();
   },
@@ -597,7 +598,7 @@ var CartLineController = new JS.Class(ViewController, {
 
   onRemove: function(event) {
     event.data.instance.line.quantity = 0;
-    event.data.instance.notifyObservers(event.data.instance.line);
+    event.data.instance.notifyObservers(event.data.instance.index, event.data.instance.line);
     event.preventDefault();
   },
 
@@ -663,9 +664,9 @@ var CartLinesController = new JS.Class(ViewController, {
         }
       }
       if(is_open) {
-        new_line = new CartLineController(this.line.clone(), lines[line], true);
+        new_line = new CartLineController(this.line.clone(), line, lines[line], true);
       } else {
-        new_line = new CartLineController(this.line.clone(), lines[line], false);
+        new_line = new CartLineController(this.line.clone(), line, lines[line], false);
       }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
@@ -684,15 +685,11 @@ var CartLinesController = new JS.Class(ViewController, {
     $('ul#cart_lines > li').remove();
   },
 
-  updateLine: function(updated_line) {
-    for(line in this.lines) {
-      if(this.lines[line].id == updated_line.id) {
-        if(updated_line.quantity > 0) {
-          this.lines[line] = updated_line;
-        } else {
-          this.lines.splice(line, 1);
-        }
-      }
+  updateLine: function(index, updated_line) {
+    if(updated_line.quantity > 0) {
+      this.lines[index] = updated_line;
+    } else {
+      this.lines.splice(index, 1);
     }
     this.replace(this.lines);
   },
@@ -1041,7 +1038,6 @@ var CartSearchResultsController = new JS.Class(ViewController, {
 
   onItem: function(id) {
     line = new Line();
-    line.id = id;
     line.item = Item.find(id);
     line.sell = false;
     line.condition = 5;

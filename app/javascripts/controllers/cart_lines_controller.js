@@ -54,9 +54,9 @@ var CartLinesController = new JS.Class(ViewController, {
         }
       }
       if(is_open) {
-        new_line = new CartLineController(this.line.clone(), lines[line], true);
+        new_line = new CartLineController(this.line.clone(), line, lines[line], true);
       } else {
-        new_line = new CartLineController(this.line.clone(), lines[line], false);
+        new_line = new CartLineController(this.line.clone(), line, lines[line], false);
       }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
@@ -75,15 +75,11 @@ var CartLinesController = new JS.Class(ViewController, {
     $('ul#cart_lines > li').remove();
   },
   
-  updateLine: function(updated_line) {
-    for(line in this.lines) {
-      if(this.lines[line].id == updated_line.id) {
-        if(updated_line.quantity > 0) {
-          this.lines[line] = updated_line;
-        } else {
-          this.lines.splice(line, 1);
-        }
-      }
+  updateLine: function(index, updated_line) {
+    if(updated_line.quantity > 0) {
+      this.lines[index] = updated_line;
+    } else {
+      this.lines.splice(index, 1);
     }
     this.replace(this.lines);
   },

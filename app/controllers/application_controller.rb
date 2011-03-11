@@ -1,15 +1,15 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  before_filter :authenticate
+  before_filter :authorize
   helper_method :current_user_session, :current_user
   rescue_from ActiveRecord::RecordNotFound, :with => :handle_record_not_found
   
   private
-    def authenticate
+    def authorize
       case request.format
       when Mime::JSON, Mime::XML
-        authenticate_or_request_with_http_basic do |api_key, api_secret| 
-          return api_key == 'x' && api_secret == 'x'
+        authenticate_or_request_with_http_basic do |api_key, api_secret|
+          return false # This is broken! Should be authenticating!
         end
       end
     end

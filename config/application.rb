@@ -6,6 +6,9 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
+require 'lib/rack/json_validate'
+require 'lib/rack/xml_validate'
+
 module Gameroom
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
@@ -32,11 +35,15 @@ module Gameroom
 
     # JavaScript files you want as :defaults (application.js is always included).
     # config.action_view.javascript_expansions[:defaults] = %w(jquery rails)
-
+    
+    # Custom middleware to properly respond to malformed XML and JSON being passed to application
+    config.middleware.insert_after "Rack::Runtime", "Rack::JSONValidate"
+    config.middleware.insert_after "Rack::Runtime", "Rack::XMLValidate"
+    
     # Configure the default encoding used in templates for Ruby 1.9.
     config.encoding = "utf-8"
 
     # Configure sensitive parameters which will be filtered from the log file.
-    config.filter_parameters += [:password]
+    config.filter_parameters += [:password, :password_hash, :password_confirmation]
   end
 end

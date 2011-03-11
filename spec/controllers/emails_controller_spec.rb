@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe EmailsController do
+describe Api::EmailsController do
 
 end

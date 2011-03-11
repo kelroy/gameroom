@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe LinesController do
+describe Api::LinesController do
 
 end

@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe ReceiptsController do
+describe Api::ReceiptsController do
 
 end

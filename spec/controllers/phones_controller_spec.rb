@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe PhonesController do
+describe Api::PhonesController do
 
 end

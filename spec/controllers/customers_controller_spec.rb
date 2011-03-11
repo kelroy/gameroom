@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe CustomersController do
+describe Api::CustomersController do
 
 end

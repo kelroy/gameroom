@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe TillsController do
+describe Api::TillsController do
 
 end

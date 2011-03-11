@@ -1,8 +1,28 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
+  before_filter :authenticate
   helper_method :current_user_session, :current_user
+  rescue_from ActiveRecord::RecordNotFound, :with => :handle_record_not_found
   
   private
+    def authenticate
+      case request.format
+      when Mime::JSON, Mime::XML
+        authenticate_or_request_with_http_basic do |api_key, api_secret| 
+          return api_key == 'x' && api_secret == 'x'
+        end
+      end
+    end
+    
+    def handle_record_not_found
+      case request.format
+      when Mime::JSON, Mime::XML
+        head :not_found
+      else
+        render :text => "404 Not Found", :status => :not_found
+      end
+    end
+    
     def current_user_session
       return @current_user_session if defined?(@current_user_session)
       @current_user_session = UserSession.find

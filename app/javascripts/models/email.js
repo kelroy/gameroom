@@ -1,8 +1,8 @@
 var Email = new JS.Class({
   
-  initialize: function() {
-    this.id = null;
-    this.address = null;
+  initialize: function(params) {
+    this.id = params.id;
+    this.address = params.address;
   },
 
   save: function() {

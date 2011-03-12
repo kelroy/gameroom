@@ -7,8 +7,8 @@ class Api::TransactionsController < ApplicationController
     @transactions = Transaction.all
     
     respond_to do |format|
-      format.json { render :json => @transactions.to_json(:include => [:items, :payments], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @transactions.to_xml(:include => [:items, :payments], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @transactions.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @transactions.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -19,8 +19,8 @@ class Api::TransactionsController < ApplicationController
     @transaction = Transaction.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @transaction.to_json(:include => [:items, :payments], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @transaction.to_xml(:include => [:items, :payments], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -32,8 +32,8 @@ class Api::TransactionsController < ApplicationController
 
     respond_to do |format|
       if @transaction.save
-        format.json  { render :json => @transaction.to_json(:include => [:items, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
-        format.xml  { render :xml => @transaction.to_xml(:include => [:items, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
+        format.json  { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
+        format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
       else
         format.json  { render :json => @transaction.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @transaction.errors, :status => :unprocessable_entity }

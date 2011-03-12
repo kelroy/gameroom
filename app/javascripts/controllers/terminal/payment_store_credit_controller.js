@@ -4,7 +4,7 @@
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
-    this.customer = new Customer();
+    this.customer = new Customer({});
     this.callSuper();
   },
   
@@ -44,7 +44,7 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
       if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
         amount = Currency.format(event.data.instance.customer.credit);
       }
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs(amount))));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
     } else {
       $(this).val(null);
     }

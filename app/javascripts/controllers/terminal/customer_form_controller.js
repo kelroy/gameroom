@@ -31,20 +31,20 @@ var CustomerFormController = new JS.Class(FormController, {
   },
   
   save: function() {
-    address = new Address();
+    address = new Address({});
     address.first_line = $('input#customer_person_address_first_line', this.view).val();
     address.second_line = $('input#customer_person_address_second_line', this.view).val();
     address.city = $('input#customer_person_address_city', this.view).val();
     address.state = $('input#customer_person_address_state', this.view).val();
     address.zip = $('input#customer_person_address_zip', this.view).val();
     
-    phone = new Phone();
+    phone = new Phone({});
     phone.number = $('input#customer_person_phone_number', this.view).val();
     
-    email = new Email();
+    email = new Email({});
     email.address = $('input#customer_person_email_address', this.view).val();
     
-    person = new Person();
+    person = new Person({});
     person.first_name = $('input#customer_person_first_name', this.view).val();
     person.middle_name = $('input#customer_person_middle_name', this.view).val();
     person.last_name = $('input#customer_person_last_name', this.view).val();
@@ -52,7 +52,7 @@ var CustomerFormController = new JS.Class(FormController, {
     person.phones.push(phone);
     person.emails.push(email);
     
-    customer = new Customer();
+    customer = new Customer({});
     customer.id = $('input#customer_id', this.view).val();
     customer.credit = parseInt(Currency.toPennies($('input#customer_credit', this.view).val()));
     customer.notes = $('textarea#customer_notes', this.view).val();

@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "credit",                 :default => 0,    :null => false
     t.string   "drivers_license_number"
     t.string   "drivers_license_state"
+    t.string   "notes"
     t.boolean  "active",                 :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -54,7 +55,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-12 02:45:33', :null => false
+    t.datetime "time",        :default => '2011-03-12 20:47:25', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"

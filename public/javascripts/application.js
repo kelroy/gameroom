@@ -5,6 +5,125 @@ var ViewController = new JS.Class({
     this.view = $(view);
   }
 });
+var Factory = new JS.Class({
+  extend: {
+    factories: [],
+
+    build: function(klass, properties) {
+      var factory = this._factory_fetch(klass);
+      if(factory != null && window[klass] != undefined) {
+        var properties = this._merge_properties(factory.properties, properties);
+        var object = new window[klass];
+        for(property in properties) {
+          if(properties[property].sequence != undefined) {
+            object[property] = this.sequence(klass, properties[property].sequence);
+          } else if(properties[property].factory != undefined) {
+            object[property] = this.build(properties[property].factory);
+          } else if(properties[property].factories != undefined) {
+            object[property] = [this.build(properties[property].factories)];
+          } else {
+            object[property] = properties[property];
+          }
+        }
+        return object;
+      } else {
+        return null;
+      }
+    },
+
+    define: function(klass, properties) {
+      if(!this._factory_exists(klass)) {
+        this.factories.push({klass: klass, properties: properties, sequences: {}});
+      } else {
+        var factory = this._factory_fetch(klass);
+        factory.properties = properties;
+      }
+    },
+
+    sequence: function(klass, property) {
+      if(this._factory_exists(klass)) {
+        var factory = this._factory_fetch(klass);
+      } else {
+        this.define(klass, {});
+        var factory = this._factory_fetch(klass);
+      }
+      if(factory.sequences[property] != undefined) {
+        factory.sequences[property] += 1;
+      } else {
+        factory.sequences[property] = 1;
+      }
+      return factory.sequences[property];
+    },
+
+    _merge_properties: function(original, source) {
+      var original_copy = {};
+      for(property in original) {
+        original_copy[property]  = original[property];
+      }
+      for(property in source) {
+        original_copy[property] = source[property];
+      }
+      return original_copy;
+    },
+
+    _factory_fetch: function(klass) {
+      for(factory in this.factories) {
+        if(this.factories[factory].klass == klass) {
+          return this.factories[factory];
+        }
+      }
+      return null;
+    },
+
+    _factory_exists: function(klass) {
+      for(factory in this.factories) {
+        if(this.factories[factory].klass == klass) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+});
+
+Factory.define('Till', {
+  id: {
+    sequence: 'id'
+  },
+  title: 'Title'
+});
+
+var Till = new JS.Class({
+  extend: {
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/tills/' + id,
+        accept: 'application/json',
+        success: function(results) {
+          callback(results.till);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x',
+        dataType: 'json'
+      });
+    }
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+  },
+
+  valid: function() {
+    return true;
+  }
+});
 
 var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -16,9 +135,11 @@ var TillController = new JS.Class(ViewController, {
   },
 
   doSelect: function(event) {
-    id = $('div#till select#till_id').val();
-    title = $('div#till select#till_id option:selected').html();
-    event.data.instance.notifyObservers(new Till(id, title));
+    Till.find($('div#till select#till_id').val(), function(till) {
+      if(till != null) {
+        event.data.instance.notifyObservers(new Till(till));
+      }
+    });
     event.preventDefault();
   }
 });
@@ -136,20 +257,20 @@ var CustomerFormController = new JS.Class(FormController, {
   },
 
   save: function() {
-    address = new Address();
+    address = new Address({});
     address.first_line = $('input#customer_person_address_first_line', this.view).val();
     address.second_line = $('input#customer_person_address_second_line', this.view).val();
     address.city = $('input#customer_person_address_city', this.view).val();
     address.state = $('input#customer_person_address_state', this.view).val();
     address.zip = $('input#customer_person_address_zip', this.view).val();
 
-    phone = new Phone();
+    phone = new Phone({});
     phone.number = $('input#customer_person_phone_number', this.view).val();
 
-    email = new Email();
+    email = new Email({});
     email.address = $('input#customer_person_email_address', this.view).val();
 
-    person = new Person();
+    person = new Person({});
     person.first_name = $('input#customer_person_first_name', this.view).val();
     person.middle_name = $('input#customer_person_middle_name', this.view).val();
     person.last_name = $('input#customer_person_last_name', this.view).val();
@@ -157,7 +278,7 @@ var CustomerFormController = new JS.Class(FormController, {
     person.phones.push(phone);
     person.emails.push(email);
 
-    customer = new Customer();
+    customer = new Customer({});
     customer.id = $('input#customer_id', this.view).val();
     customer.credit = parseInt(Currency.toPennies($('input#customer_credit', this.view).val()));
     customer.notes = $('textarea#customer_notes', this.view).val();
@@ -240,7 +361,11 @@ var CustomerTableController = new JS.Class(TableController, {
         $('td.address', new_row).append($('<address></address>').html(address_string));
       }
       for(phone in customers[customer].person.phones) {
-        phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
+        if(customers[customer].person.phones[phone].title != null) {
+          phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
+        } else {
+          phone_string = customers[customer].person.phones[phone].number;
+        }
         $('td.phone', new_row).append($('<p></p>').html(phone_string));
       }
       for(email in customers[customer].person.emails) {
@@ -255,86 +380,6 @@ var CustomerTableController = new JS.Class(TableController, {
       $('td.flagged', new_row).html(Boolean.toString(!customers[customer].active));
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
-    }
-  }
-});
-var Factory = new JS.Class({
-  extend: {
-    factories: [],
-
-    build: function(klass, properties) {
-      var factory = this._factory_fetch(klass);
-      if(factory != null && window[klass] != undefined) {
-        var properties = this._merge_properties(factory.properties, properties);
-        var object = new window[klass];
-        for(property in properties) {
-          if(properties[property].sequence != undefined) {
-            object[property] = this.sequence(klass, properties[property].sequence);
-          } else if(properties[property].factory != undefined) {
-            object[property] = this.build(properties[property].factory);
-          } else if(properties[property].factories != undefined) {
-            object[property] = [this.build(properties[property].factories)];
-          } else {
-            object[property] = properties[property];
-          }
-        }
-        return object;
-      } else {
-        return null;
-      }
-    },
-
-    define: function(klass, properties) {
-      if(!this._factory_exists(klass)) {
-        this.factories.push({klass: klass, properties: properties, sequences: {}});
-      } else {
-        var factory = this._factory_fetch(klass);
-        factory.properties = properties;
-      }
-    },
-
-    sequence: function(klass, property) {
-      if(this._factory_exists(klass)) {
-        var factory = this._factory_fetch(klass);
-      } else {
-        this.define(klass, {});
-        var factory = this._factory_fetch(klass);
-      }
-      if(factory.sequences[property] != undefined) {
-        factory.sequences[property] += 1;
-      } else {
-        factory.sequences[property] = 1;
-      }
-      return factory.sequences[property];
-    },
-
-    _merge_properties: function(original, source) {
-      var original_copy = {};
-      for(property in original) {
-        original_copy[property]  = original[property];
-      }
-      for(property in source) {
-        original_copy[property] = source[property];
-      }
-      return original_copy;
-    },
-
-    _factory_fetch: function(klass) {
-      for(factory in this.factories) {
-        if(this.factories[factory].klass == klass) {
-          return this.factories[factory];
-        }
-      }
-      return null;
-    },
-
-    _factory_exists: function(klass) {
-      for(factory in this.factories) {
-        if(this.factories[factory].klass == klass) {
-          return true;
-        }
-      }
-      return false;
     }
   }
 });
@@ -354,15 +399,25 @@ Factory.define('Customer', {
 });
 var Person = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.first_name = null;
-    this.middle_name = null;
-    this.last_name = null;
-    this.date_of_birth = null;
+  initialize: function(params) {
+    console.log(params);
+    this.id = params.id;
+    this.first_name = params.first_name;
+    this.middle_name = params.middle_name;
+    this.last_name = params.last_name;
+    this.date_of_birth = params.date_of_birth;
     this.addresses = [];
+    for(address in params.addresses) {
+      this.addresses.push(new Address(params.addresses[address]));
+    }
     this.phones = [];
+    for(phone in params.phones) {
+      this.phones.push(new Phone(params.phones[phone]));
+    }
     this.emails = [];
+    for(email in params.emails) {
+      this.emails.push(new Email(params.emails[email]));
+    }
   },
 
   save: function() {
@@ -376,27 +431,58 @@ var Person = new JS.Class({
 
 var Customer = new JS.Class({
   extend: {
-    find: function(id) {
-      return Factory.build('Customer');
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/customers/' + id,
+        accept: 'application/json',
+        success: function(results) {
+          callback(results.customer);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x',
+        dataType: 'json'
+      });
     },
 
-    search: function(query) {
-      results = [];
-      for(i = 0; i < 5; i++){
-        results.push(Factory.build('Customer'));
-      }
-      return results;
+    search: function(query, callback) {
+      $.ajax({
+        url: '/api/customers/search',
+        data: {query: query},
+        accept: 'application/json',
+        success: function(results) {
+          callback(results);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x',
+        dataType: 'json'
+      });
     }
   },
 
-  initialize: function() {
-    this.id = null;
-    this.person = new Person();
-    this.credit = null;
-    this.drivers_license_number = null;
-    this.drivers_license_state = null;
-    this.notes = null;
-    this.active = false;
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.person != undefined) {
+      this.person = new Person(params.person);
+    } else {
+      this.person = undefined;
+    }
+    this.credit = params.credit;
+    this.drivers_license_number = params.drivers_license_number;
+    this.drivers_license_state = params.drivers_license_state;
+    this.notes = params.notes;
+    this.active = params.active;
   },
 
   save: function() {
@@ -422,11 +508,24 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
   },
 
   search: function(query) {
-    this.customer_table_controller.update(Customer.search(query));
+    controller = this;
+    Customer.search(query, function(customers) {
+      customers_results = [];
+      for(customer in customers) {
+        customers_results.push(new Customer(customers[customer].customer));
+      }
+      controller.customer_table_controller.update(customers_results);
+    });
   },
 
   onCustomer: function(id) {
-    this.notifyObservers(Customer.find(id));
+    controller = this;
+    Customer.find(id, function(customer) {
+      if(customer != null) {
+        controller.notifyObservers(new Customer(customer));
+      }
+    });
+
   }
 });
 
@@ -740,14 +839,22 @@ var CartLinesController = new JS.Class(ViewController, {
 });
 var Line = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.transaction = null;
-    this.item = null;
-    this.sell = false;
-    this.condition = 5;
-    this.quantity = 0;
-    this.price = 0;
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.transaction != undefined) {
+      this.transaction = new Transaction(params.transaction);
+    } else {
+      this.transaction = undefined;
+    }
+    if(params.item != undefined) {
+      this.item = new Item(params.item);
+    } else {
+      this.item = undefined;
+    }
+    this.sell = params.sell;
+    this.condition = params.condition;
+    this.quantity = params.quantity;
+    this.price = params.price;
   },
 
   subtotal: function() {
@@ -807,10 +914,10 @@ var Line = new JS.Class({
 var Item = new JS.Class({
   extend: {
     find: function(id) {
-      credit = new Property();
+      credit = new Property({});
       credit.key = 'credit_price';
       credit.value = 800;
-      cash = new Property();
+      cash = new Property({});
       cash.key = 'cash_price';
       cash.value = 500;
       return Factory.build('Item', {properties: [
@@ -821,10 +928,10 @@ var Item = new JS.Class({
 
     search: function(query) {
       results = [];
-      credit = new Property();
+      credit = new Property({});
       credit.key = 'credit_price';
       credit.value = 800;
-      cash = new Property();
+      cash = new Property({});
       cash.key = 'cash_price';
       cash.value = 500;
       for(i = 0; i < 5; i++){
@@ -837,17 +944,20 @@ var Item = new JS.Class({
     }
   },
 
-  initialize: function() {
-    this.id = null;
+  initialize: function(params) {
+    this.id = params.id;
     this.properties = [];
-    this.title = null;
-    this.description = null;
-    this.sku = null;
-    this.price = 0;
-    this.taxable = false;
-    this.discountable = false;
-    this.locked = false;
-    this.active = false;
+    for(property in properties) {
+      this.properties.push(new Property(properties[property].property));
+    }
+    this.title = params.title;
+    this.description = params.description;
+    this.sku = params.sku;
+    this.price = params.price;
+    this.taxable = params.taxable;
+    this.discountable = params.discountable;
+    this.locked = params.locked;
+    this.active = params.active;
   },
 
   creditPrice: function() {
@@ -884,10 +994,10 @@ var Item = new JS.Class({
 });
 var Property = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.key = null;
-    this.value = null;
+  initialize: function(params) {
+    this.id = params.id;
+    this.key = params.key;
+    this.value = params.value;
   },
 
   valid: function() {
@@ -909,10 +1019,10 @@ var CartFormController = new JS.Class(FormController, {
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
-      line = new Line();
-      item = new Item();
-      credit_property = new Property();
-      cash_property = new Property();
+      line = new Line({});
+      item = new Item({});
+      credit_property = new Property({});
+      cash_property = new Property({});
 
       item.title = $('input#item_title', this).val();
       item.description = $('input#item_description', this).val();
@@ -1036,7 +1146,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   },
 
   onItem: function(id) {
-    line = new Line();
+    line = new Line({});
     line.item = Item.find(id);
     line.sell = false;
     line.condition = 5;
@@ -1138,7 +1248,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
 
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()))));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val()))}));
     } else {
       $(this).val(null);
     }
@@ -1208,7 +1318,7 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
-    this.customer = new Customer();
+    this.customer = new Customer({});
     this.callSuper();
   },
 
@@ -1248,7 +1358,7 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
       if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
         amount = Currency.format(event.data.instance.customer.credit);
       }
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs(amount))));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
     } else {
       $(this).val(null);
     }
@@ -1281,21 +1391,10 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
     }
   }
 });
-var Till = new JS.Class({
-
-  initialize: function(id, title) {
-    this.id = id;
-    this.title = title;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
 var Receipt = new JS.Class({
 
-  initialize: function(quantity) {
-    this.quantity = quantity;
+  initialize: function(params) {
+    this.quantity = params.quantity;
   },
 
   valid: function() {
@@ -1304,10 +1403,10 @@ var Receipt = new JS.Class({
 });
 var Payment = new JS.Class({
 
-  initialize: function(form, amount) {
-    this.id = null;
-    this.form = form;
-    this.amount = amount;
+  initialize: function(params) {
+    this.id = params.id;
+    this.form = params.form;
+    this.amount = params.amount;
   },
 
   valid: function() {
@@ -1317,22 +1416,37 @@ var Payment = new JS.Class({
 
 var Transaction = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.till = new Till();
-    this.customer = new Customer();
-    this.receipt = new Receipt();
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.till != undefined) {
+      this.till = new Till(params.till);
+    } else {
+      this.till = undefined;
+    }
+    if(params.customer != undefined) {
+      this.customer = new Customer(params.customer);
+    } else {
+      this.customer = undefined;
+    }
+    if(params.receipt != undefined) {
+      this.receipt = new Receipt(params.receipt);
+    } else {
+      this.receipt = undefined;
+    }
     this.lines = [];
+    for(line in params.lines) {
+      this.lines.push(new Line(params.lines[line].line));
+    }
     this.payments = [
-      new Payment('store_credit', 0),
-      new Payment('gift_card', 0),
-      new Payment('credit_card', 0),
-      new Payment('check', 0),
-      new Payment('cash', 0)
+      new Payment({form: 'store_credit', amount: 0}),
+      new Payment({form: 'gift_card', amount: 0}),
+      new Payment({form: 'credit_card', amount: 0}),
+      new Payment({form: 'check', amount: 0}),
+      new Payment({form: 'cash', amount: 0})
     ];
-    this.tax_rate = 0.07;
-    this.complete = false;
-    this.locked = false;
+    this.tax_rate = params.tax_rate;
+    this.complete = params.complete;
+    this.locked = params.locked;
   },
 
   subtotal: function() {
@@ -1364,7 +1478,7 @@ var Transaction = new JS.Class({
       }
       return this.total() - payment_total;
     } else {
-      cash_payment = new Payment('cash', 0);
+      cash_payment = new Payment({form: 'cash', amount: 0});
       for(payment in this.payments) {
         if(this.payments[payment].form == 'cash') {
           cash_payment = this.payments[payment];
@@ -1406,7 +1520,7 @@ var Transaction = new JS.Class({
       }
       if(subtotal < 0 && this.payments[payment].form == 'store_credit') {
         this.payments[payment].amount = this._calculateStoreCreditPayout(0) * -1;
-        this._updatePayment('cash', new Payment('cash', 0));
+        this._updatePayment('cash', new Payment({form: 'cash', amount: 0}));
       }
     }
   },
@@ -1451,14 +1565,14 @@ var Transaction = new JS.Class({
           if(Math.abs(updated_payment.amount) > store_credit_subtotal) {
             updated_payment.amount = store_credit_subtotal * -1;
           }
-          this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
+          this._updatePayment('cash', new Payment({form: 'cash', amount: this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1}));
           break;
         case 'cash':
           cash_subtotal = this.payoutCashSubtotal();
           if(Math.abs(updated_payment.amount) > cash_subtotal) {
             updated_payment.amount = cash_subtotal * -1;
           }
-          this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
+          this._updatePayment('store_credit', new Payment({form: 'store_credit', amount: this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1}));
           break;
         default:
           break;
@@ -1505,7 +1619,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.transaction = new Transaction();
+    this.transaction = null;
     $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
   },
 
@@ -1766,7 +1880,7 @@ var ReviewController = new JS.Class(ViewController, {
 var TerminalSummaryController = new JS.Class(ViewController, {
 
   reset: function() {
-    this.setCustomer(new Customer());
+    this.setCustomer(new Customer({}));
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();
@@ -1869,7 +1983,7 @@ var TransactionController = new JS.Class({
   transactions: [],
 
   initialize: function() {
-    this.till = new Till();
+    this.till = new Till({});
     this.current_transaction = null;
 
     this.transaction_nav = $('ul#transaction_nav');
@@ -1947,7 +2061,7 @@ var TransactionController = new JS.Class({
   newTransaction: function(till) {
     this.reset();
     this.till = till;
-    this.addTransaction(new Transaction());
+    this.addTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
     this.setCurrentTransaction(this.transactions.length - 1);
   },
 
@@ -1975,10 +2089,8 @@ var TransactionController = new JS.Class({
 var TerminalController = new JS.Class({
 
   initialize: function() {
-
     this.transaction_controller = new TransactionController();
     this.till_controller = new TillController('div#till');
-
     this.till_controller.view.show();
     this.till_controller.addObserver(this.updateTill, this);
 
@@ -2046,20 +2158,34 @@ var CustomerReviewController = new JS.Class(ViewController, {
       customer.person.middle_name,
       customer.person.last_name
     ].join(' '));
+    $('div#customer_data div#customer_addresses > p', this.view).empty();
     if(customer.person.addresses.length > 0) {
-      $('div#customer_data div#customer_addresses > p', this.view).html([
-        customer.person.addresses[0].first_line,
-        customer.person.addresses[0].second_line,
-        customer.person.addresses[0].city + ',',
-        customer.person.addresses[0].state,
-        customer.person.addresses[0].zip
-      ].join(' '));
+      for(address in customer.person.addresses) {
+        $('div#customer_data div#customer_addresses > p', this.view).append('<address>' + [
+          customer.person.addresses[address].first_line,
+          customer.person.addresses[address].second_line,
+          customer.person.addresses[address].city + ',',
+          customer.person.addresses[address].state,
+          customer.person.addresses[address].zip
+        ].join(' ') + '</address>');
+      }
     }
+    $('div#customer_data div#customer_phones > p', this.view).empty();
     if(customer.person.phones.length > 0){
-      $('div#customer_data div#customer_phones > p', this.view).html(customer.person.phones[0].number);
+      for(phone in customer.person.phones) {
+        if(customer.person.phones[phone].title != null) {
+          phone_string = customer.person.phones[phone].title + ' - ' + customer.person.phones[phone].number;
+        } else {
+          phone_string = customer.person.phones[phone].number;
+        }
+        $('div#customer_data div#customer_phones > p', this.view).append('<span>' + phone_string + '</span>');
+      }
     }
+    $('div#customer_data div#customer_emails > p', this.view).empty();
     if(customer.person.emails.length > 0){
-      $('div#customer_data div#customer_emails > p', this.view).html(customer.person.emails[0].address);
+      for(email in customer.person.emails) {
+        $('div#customer_data div#customer_emails > p', this.view).append('<span>' + customer.person.emails[email].address + '</span>');
+      }
     }
     $('div#customer_data div#customer_license > p', this.view).html([
       customer.drivers_license_state,
@@ -2192,15 +2318,15 @@ Factory.define('Property', {
 });
 var Address = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.first_line = null;
-    this.second_line = null;
-    this.city = null;
-    this.state = null;
-    this.province = null;
-    this.country = null;
-    this.zip = null
+  initialize: function(params) {
+    this.id = params.id;
+    this.first_line = params.first_line;
+    this.second_line = params.second_line;
+    this.city = params.city;
+    this.state = params.state;
+    this.province = params.province;
+    this.country = params.country;
+    this.zip = params.zip;
   },
 
   save: function() {
@@ -2213,9 +2339,9 @@ var Address = new JS.Class({
 });
 var Email = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.address = null;
+  initialize: function(params) {
+    this.id = params.id;
+    this.address = params.address;
   },
 
   save: function() {
@@ -2228,13 +2354,17 @@ var Email = new JS.Class({
 });
 var Entry = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.title = null;
-    this.description = null;
-    this.time = new Date();
-    this.amount = 0;
-    this.action = 'debit';
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.description = params.description;
+    if(params.time != undefined) {
+      this.time = new Date(params.time);
+    } else {
+      this.time = new Date();
+    }
+    this.amount = params.amount;
+    this.action = params.action;
   },
 
   valid: function() {
@@ -2243,10 +2373,10 @@ var Entry = new JS.Class({
 });
 var Phone = new JS.Class({
 
-  initialize: function() {
-    this.id = null;
-    this.title = null;
-    this.number = null;
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.number = params.number;
   },
 
   save: function() {

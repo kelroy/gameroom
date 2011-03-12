@@ -27,7 +27,11 @@ var CustomerTableController = new JS.Class(TableController, {
         $('td.address', new_row).append($('<address></address>').html(address_string));
       }
       for(phone in customers[customer].person.phones) {
-        phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
+        if(customers[customer].person.phones[phone].title != null) {
+          phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
+        } else {
+          phone_string = customers[customer].person.phones[phone].number;
+        }
         $('td.phone', new_row).append($('<p></p>').html(phone_string));
       }
       for(email in customers[customer].person.emails) {

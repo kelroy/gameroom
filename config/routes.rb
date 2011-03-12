@@ -5,7 +5,11 @@ Gameroom::Application.routes.draw do
   resource :user_sessions, :except => [:index, :show]
   
   namespace 'api' do
-    resources :customers
+    resources :customers do
+      collection do
+        get 'search' => 'customers#search', :via => [:get, :post], :as => :customers_search
+      end
+    end
     resources :employees
     resources :goods do
       resources :properties
@@ -16,6 +20,7 @@ Gameroom::Application.routes.draw do
       resources :emails
     end
     resources :transactions do
+      resources :lines
       resource :receipt, :only => :show
     end
     resources :tills

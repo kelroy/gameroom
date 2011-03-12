@@ -15,7 +15,7 @@ var TransactionController = new JS.Class({
   transactions: [],
   
   initialize: function() {
-    this.till = new Till();
+    this.till = new Till({});
     this.current_transaction = null;
     
     this.transaction_nav = $('ul#transaction_nav');
@@ -93,7 +93,7 @@ var TransactionController = new JS.Class({
   newTransaction: function(till) {
     this.reset();
     this.till = till;
-    this.addTransaction(new Transaction());
+    this.addTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
     this.setCurrentTransaction(this.transactions.length - 1);
   },
   

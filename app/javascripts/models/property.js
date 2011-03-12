@@ -1,9 +1,9 @@
 var Property = new JS.Class({
   
-  initialize: function() {
-    this.id = null;
-    this.key = null;
-    this.value = null;
+  initialize: function(params) {
+    this.id = params.id;
+    this.key = params.key;
+    this.value = params.value;
   },
   
   valid: function() {

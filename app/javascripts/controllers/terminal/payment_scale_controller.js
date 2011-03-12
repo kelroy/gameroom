@@ -7,7 +7,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.transaction = new Transaction();
+    this.transaction = null;
     $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
   },
   

@@ -4,7 +4,7 @@
 var TerminalSummaryController = new JS.Class(ViewController, {
   
   reset: function() {
-    this.setCustomer(new Customer());
+    this.setCustomer(new Customer({}));
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();

@@ -1,14 +1,14 @@
 var Address = new JS.Class({
   
-  initialize: function() {
-    this.id = null;
-    this.first_line = null;
-    this.second_line = null;
-    this.city = null;
-    this.state = null;
-    this.province = null;
-    this.country = null;
-    this.zip = null
+  initialize: function(params) {
+    this.id = params.id;
+    this.first_line = params.first_line;
+    this.second_line = params.second_line;
+    this.city = params.city;
+    this.state = params.state;
+    this.province = params.province;
+    this.country = params.country;
+    this.zip = params.zip;
   },
 
   save: function() {

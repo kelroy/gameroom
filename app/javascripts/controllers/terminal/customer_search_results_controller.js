@@ -15,10 +15,23 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
   },
   
   search: function(query) {
-    this.customer_table_controller.update(Customer.search(query));
+    controller = this;
+    Customer.search(query, function(customers) {
+      customers_results = [];
+      for(customer in customers) {
+        customers_results.push(new Customer(customers[customer].customer));
+      }
+      controller.customer_table_controller.update(customers_results);
+    });
   },
   
   onCustomer: function(id) {
-    this.notifyObservers(Customer.find(id));
+    controller = this;
+    Customer.find(id, function(customer) {
+      if(customer != null) {
+        controller.notifyObservers(new Customer(customer));
+      }
+    });
+    
   }
 });

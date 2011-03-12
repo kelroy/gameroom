@@ -11,6 +11,7 @@ describe Customer do
         :credit => 0,
         :drivers_license_number => 'H1000000',
         :drivers_license_state => 'NE',
+        :notes => 'Lorem Ipsum...',
         :active => true
       }
       Customer.new(valid_data).should be_valid

@@ -1,4 +1,5 @@
 //= require "../view_controller"
+//= require "../../models/till"
 
 var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -10,9 +11,11 @@ var TillController = new JS.Class(ViewController, {
   },
   
   doSelect: function(event) {
-    id = $('div#till select#till_id').val();
-    title = $('div#till select#till_id option:selected').html();
-    event.data.instance.notifyObservers(new Till(id, title));
+    Till.find($('div#till select#till_id').val(), function(till) {
+      if(till != null) {
+        event.data.instance.notifyObservers(new Till(till));
+      }
+    });
     event.preventDefault();
   }
 });

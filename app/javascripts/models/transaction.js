@@ -6,22 +6,37 @@
 
 var Transaction = new JS.Class({
   
-  initialize: function() {
-    this.id = null;
-    this.till = new Till();
-    this.customer = new Customer();
-    this.receipt = new Receipt();
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.till != undefined) {
+      this.till = new Till(params.till);
+    } else {
+      this.till = undefined;
+    }
+    if(params.customer != undefined) {
+      this.customer = new Customer(params.customer);
+    } else {
+      this.customer = undefined;
+    }
+    if(params.receipt != undefined) {
+      this.receipt = new Receipt(params.receipt);
+    } else {
+      this.receipt = undefined;
+    }
     this.lines = [];
+    for(line in params.lines) {
+      this.lines.push(new Line(params.lines[line].line));
+    }
     this.payments = [
-      new Payment('store_credit', 0),
-      new Payment('gift_card', 0),
-      new Payment('credit_card', 0),
-      new Payment('check', 0),
-      new Payment('cash', 0)
+      new Payment({form: 'store_credit', amount: 0}),
+      new Payment({form: 'gift_card', amount: 0}),
+      new Payment({form: 'credit_card', amount: 0}),
+      new Payment({form: 'check', amount: 0}),
+      new Payment({form: 'cash', amount: 0})
     ];
-    this.tax_rate = 0.07;
-    this.complete = false;
-    this.locked = false;
+    this.tax_rate = params.tax_rate;
+    this.complete = params.complete;
+    this.locked = params.locked;
   },
   
   subtotal: function() {
@@ -53,7 +68,7 @@ var Transaction = new JS.Class({
       }
       return this.total() - payment_total;
     } else {
-      cash_payment = new Payment('cash', 0);
+      cash_payment = new Payment({form: 'cash', amount: 0});
       for(payment in this.payments) {
         if(this.payments[payment].form == 'cash') {
           cash_payment = this.payments[payment];
@@ -95,7 +110,7 @@ var Transaction = new JS.Class({
       }
       if(subtotal < 0 && this.payments[payment].form == 'store_credit') {
         this.payments[payment].amount = this._calculateStoreCreditPayout(0) * -1;
-        this._updatePayment('cash', new Payment('cash', 0));
+        this._updatePayment('cash', new Payment({form: 'cash', amount: 0}));
       }
     }
   },
@@ -140,14 +155,14 @@ var Transaction = new JS.Class({
           if(Math.abs(updated_payment.amount) > store_credit_subtotal) {
             updated_payment.amount = store_credit_subtotal * -1;
           }
-          this._updatePayment('cash', new Payment('cash', this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1));
+          this._updatePayment('cash', new Payment({form: 'cash', amount: this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1}));
           break;
         case 'cash':
           cash_subtotal = this.payoutCashSubtotal();
           if(Math.abs(updated_payment.amount) > cash_subtotal) {
             updated_payment.amount = cash_subtotal * -1;
           }
-          this._updatePayment('store_credit', new Payment('store_credit', this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1));
+          this._updatePayment('store_credit', new Payment({form: 'store_credit', amount: this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1}));
           break;
         default:
           break;

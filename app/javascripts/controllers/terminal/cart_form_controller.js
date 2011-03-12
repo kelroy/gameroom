@@ -17,10 +17,10 @@ var CartFormController = new JS.Class(FormController, {
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
-      line = new Line();
-      item = new Item();
-      credit_property = new Property();
-      cash_property = new Property();
+      line = new Line({});
+      item = new Item({});
+      credit_property = new Property({});
+      cash_property = new Property({});
       
       item.title = $('input#item_title', this).val();
       item.description = $('input#item_description', this).val();

@@ -7,7 +7,7 @@
       %ul{:id => 'user_nav', :class => 'link_nav'}
         %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
         %li &#124;
-        %li{:class => 'current_user_till'}
+        %li{:class => 'current_user_till'} Select a till...
         %li &#124;
         %li
           = link_to "Logout", logout_path, :method => :delete

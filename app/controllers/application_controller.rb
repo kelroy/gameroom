@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
   before_filter :authorize
   helper_method :current_user_session, :current_user
   rescue_from ActiveRecord::RecordNotFound, :with => :handle_record_not_found
-  
+      
   private
     def authorize
       case request.format
@@ -36,7 +36,15 @@ class ApplicationController < ActionController::Base
     def authenticate
       unless current_user
         store_location
-        redirect_to login_url
+        redirect_to login_path
+        return false
+      end
+    end
+    
+    def super_authenticate
+      unless current_user && current_user.admin?
+        store_location
+        redirect_to login_path
         return false
       end
     end

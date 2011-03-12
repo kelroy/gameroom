@@ -15,6 +15,11 @@ class User < ActiveRecord::Base
     self.active
   end
   
+  # Is user admin?
+  def admin?
+    self.administrator
+  end
+  
   # Activate the user
   def activate!
     self.active = true

@@ -10,6 +10,9 @@
         %li{:class => 'current_user_till'} Select a till...
         %li &#124;
         %li
+          = link_to "Dashboard", dashboard_root_path
+        %li &#124;
+        %li
           = link_to "Logout", logout_path, :method => :delete
   .section_container
     %ul{:id => 'transaction_nav', :class => 'drop_nav'}

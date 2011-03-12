@@ -8,6 +8,9 @@
         %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
         %li &#124;
         %li
+          = link_to "Dashboard", dashboard_root_path
+        %li &#124;
+        %li
           = link_to "Logout", logout_path, :method => :delete
   .section_container
 %footer

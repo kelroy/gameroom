@@ -22,8 +22,8 @@ Gameroom::Application.routes.draw do
     resources :users
   end
   
-  namespace 'terminal' do
-    root :to => 'terminal#index'
+  namespace 'transactions' do
+    root :to => 'transactions#index'
   end
   
   namespace 'reports' do

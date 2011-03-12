@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-08 22:36:25', :null => false
+    t.datetime "time",        :default => '2011-03-12 02:45:33', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"
@@ -146,20 +146,21 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   end
 
   create_table "users", :force => true do |t|
-    t.string   "login",                                :null => false
-    t.string   "email",                                :null => false
-    t.string   "password_hash",                        :null => false
-    t.string   "password_salt",                        :null => false
-    t.string   "persistence_token",                    :null => false
-    t.string   "perishable_token",                     :null => false
-    t.integer  "login_count",        :default => 0,    :null => false
-    t.integer  "failed_login_count", :default => 0,    :null => false
+    t.string   "login",                                 :null => false
+    t.string   "email",                                 :null => false
+    t.string   "password_hash",                         :null => false
+    t.string   "password_salt",                         :null => false
+    t.string   "persistence_token",                     :null => false
+    t.string   "perishable_token",                      :null => false
+    t.integer  "login_count",        :default => 0,     :null => false
+    t.integer  "failed_login_count", :default => 0,     :null => false
     t.datetime "last_request_at"
     t.datetime "current_login_at"
     t.datetime "last_login_at"
     t.string   "current_login_ip"
     t.string   "last_login_ip"
-    t.boolean  "active",             :default => true, :null => false
+    t.boolean  "administrator",      :default => false, :null => false
+    t.boolean  "active",             :default => true,  :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

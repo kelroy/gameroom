@@ -4,46 +4,38 @@ Gameroom::Application.routes.draw do
   match 'logout' => "user_sessions#destroy", :as => :logout
   resource :user_sessions, :except => [:index, :show]
   
-  constraints :subdomain => 'api' do
-    scope :module => 'api' do
-      resources :customers
-      resources :employees
-      resources :goods do
-        resources :properties
-      end
-      resources :people do
-        resources :addresses
-        resources :phones
-        resources :emails
-      end
-      resources :transactions do
-        resource :receipt, :only => :show
-      end
-      resources :tills
-      resources :users
+  namespace 'api' do
+    resources :customers
+    resources :employees
+    resources :goods do
+      resources :properties
     end
+    resources :people do
+      resources :addresses
+      resources :phones
+      resources :emails
+    end
+    resources :transactions do
+      resource :receipt, :only => :show
+    end
+    resources :tills
+    resources :users
   end
   
-  constraints :subdomain => 'terminal' do
-    scope :module => 'terminal' do
-      root :to => 'terminal#index'
-    end
+  namespace 'terminal' do
+    root :to => 'terminal#index'
   end
   
-  constraints :subdomain => 'reports' do
-    scope :module => 'reports' do
-      root :to => 'reports#index'
-    end
+  namespace 'reports' do
+    root :to => 'reports#index'
   end
   
-  constraints :subdomain => 'dashboard' do
-    scope :module => 'dashboard' do
-      root :to => 'dashboard#index'
-    end
+  namespace 'dashboard' do
+    root :to => 'dashboard#index'
   end
   
-  root :to => redirect {|params, request| "http://dashboard.#{request.domain}" }
-  match '*path', :to => redirect {|params, request| "http://dashboard.#{request.domain}" }
+  root :to => redirect("/dashboard")
+  match '*path', :to => redirect("/dashboard")
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

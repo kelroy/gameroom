@@ -1,0 +1,23 @@
+%ul{:id => 'dashboard_nav'}
+  %li
+    %a{:href => "#{transactions_root_path}"}
+      %img{:src => '/images/transactions.png', :alt => 'Transactions'}
+      %span Transactions
+  %li
+    %a{:href => "#timeclock"}
+      %img{:src => '/images/timeclock.png', :alt => 'Timeclock'}
+      %span Timeclock
+  %li
+    %a{:href => "#repairs"}
+      %img{:src => '/images/repairs.png', :alt => 'Repairs'}
+      %span Repairs
+  %li
+    %a{:href => "http://support.gameroomlincoln.com"}
+      %img{:src => '/images/support.png', :alt => 'Support'}
+      %span Support
+  - if current_user.admin?
+    
+    %li
+      %a{:href => "#{reports_root_path}"}
+        %img{:src => '/images/reports.png', :alt => 'Reports'}
+        %span Reports

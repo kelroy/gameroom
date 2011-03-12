@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe EmployeesController do
+describe Api::EmployeesController do
 
 end

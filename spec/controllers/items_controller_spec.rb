@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe ItemsController do
+describe Api::ItemsController do
 
 end

@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe AddressesController do
+describe Api::AddressesController do
 
 end

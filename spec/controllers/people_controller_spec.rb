@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe PeopleController do
+describe Api::PeopleController do
 
 end

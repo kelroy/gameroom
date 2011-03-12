@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe PropertiesController do
+describe Api::PropertiesController do
 
 end

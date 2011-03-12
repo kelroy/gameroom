@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe TerminalController do
+describe Terminal::TerminalController do
 
 end

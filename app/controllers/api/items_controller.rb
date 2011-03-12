@@ -32,8 +32,8 @@ class Api::ItemsController < ApplicationController
 
     respond_to do |format|
       if @item.save
-        format.json  { render :json => @item.to_json(:except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @item }
-        format.xml  { render :xml => @item.to_xml(:except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @item }
+        format.json  { render :json => @item.to_json(:except => [:created_at, :updated_at, :account_id]), :status => :created }
+        format.xml  { render :xml => @item.to_xml(:except => [:created_at, :updated_at, :account_id]), :status => :created }
       else
         format.json  { render :json => @item.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @item.errors, :status => :unprocessable_entity }

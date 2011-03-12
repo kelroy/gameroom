@@ -24,7 +24,11 @@ var TerminalSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      if(customer.person != null) {
+        $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      } else {
+        $('h2#summary_customer', this.view).empty();
+      }
     }
   },
   

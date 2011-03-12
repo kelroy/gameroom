@@ -38,8 +38,8 @@ class Api::LinesController < ApplicationController
 
     respond_to do |format|
       if @line.save
-        format.json  { render :json => @line, :status => :created, :location => [ @transaction, @line ] }
-        format.xml  { render :xml => @line, :status => :created, :location => [ @transaction, @line ] }
+        format.json  { render :json => @line, :status => :created }
+        format.xml  { render :xml => @line, :status => :created }
       else
         format.json  { render :json => @line.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @line.errors, :status => :unprocessable_entity }

@@ -32,8 +32,8 @@ class Api::TransactionsController < ApplicationController
 
     respond_to do |format|
       if @transaction.save
-        format.json  { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
-        format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created, :location => @transaction }
+        format.json  { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @transaction.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @transaction.errors, :status => :unprocessable_entity }

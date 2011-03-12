@@ -38,8 +38,8 @@ class Api::PropertiesController < ApplicationController
 
     respond_to do |format|
       if @property.save
-        format.json  { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]), :status => :created, :location => [ @good, @property ] }
-        format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]), :status => :created, :location => [ @good, @property ] }
+        format.json  { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]), :status => :created }
       else
         format.html { render :action => "new" }
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }

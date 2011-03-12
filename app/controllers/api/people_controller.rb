@@ -32,8 +32,8 @@ class Api::PeopleController < ApplicationController
 
     respond_to do |format|
       if @person.save
-        format.json  { render :json => @person.to_json(:include => [:emails, :addresses, :phones], :except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @person }
-        format.xml  { render :xml => @person.to_xml(:include => [:emails, :addresses, :phones], :except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @person }
+        format.json  { render :json => @person.to_json(:include => [:emails, :addresses, :phones], :except => [:created_at, :updated_at, :account_id]), :status => :created }
+        format.xml  { render :xml => @person.to_xml(:include => [:emails, :addresses, :phones], :except => [:created_at, :updated_at, :account_id]), :status => :created }
       else
         format.json  { render :json => @person.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @person.errors, :status => :unprocessable_entity }

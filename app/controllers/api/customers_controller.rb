@@ -7,8 +7,8 @@ class Api::CustomersController < ApplicationController
     @customers = Customer.all
     
     respond_to do |format|
-      format.json { render :json => @customers.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
-      format.xml  { render :xml => @customers.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
+      format.json { render :json => @customers.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @customers.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -19,8 +19,8 @@ class Api::CustomersController < ApplicationController
     @customer = Customer.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @customer.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
-      format.xml  { render :xml => @customer.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
+      format.json { render :json => @customer.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @customer.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -31,8 +31,8 @@ class Api::CustomersController < ApplicationController
     @customers = Customer.all
     
     respond_to do |format|
-      format.json { render :json => @customers.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
-      format.xml  { render :xml => @customers.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]) }
+      format.json { render :json => @customers.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @customers.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -44,8 +44,8 @@ class Api::CustomersController < ApplicationController
 
     respond_to do |format|
       if @customer.save
-        format.json  { render :json => @customer.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]), :status => :created, :location => @customer }
-        format.xml  { render :xml => @customer.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at, :account_id, :customer_id]), :status => :created, :location => @customer }
+        format.json  { render :json => @customer.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @customer.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @customer.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }

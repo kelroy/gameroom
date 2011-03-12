@@ -3,4 +3,5 @@ class Customer < ActiveRecord::Base
   
   has_many    :transactions
   has_one     :person
+  accepts_nested_attributes_for :person
 end

@@ -3,19 +3,19 @@
     %h1 Gameroom
     %h2 1709 O St. Lincoln NE 68508 
     %h2 402-438-7161
+  %p= "ID #%09d" % @transaction.id
+  %p= @transaction.created_at.getlocal
   %table{:class => 'lines'}
     %thead
       %tr
         %th Qty.
-        %th SKU
         %th Title
         %th Subtotal
     %tbody
       - @transaction.lines.each do |line|
         %tr
           %td{:class => 'quantity'}= line.quantity
-          %td{:class => 'sku'}= line.item.sku
-          %td{:class => 'title'}= line.item.title
+          %td{:class => 'title'}= truncate line.item.title.upcase, :length => 10, :seperator => ''
           %td{:class => 'subtotal'}= number_to_currency line.subtotal / 100
   %table{:class => 'summary'}
     %tbody
@@ -37,7 +37,7 @@
       - @transaction.payments.each do |payment|
         %tr{:id => 'payment'}
           %td= payment.form.gsub('_', ' ').capitalize
-          %td= number_to_currency payment.amount
+          %td= number_to_currency payment.amount / 100
       %tr{:id => 'change'}
         %td Change
         %td= number_to_currency @transaction.change / 100

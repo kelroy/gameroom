@@ -114,7 +114,7 @@ var CartLineController = new JS.Class(ViewController, {
   
   onRemove: function(event) {
     event.data.instance.line.quantity = 0;
-    event.data.instance.notifyObservers(event.data.instance.index, event.data.instance.line);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
   

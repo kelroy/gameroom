@@ -30,11 +30,12 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     controller = this;
     Item.find(id, function(item) {
       if(item != null) {
-        line = new Line({});
-        line.item = new Item(item);
-        line.sell = false;
-        line.condition = 5;
-        line.quantity = 1;
+        line = new Line({
+          sell: false,
+          condition: 5,
+          quantity: 1,
+          item: item
+        });
         controller.notifyObservers([new Line(line)]);
       }
     });

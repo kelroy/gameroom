@@ -812,7 +812,7 @@ var CartLineController = new JS.Class(ViewController, {
 
   onRemove: function(event) {
     event.data.instance.line.quantity = 0;
-    event.data.instance.notifyObservers(event.data.instance.index, event.data.instance.line);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
@@ -900,6 +900,7 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   updateLine: function(index, updated_line) {
+    console.log(index);
     if(updated_line.quantity > 0) {
       this.lines[index] = updated_line;
     } else {
@@ -1297,11 +1298,12 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     controller = this;
     Item.find(id, function(item) {
       if(item != null) {
-        line = new Line({});
-        line.item = new Item(item);
-        line.sell = false;
-        line.condition = 5;
-        line.quantity = 1;
+        line = new Line({
+          sell: false,
+          condition: 5,
+          quantity: 1,
+          item: item
+        });
         controller.notifyObservers([new Line(line)]);
       }
     });

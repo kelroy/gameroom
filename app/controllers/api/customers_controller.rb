@@ -24,9 +24,9 @@ class Api::CustomersController < ApplicationController
     end
   end
   
-  # GET /customers/search
-  # GET /customers/search.xml
-  # GET /customers/search.json
+  # GET|POST /customers/search
+  # GET|POST /customers/search.xml
+  # GET|POST /customers/search.json
   def search
     @customers = Customer.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
     

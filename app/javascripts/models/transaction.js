@@ -196,8 +196,10 @@ var Transaction = new JS.Class({
     if(this.total() > 0 && this.amountDue() == 0) {
       return true;
     } else if(this.total() < 0) {
-      if(this.customer.valid()) {
-        return true;
+      if(this.customer != undefined) {
+        if(this.customer.valid()) {
+          return true;
+        }
       }
     }
     return false;

@@ -36,7 +36,7 @@ var CartController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s) in cart: ' + Currency.pretty(transaction.subtotal()));
+    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
   
   showLinesSection: function() {

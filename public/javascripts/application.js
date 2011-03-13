@@ -642,7 +642,6 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
         controller.notifyObservers(new Customer(customer));
       }
     });
-
   }
 });
 
@@ -1021,7 +1020,7 @@ var Line = new JS.Class({
   },
 
   valid: function() {
-    if(this.item != null) {
+    if(this.item != undefined) {
       return this.quantity > 0 && this.price > 0 && this.item.valid();
     } else {
       return this.quantity > 0 && this.price > 0;
@@ -1030,42 +1029,60 @@ var Line = new JS.Class({
 });
 var Item = new JS.Class({
   extend: {
-    find: function(id) {
-      credit = new Property({});
-      credit.key = 'credit_price';
-      credit.value = 800;
-      cash = new Property({});
-      cash.key = 'cash_price';
-      cash.value = 500;
-      return Factory.build('Item', {properties: [
-        credit,
-        cash
-      ]});
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/items/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        success: function(results) {
+          callback(results.item);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
     },
 
-    search: function(query) {
-      results = [];
-      credit = new Property({});
-      credit.key = 'credit_price';
-      credit.value = 800;
-      cash = new Property({});
-      cash.key = 'cash_price';
-      cash.value = 500;
-      for(i = 0; i < 5; i++){
-        results.push(Factory.build('Item', {properties: [
-          credit,
-          cash
-        ]}));
-      }
-      return results;
+    search: function(query, callback) {
+      $.ajax({
+        url: '/api/items/search',
+        data: JSON.stringify({
+          search: {
+            title_or_description_or_sku_contains: query
+          },
+          page: 1,
+          per_page: 25
+        }),
+        dataType: 'json',
+        accept: 'application/json',
+        contentType: 'application/json',
+        processData: false,
+        type: 'POST',
+        success: function(results) {
+          callback(results);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
     }
   },
 
   initialize: function(params) {
     this.id = params.id;
     this.properties = [];
-    for(property in properties) {
-      this.properties.push(new Property(properties[property].property));
+    for(property in params.properties) {
+      this.properties.push(new Property(params.properties[property]));
     }
     this.title = params.title;
     this.description = params.description;
@@ -1136,37 +1153,39 @@ var CartFormController = new JS.Class(FormController, {
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
-      line = new Line({});
-      item = new Item({});
-      credit_property = new Property({});
-      cash_property = new Property({});
-
-      item.title = $('input#item_title', this).val();
-      item.description = $('input#item_description', this).val();
-      item.price = parseInt(Currency.toPennies($('input#item_price', this).val()));
-      item.taxable = $('input#item_taxable', this).attr('checked');
-
-      credit_property.key = 'credit_price';
       credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
-      if(credit_price > 0) {
-        credit_property.value = credit_price;
-      } else {
-        credit_property.value = 0;
-      }
-      cash_property.key = 'cash_price'
-      cash_price = parseInt(Currency.toPennies($('input#item_cash', this).val()));
-      if(cash_price > 0) {
-        cash_property.value = cash_price;
-      } else {
-        cash_property.value = 0;
+      if(credit_price <= 0) {
+        credit_price = 0;
       }
 
-      line.item = item;
-      line.sell = false;
-      line.condition = 5;
-      line.quantity = parseInt(Math.abs($('input#item_quantity', this).val()));
-      line.item.properties.push(credit_property);
-      line.item.properties.push(cash_property);
+      cash_price = parseInt(Currency.toPennies($('input#item_cash', this).val()));
+      if(cash_price <= 0) {
+        cash_price = 0;
+      }
+
+      line = new Line({
+        sell: false,
+        condition: 5,
+        quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
+        price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+        item: {
+          title: $('input#item_title', this).val(),
+          description: $('input#item_description', this).val(),
+          price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+          taxable: $('input#item_taxable', this).attr('checked'),
+          properties: [
+            {
+              key: 'credit_price',
+              value: credit_price
+            },
+            {
+              key: 'cash_price',
+              value: cash_price
+            }
+          ]
+        }
+      });
+
       if(line.valid()) {
         lines.push(line);
       }
@@ -1190,7 +1209,12 @@ var CartFormController = new JS.Class(FormController, {
   },
 
   onPrice: function(event) {
-    $(this).val(Currency.format(Currency.toPennies(Math.abs($(this).val()))));
+    value = $(this).val();
+    if(isNaN(value)) {
+      $(this).val(Currency.format(0));
+    } else {
+      $(this).val(Currency.format(Currency.toPennies(Math.abs(value))));
+    }
   },
 
   onMore: function(event) {
@@ -1259,16 +1283,28 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   },
 
   search: function(query) {
-    this.cart_table_controller.update(Item.search(query));
+    controller = this;
+    Item.search(query, function(items) {
+      items_results = [];
+      for(item in items) {
+        items_results.push(new Item(items[item].item));
+      }
+      controller.cart_table_controller.update(items_results);
+    });
   },
 
   onItem: function(id) {
-    line = new Line({});
-    line.item = Item.find(id);
-    line.sell = false;
-    line.condition = 5;
-    line.quantity = 1;
-    this.notifyObservers([line]);
+    controller = this;
+    Item.find(id, function(item) {
+      if(item != null) {
+        line = new Line({});
+        line.item = new Item(item);
+        line.sell = false;
+        line.condition = 5;
+        line.quantity = 1;
+        controller.notifyObservers([new Line(line)]);
+      }
+    });
   }
 });
 
@@ -1304,7 +1340,7 @@ var CartController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s) in cart: ' + Currency.pretty(transaction.subtotal()));
+    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
 
   showLinesSection: function() {
@@ -1448,14 +1484,16 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   },
 
   update: function(amount, amount_due, customer) {
-    if(customer.id != null) {
-      this.customer = customer;
-      if(this.customer.person != null) {
-        $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
-      } else {
-        $('div#payment_store_credit span#payment_customer').empty();
+    if(customer != undefined) {
+      if(customer.id != null) {
+        this.customer = customer;
+        if(this.customer.person != null) {
+          $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
+        } else {
+          $('div#payment_store_credit span#payment_customer').empty();
+        }
+        this.enable();
       }
-      this.enable();
     }
     this.callSuper(amount, amount_due);
   },
@@ -1727,8 +1765,10 @@ var Transaction = new JS.Class({
     if(this.total() > 0 && this.amountDue() == 0) {
       return true;
     } else if(this.total() < 0) {
-      if(this.customer.valid()) {
-        return true;
+      if(this.customer != undefined) {
+        if(this.customer.valid()) {
+          return true;
+        }
       }
     }
     return false;
@@ -1943,13 +1983,15 @@ var ReviewController = new JS.Class(ViewController, {
 
   update: function(transaction) {
 
-    if(transaction.customer.id == null) {
-      $('h2#review_customer', this.view).html("No customer");
-    } else {
-      if(transaction.customer.person != null) {
-        $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+    if(transaction.customer != undefined) {
+      if(transaction.customer.id == null) {
+        $('h2#review_customer', this.view).html("No customer");
       } else {
-        $('h2#review_customer', this.view).empty();
+        if(transaction.customer.person != null) {
+          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+        } else {
+          $('h2#review_customer', this.view).empty();
+        }
       }
     }
 
@@ -2012,7 +2054,9 @@ var TerminalSummaryController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    this.setCustomer(transaction.customer);
+    if(transaction.customer != undefined) {
+      this.setCustomer(transaction.customer);
+    }
     this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
   },

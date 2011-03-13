@@ -17,14 +17,16 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   },
   
   update: function(amount, amount_due, customer) {
-    if(customer.id != null) {
-      this.customer = customer;
-      if(this.customer.person != null) {
-        $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
-      } else {
-        $('div#payment_store_credit span#payment_customer').empty();
+    if(customer != undefined) {
+      if(customer.id != null) {
+        this.customer = customer;
+        if(this.customer.person != null) {
+          $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
+        } else {
+          $('div#payment_store_credit span#payment_customer').empty();
+        }
+        this.enable();
       }
-      this.enable();
     }
     this.callSuper(amount, amount_due);
   },

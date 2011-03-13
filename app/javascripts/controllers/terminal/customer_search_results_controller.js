@@ -32,6 +32,5 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
         controller.notifyObservers(new Customer(customer));
       }
     });
-    
   }
 });

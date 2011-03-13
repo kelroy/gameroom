@@ -11,7 +11,9 @@ var TerminalSummaryController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    this.setCustomer(transaction.customer);
+    if(transaction.customer != undefined) {
+      this.setCustomer(transaction.customer);
+    }
     this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
   },

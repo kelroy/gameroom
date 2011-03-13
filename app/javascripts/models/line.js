@@ -65,7 +65,7 @@ var Line = new JS.Class({
   },
   
   valid: function() {
-    if(this.item != null) {
+    if(this.item != undefined) {
       return this.quantity > 0 && this.price > 0 && this.item.valid();
     } else {
       return this.quantity > 0 && this.price > 0;

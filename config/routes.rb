@@ -11,7 +11,10 @@ Gameroom::Application.routes.draw do
       end
     end
     resources :employees
-    resources :goods do
+    resources :items do
+      collection do
+        match 'search' => 'items#search', :via => [:get, :post], :as => :items_search
+      end
       resources :properties
     end
     resources :people do

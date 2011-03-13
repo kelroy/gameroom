@@ -16,15 +16,27 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   },
   
   search: function(query) {
-    this.cart_table_controller.update(Item.search(query));
+    controller = this;
+    Item.search(query, function(items) {
+      items_results = [];
+      for(item in items) {
+        items_results.push(new Item(items[item].item));
+      }
+      controller.cart_table_controller.update(items_results);
+    });
   },
   
   onItem: function(id) {
-    line = new Line({});
-    line.item = Item.find(id);
-    line.sell = false;
-    line.condition = 5;
-    line.quantity = 1;
-    this.notifyObservers([line]);
+    controller = this;
+    Item.find(id, function(item) {
+      if(item != null) {
+        line = new Line({});
+        line.item = new Item(item);
+        line.sell = false;
+        line.condition = 5;
+        line.quantity = 1;
+        controller.notifyObservers([new Line(line)]);
+      }
+    });
   }
 });

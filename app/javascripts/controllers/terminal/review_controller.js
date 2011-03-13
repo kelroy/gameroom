@@ -23,13 +23,15 @@ var ReviewController = new JS.Class(ViewController, {
   
   update: function(transaction) {
     
-    if(transaction.customer.id == null) {
-      $('h2#review_customer', this.view).html("No customer");
-    } else {
-      if(transaction.customer.person != null) {
-        $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+    if(transaction.customer != undefined) {
+      if(transaction.customer.id == null) {
+        $('h2#review_customer', this.view).html("No customer");
       } else {
-        $('h2#review_customer', this.view).empty();
+        if(transaction.customer.person != null) {
+          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+        } else {
+          $('h2#review_customer', this.view).empty();
+        }
       }
     }
     

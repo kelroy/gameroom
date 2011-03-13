@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "employees", :force => true do |t|
     t.string   "title"
     t.integer  "rate",       :default => 0,    :null => false
-    t.integer  "pin",                          :null => false
+    t.string   "pin",                          :null => false
     t.boolean  "active",     :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-13 12:08:24', :null => false
+    t.datetime "time",        :default => '2011-03-13 21:38:26', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"

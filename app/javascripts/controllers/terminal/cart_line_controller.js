@@ -20,7 +20,7 @@ var CartLineController = new JS.Class(ViewController, {
   set: function(line) {
     $('input#quantity_amount', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3', this.view).html(line.item.title);
-    $('hgroup.cart_line_information h4', this.view).html(line.item.description);
+    $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
     for(property in line.item.properties) {

@@ -7,7 +7,7 @@ Gameroom::Application.routes.draw do
   namespace 'api' do
     resources :customers do
       collection do
-        get 'search' => 'customers#search', :via => [:get, :post], :as => :customers_search
+        match 'search' => 'customers#search', :via => [:get, :post], :as => :customers_search
       end
     end
     resources :employees

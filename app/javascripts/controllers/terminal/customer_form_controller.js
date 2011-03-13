@@ -7,6 +7,7 @@ var CustomerFormController = new JS.Class(FormController, {
   },
   
   update: function(customer) {
+    $('input#customer_id', this.view).val(customer.id);
     $('input#customer_credit', this.view).val(Currency.format(customer.credit));
     $('input#customer_drivers_license_number', this.view).val(customer.drivers_license_number);
     $('input#customer_drivers_license_state', this.view).val(customer.drivers_license_state);

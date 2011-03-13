@@ -28,7 +28,7 @@ class Api::CustomersController < ApplicationController
   # GET /customers/search.xml
   # GET /customers/search.json
   def search
-    @customers = Customer.all
+    @customers = Customer.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
     
     respond_to do |format|
       format.json { render :json => @customers.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]) }
@@ -61,7 +61,7 @@ class Api::CustomersController < ApplicationController
 
     respond_to do |format|
       if @customer.update_attributes(params[:customer])
-        format.json  { head :ok }
+        format.json  { render :json => @customer.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:created_at, :updated_at]), :status => :ok }
         format.xml  { head :ok }
       else
         format.json  { render :json => @customer.errors, :status => :unprocessable_entity }

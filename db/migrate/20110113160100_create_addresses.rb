@@ -6,8 +6,7 @@ class CreateAddresses < ActiveRecord::Migration
       t.string :second_line
       t.string :city,         :null => false
       t.string :state,        :null => false
-      t.string :province
-      t.string :country,      :null => false
+      t.string :country
       t.string :zip,          :null => false
 
       t.timestamps

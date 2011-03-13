@@ -42,7 +42,7 @@ var ReviewController = new JS.Class(ViewController, {
       var new_line = this.line.clone();
       $('td.quantity', new_line).html(transaction.lines[line].quantity);
       $('td.title', new_line).html(transaction.lines[line].item.title);
-      $('td.description', new_line).html(transaction.lines[line].item.description);
+      $('td.description', new_line).html(String.truncate(transaction.lines[line].item.description, 50)).attr('title', transaction.lines[line].item.description);
       $('td.sku', new_line).html(transaction.lines[line].item.sku);
       $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
       $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));

@@ -3,4 +3,9 @@ class Line < ActiveRecord::Base
   
   belongs_to                 :transaction
   belongs_to                 :item
+  
+  # Calculate subtotal in pennies
+  def subtotal
+    self.quantity * self.price
+  end
 end

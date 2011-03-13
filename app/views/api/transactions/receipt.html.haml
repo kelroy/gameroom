@@ -1,0 +1,43 @@
+%div{:class => 'standard_receipt'}
+  %hgroup
+    %h1 Gameroom
+    %h2 1709 O St. Lincoln NE 68508 
+    %h2 402-438-7161
+  %table{:class => 'lines'}
+    %thead
+      %tr
+        %th Qty.
+        %th SKU
+        %th Title
+        %th Subtotal
+    %tbody
+      - @transaction.lines.each do |line|
+        %tr
+          %td{:class => 'quantity'}= line.quantity
+          %td{:class => 'sku'}= line.item.sku
+          %td{:class => 'title'}= line.item.title
+          %td{:class => 'subtotal'}= number_to_currency line.subtotal / 100
+  %table{:class => 'summary'}
+    %tbody
+      %tr{:id => 'subtotal'}
+        %td Subtotal
+        %td= number_to_currency @transaction.subtotal / 100
+      %tr{:id => 'tax'}
+        %td Tax
+        %td= number_to_currency @transaction.tax / 100
+      %tr{:id => 'divider'}
+        %td
+        %td =========
+      %tr{:id => 'total'}
+        %td Total
+        %td= number_to_currency @transaction.total / 100
+      %tr{:id => 'divider'}
+        %td
+        %td =========
+      - @transaction.payments.each do |payment|
+        %tr{:id => 'payment'}
+          %td= payment.form.gsub('_', ' ').capitalize
+          %td= number_to_currency payment.amount
+      %tr{:id => 'change'}
+        %td Change
+        %td= number_to_currency @transaction.change / 100

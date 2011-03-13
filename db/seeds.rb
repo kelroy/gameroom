@@ -33,8 +33,8 @@ unless Rails.env.production?
   item.properties << Factory.create(:property, :item => item)
   item.properties << Factory.create(:property, :item => item)
   
-  transaction = Factory.create(:transaction, :till => till, :customer => customer)
-  transaction.lines << Factory.create(:line, :item => item, :transaction => transaction)
+  transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => till, :customer => customer)
+  transaction.lines << Factory.create(:line, :quantity => 2, :price => 1000, :item => item, :transaction => transaction)
   transaction.payments << Factory.create(:payment, :transaction => transaction)
   transaction.payments << Factory.create(:payment, :transaction => transaction)
   

@@ -7,13 +7,13 @@ Gameroom::Application.routes.draw do
   namespace 'api' do
     resources :customers do
       collection do
-        match 'search' => 'customers#search', :via => [:get, :post], :as => :customers_search
+        match 'search' => 'customers#search', :via => [:get, :post]
       end
     end
     resources :employees
     resources :items do
       collection do
-        match 'search' => 'items#search', :via => [:get, :post], :as => :items_search
+        match 'search' => 'items#search', :via => [:get, :post]
       end
       resources :properties
     end
@@ -24,7 +24,9 @@ Gameroom::Application.routes.draw do
     end
     resources :transactions do
       resources :lines
-      resource :receipt, :only => :show
+      member do
+        match 'receipt' => 'transactions#receipt', :via => [:get]
+      end
     end
     resources :tills
     resources :users

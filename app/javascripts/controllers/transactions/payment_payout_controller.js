@@ -9,7 +9,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
   
   update: function(amount, amount_due) {
     this.amount_due = amount_due;
-
+    
     if(amount < 0) {
       $('input.payment', this.view).val(Currency.format(amount * -1));
     } else {
@@ -19,7 +19,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
   
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()) * -1)));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val())) * -1}));
     } else {
       $(this).val(null);
     }

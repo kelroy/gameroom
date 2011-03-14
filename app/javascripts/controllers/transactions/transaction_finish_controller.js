@@ -9,6 +9,10 @@ var TransactionFinishController = new JS.Class(ViewController, {
     $('a', view).bind('click', {instance: this}, this.finish);
   },
   
+  reset: function() {
+    this.view.show();
+  },
+  
   enable: function() {
     $('a', this.view).removeClass('disabled');
     this.enabled = true;

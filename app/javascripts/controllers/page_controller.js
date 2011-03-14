@@ -5,7 +5,6 @@ var PageController = new JS.Class(ViewController, {
   initialize: function(view, sections) {
     this.callSuper();
     this.sections = sections;
-    this.reset();
     $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
   
@@ -29,6 +28,7 @@ var PageController = new JS.Class(ViewController, {
   },
   
   reset: function() {
+    this.view.show();
     this.showSection(0);
   }
 });

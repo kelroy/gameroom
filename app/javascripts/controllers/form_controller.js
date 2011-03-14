@@ -5,15 +5,17 @@ var FormController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.reset();
     
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
   },
   
   reset: function() {
-    $(':input')
-      .not(':button, :submit, :reset, :hidden')
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
       .val(null)
       .removeAttr('checked')
       .removeAttr('selected');

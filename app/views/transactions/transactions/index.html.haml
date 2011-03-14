@@ -14,14 +14,10 @@
         %li &#124;
         %li
           = link_to "Logout", logout_path, :method => :delete
-  .section_container
+  %div{:id => 'transaction', :class => 'section_container'}
     %ul{:id => 'transaction_nav', :class => 'drop_nav'}
       %li
-        %a{:href => '#hold', :class => 'button'} Hold
-      %li
-        %a{:href => '#load', :class => 'button'} Recall
-      %li
-        %a{:href => '#reset', :class => 'button'} Reset
+        %a{:href => '#reset', :class => 'button reset'} Reset
     %section{:id => 'customer'}
       = render :partial => 'customer'
     %section{:id => 'cart'}

@@ -183,15 +183,17 @@ var FormController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.reset();
 
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
   },
 
   reset: function() {
-    $(':input')
-      .not(':button, :submit, :reset, :hidden')
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
       .val(null)
       .removeAttr('checked')
       .removeAttr('selected');
@@ -883,6 +885,8 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   clearLines: function() {
+    this.lines = [];
+    this.line_controllers = [];
     $('ul#cart_lines > li').remove();
   },
 
@@ -1823,6 +1827,8 @@ var Transaction = new JS.Class({
         password: 'x'
 
       });
+
+      return true;
     } else {
       return false;
     }
@@ -2165,6 +2171,10 @@ var TransactionFinishController = new JS.Class(ViewController, {
     $('a', view).bind('click', {instance: this}, this.finish);
   },
 
+  reset: function() {
+    this.view.show();
+  },
+
   enable: function() {
     $('a', this.view).removeClass('disabled');
     this.enabled = true;
@@ -2196,7 +2206,6 @@ var PageController = new JS.Class(ViewController, {
   initialize: function(view, sections) {
     this.callSuper();
     this.sections = sections;
-    this.reset();
     $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
 
@@ -2220,20 +2229,19 @@ var PageController = new JS.Class(ViewController, {
   },
 
   reset: function() {
+    this.view.show();
     this.showSection(0);
   }
 });
 
-var TransactionController = new JS.Class({
+var TransactionController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  transactions: [],
-
   initialize: function() {
-    this.till = new Till({});
-    this.current_transaction = null;
+    this.callSuper();
+    this.till = null;
+    this.transaction = null;
 
-    this.transaction_nav = $('ul#transaction_nav');
     this.customer_controller = new CustomerController('section#customer');
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
@@ -2259,75 +2267,65 @@ var TransactionController = new JS.Class({
     this.addObserver(this.summary_controller.update, this.summary_controller);
     this.addObserver(this.finish_controller.update, this.finish_controller);
 
-    this.reset();
-    this.customer_controller.view.hide();
-    this.section_controller.view.hide();
-    this.summary_controller.view.hide();
-    this.finish_controller.view.hide();
-    this.transaction_nav.hide();
+    $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
 
   reset: function() {
-    this.customer_controller.reset();
     this.cart_controller.reset();
     this.payment_controller.reset();
     this.review_controller.reset();
     this.section_controller.reset();
     this.summary_controller.reset();
-    this.finish_controller.view.show();
-    this.section_controller.view.show();
+    this.finish_controller.reset();
+    this.customer_controller.reset();
+  },
+
+  onReset: function(event) {
+    event.data.instance.newTransaction(event.data.instance.till);
+    event.preventDefault();
   },
 
   updateCustomer: function(customer) {
-    if(this.current_transaction) {
-      this.current_transaction.customer = customer;
-      this.notifyObservers(this.current_transaction);
+    if(this.transaction) {
+      this.transaction.customer = customer;
+      this.notifyObservers(this.transaction);
     }
   },
 
   updateCart: function(lines) {
-    if(this.current_transaction) {
-      this.current_transaction.setLines(lines);
-      this.notifyObservers(this.current_transaction);
+    if(this.transaction) {
+      this.transaction.setLines(lines);
+      this.notifyObservers(this.transaction);
     }
   },
 
   updatePayment: function(payment) {
-    if(this.current_transaction) {
-      this.current_transaction.updatePayment(payment);
-      this.notifyObservers(this.current_transaction);
+    if(this.transaction) {
+      this.transaction.updatePayment(payment);
+      this.notifyObservers(this.transaction);
     }
   },
 
   updateReceipt: function(quantity) {
-    if(this.current_transaction) {
-      this.current_transaction.receipt.quantity = quantity;
+    if(this.transaction) {
+      this.transaction.receipt.quantity = quantity;
     }
   },
 
   newTransaction: function(till) {
     this.reset();
     this.till = till;
-    this.addTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
-    this.setCurrentTransaction(this.transactions.length - 1);
-    this.notifyObservers(this.current_transaction);
+    this.setTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
   },
 
-  addTransaction: function(transaction) {
-    this.transactions.push(transaction);
-  },
-
-  removeTransaction: function(index) {
-    this.transactions.splice(index, 1);
-  },
-
-  setCurrentTransaction: function(index) {
-    this.current_transaction = this.transactions[index];
+  setTransaction: function(transaction) {
+    this.transaction = transaction;
+    this.notifyObservers(transaction);
   },
 
   saveTransaction: function() {
     controller = this;
-    this.current_transaction.save(function(transaction) {
+    this.transaction.save(function(transaction) {
       controller.newTransaction(controller.till);
       url = '/api/transactions/' + transaction.id + '/receipt';
       window.open(url, "transaction_receipt", "toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=260");
@@ -2335,23 +2333,38 @@ var TransactionController = new JS.Class({
   }
 });
 
+var TerminalUserController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  update: function(till) {
+    $('li.current_user_till', this.view).html(till.title);
+  }
+});
+
 var TerminalController = new JS.Class({
 
   initialize: function() {
-    this.transaction_controller = new TransactionController();
+    this.terminal_user_controller = new TerminalUserController('ul#user_nav');
+    this.transaction_controller = new TransactionController('div#transaction');
     this.till_controller = new TillController('div#till');
-    this.till_controller.view.show();
     this.till_controller.addObserver(this.updateTill, this);
 
-    $('form').submit(function(event) {
-      event.preventDefault();
-    });
+    this.reset();
+  },
+
+  reset: function() {
+    this.transaction_controller.view.hide();
+    this.till_controller.view.show();
   },
 
   updateTill: function(till) {
     this.transaction_controller.newTransaction(till);
-    $('li.current_user_till', this.user_nav).html(till.title);
+    this.terminal_user_controller.update(till);
     this.till_controller.view.hide();
+    this.transaction_controller.view.show();
   }
 });
 

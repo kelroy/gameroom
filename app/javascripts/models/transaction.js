@@ -251,6 +251,8 @@ var Transaction = new JS.Class({
         password: 'x'
         
       });
+      
+      return true;
     } else {
       return false;
     }

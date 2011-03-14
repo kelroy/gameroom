@@ -1550,8 +1550,9 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
   },
 
   onChange: function(event) {
+    console.log('here');
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs($(this).val()) * -1)));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val())) * -1}));
     } else {
       $(this).val(null);
     }
@@ -1859,7 +1860,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
 
   onScale: function(event) {
     index = parseFloat($(this).attr('data-index'));
-    amount = Currency.format(Math.abs(event.data.instance.transaction.payoutCreditSubtotal()) * (index / 10.0));
+    amount = Math.abs(event.data.instance.transaction.payoutCreditSubtotal()) * (index / 10.0);
     event.data.instance.notifyObservers(amount);
     event.preventDefault();
   },

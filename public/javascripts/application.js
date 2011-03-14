@@ -1550,7 +1550,6 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
   },
 
   onChange: function(event) {
-    console.log('here');
     if(!isNaN($(this).val())) {
       event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val())) * -1}));
     } else {
@@ -1974,7 +1973,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   onScale: function(amount) {
-    this.store_credit_payout_controller.set(amount);
+    this.store_credit_payout_controller.set(Currency.format(amount));
   },
 
   updatePayment: function(payment) {

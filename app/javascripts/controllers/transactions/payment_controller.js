@@ -110,7 +110,7 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   onScale: function(amount) {
-    this.store_credit_payout_controller.set(amount);
+    this.store_credit_payout_controller.set(Currency.format(amount));
   },
   
   updatePayment: function(payment) {

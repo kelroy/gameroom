@@ -2,8 +2,8 @@
 //= require "cart_controller"
 //= require "payment_controller"
 //= require "review_controller"
-//= require "terminal_summary_controller"
-//= require "terminal_finish_controller"
+//= require "transaction_summary_controller"
+//= require "transaction_finish_controller"
 //= require "../page_controller"
 //= require "../../models/till"
 //= require "../../models/transaction"
@@ -29,8 +29,8 @@ var TransactionController = new JS.Class({
       this.payment_controller.view,
       this.review_controller.view
     ]);
-    this.summary_controller = new TerminalSummaryController('ul#summary');
-    this.finish_controller = new TerminalFinishController('ul#finish');
+    this.summary_controller = new TransactionSummaryController('ul#summary');
+    this.finish_controller = new TransactionFinishController('ul#finish');
     
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);
@@ -95,6 +95,7 @@ var TransactionController = new JS.Class({
     this.till = till;
     this.addTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
     this.setCurrentTransaction(this.transactions.length - 1);
+    this.notifyObservers(this.current_transaction);
   },
   
   addTransaction: function(transaction) {
@@ -110,10 +111,11 @@ var TransactionController = new JS.Class({
   },
   
   saveTransaction: function() {
-    if(this.current_transaction.save()) {
-      id = this.current_transaction.id;
-      url = '/transactions/' + id + '/receipt';
+    controller = this;
+    this.current_transaction.save(function(transaction) {
+      controller.newTransaction(controller.till);
+      url = '/api/transactions/' + transaction.id + '/receipt';
       window.open(url, "transaction_receipt", "toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=260");
-    }
+    });
   }
 });

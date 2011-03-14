@@ -44,17 +44,17 @@ var Transaction = new JS.Class({
     for(line in this.lines) {
       subtotal += this.lines[line].subtotal();
     }
-    return subtotal;
+    return parseInt(subtotal);
   },
   
   total: function() {
-    return this.subtotal() + this.tax();
+    return parseInt(this.subtotal() + this.tax());
   },
   
   tax: function() {
     subtotal = this.subtotal();
     if(subtotal > 0) {
-      return subtotal * this.tax_rate;
+      return parseInt(Math.floor(subtotal * this.tax_rate));
     } else {
       return 0;
     }
@@ -64,7 +64,7 @@ var Transaction = new JS.Class({
     if(this.subtotal() >= 0) {
       payment_total = 0;
       for(payment in this.payments) {
-        payment_total += this.payments[payment].amount;
+        payment_total += parseInt(Math.floor(this.payments[payment].amount));
       }
       return this.total() - payment_total;
     } else {
@@ -187,13 +187,77 @@ var Transaction = new JS.Class({
     return (this.payoutCreditSubtotal() - store_credit_amount) * this.ratio();
   },
   
-  save: function() {
-    this.id = 1;
-    return true;
+  save: function(callback) {
+    if(this.valid()) {
+      transaction = {
+        till_id: this.till.id,
+        tax_rate: this.tax_rate,
+        complete: this.complete,
+        locked: this.locked,
+        payments_attributes: [],
+        lines_attributes: []
+      };
+      for(payment in this.payments) {
+        transaction.payments_attributes.push({
+          form: this.payments[payment].form,
+          amount: this.payments[payment].amount
+        });
+      }
+      for(line in this.lines) {
+        if(this.lines[line].item.id != undefined) {
+          transaction.lines_attributes.push({
+            item_id: this.lines[line].item.id,
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price
+          });
+        } else {
+          transaction.lines_attributes.push({
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price,
+            item_attributes: {
+              title: this.lines[line].item.title,
+              description: this.lines[line].item.description,
+              price: this.lines[line].item.price,
+              taxable: this.lines[line].item.taxable,
+              discountable: this.lines[line].item.discountable,
+              locked: this.lines[line].item.locked,
+              active: this.lines[line].item.active,
+            }
+          });
+        }
+      }
+      if(this.customer != undefined) {
+        transaction.customer_id = this.customer.id;
+      }
+      
+      $.ajax({
+        url: '/api/transactions',
+        accept: 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify({transaction: transaction}),
+        dataType: 'json',
+        processData: false,
+        type: 'POST',
+        success: function(result) {
+          callback(result.transaction);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+        
+      });
+    } else {
+      return false;
+    }
   },
   
   valid: function() {
-    if(this.total() > 0 && this.amountDue() == 0) {
+    if(this.total() > 0 && this.amountDue() <= 0) {
       return true;
     } else if(this.total() < 0) {
       if(this.customer != undefined) {

@@ -1,6 +1,6 @@
 //= require "../view_controller"
 
-var TerminalFinishController = new JS.Class(ViewController, {
+var TransactionFinishController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {

@@ -27,6 +27,8 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
         }
         this.enable();
       }
+    } else {
+      $('div#payment_store_credit span#payment_customer').empty();
     }
     this.callSuper(amount, amount_due);
   },

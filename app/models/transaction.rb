@@ -1,5 +1,5 @@
 class Transaction < ActiveRecord::Base
-  attr_readonly           :till_id, :customer_id
+  attr_readonly           :till_id
   
   belongs_to  :till
   belongs_to  :customer
@@ -22,7 +22,11 @@ class Transaction < ActiveRecord::Base
   
   # Calculate tax in pennies
   def tax
-    self.subtotal * self.tax_rate
+    if(self.subtotal > 0)
+      (self.subtotal * self.tax_rate).floor.to_i
+    else
+      0
+    end
   end
   
   # Calculate total in pennies

@@ -19,6 +19,9 @@ var ReviewController = new JS.Class(ViewController, {
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#review_lines table > tbody > tr', this.view).remove();
+    $('h2#review_customer', this.view).html("No customer");
   },
   
   update: function(transaction) {
@@ -35,7 +38,7 @@ var ReviewController = new JS.Class(ViewController, {
       }
     }
     
-    $('div#review_summary table > tbody > tr#payment', this.view).remove()
+    $('div#review_summary table > tbody > tr#payment', this.view).remove();
     $('div#review_lines table > tbody > tr', this.view).remove();
     
     for(line in transaction.lines) {

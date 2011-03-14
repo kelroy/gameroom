@@ -68,6 +68,7 @@ var CustomerReviewController = new JS.Class(ViewController, {
   
   reset: function() {
     $('h2#customer_notice').show();
+    $('div#customer_data').hide();
     $('div#customer_data h3#customer_name', this.view).html(null);
     $('div#customer_data div#customer_addresses > p', this.view).html(null);
     $('div#customer_data div#customer_emails > p', this.view).html(null);

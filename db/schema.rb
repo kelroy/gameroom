@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-13 21:38:26', :null => false
+    t.datetime "time",        :default => '2011-03-14 01:23:49', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "items", :force => true do |t|
     t.string   "title",                           :null => false
     t.string   "description"
-    t.string   "sku",                             :null => false
+    t.string   "sku"
     t.integer  "price",        :default => 0,     :null => false
     t.boolean  "taxable",      :default => true,  :null => false
     t.boolean  "discountable", :default => true,  :null => false
@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
 
   create_table "transactions", :force => true do |t|
     t.integer  "till_id"
-    t.integer  "customer_id",                    :null => false
+    t.integer  "customer_id"
     t.decimal  "tax_rate",    :default => 0.0,   :null => false
     t.boolean  "complete",    :default => true,  :null => false
     t.boolean  "locked",      :default => false, :null => false

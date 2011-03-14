@@ -1,10 +1,10 @@
 class Item < ActiveRecord::Base
-  validates_presence_of   :title, :sku
-  validates_uniqueness_of :sku
+  validates_presence_of   :title
   
-  has_many                :properties
-  has_many                :lines
-  has_many                :transactions,  :through => :lines
+  has_many                      :properties
+  has_many                      :lines
+  has_many                      :transactions,  :through => :lines
+  accepts_nested_attributes_for :properties
   
   # Is good taxable?
   def taxable?

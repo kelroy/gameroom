@@ -76,7 +76,6 @@ var CartLinesController = new JS.Class(ViewController, {
   },
   
   updateLine: function(index, updated_line) {
-    console.log(index);
     if(updated_line.quantity > 0) {
       this.lines[index] = updated_line;
     } else {

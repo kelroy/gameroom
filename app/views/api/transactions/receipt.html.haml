@@ -16,28 +16,29 @@
         %tr
           %td{:class => 'quantity'}= line.quantity
           %td{:class => 'title'}= truncate line.item.title.upcase, :length => 10, :seperator => ''
-          %td{:class => 'subtotal'}= number_to_currency line.subtotal / 100
+          %td{:class => 'subtotal'}= number_to_currency line.subtotal.to_f / 100
   %table{:class => 'summary'}
     %tbody
       %tr{:id => 'subtotal'}
         %td Subtotal
-        %td= number_to_currency @transaction.subtotal / 100
+        %td= number_to_currency @transaction.subtotal.to_f / 100
       %tr{:id => 'tax'}
         %td Tax
-        %td= number_to_currency @transaction.tax / 100
+        %td= number_to_currency @transaction.tax.to_f / 100
       %tr{:id => 'divider'}
         %td
         %td =========
       %tr{:id => 'total'}
         %td Total
-        %td= number_to_currency @transaction.total / 100
+        %td= number_to_currency @transaction.total.to_f / 100
       %tr{:id => 'divider'}
         %td
         %td =========
       - @transaction.payments.each do |payment|
-        %tr{:id => 'payment'}
-          %td= payment.form.gsub('_', ' ').capitalize
-          %td= number_to_currency payment.amount / 100
+        - if payment.amount != 0
+          %tr{:id => 'payment'}
+            %td= payment.form.gsub('_', ' ').capitalize
+            %td= number_to_currency payment.amount.to_f / 100
       %tr{:id => 'change'}
         %td Change
-        %td= number_to_currency @transaction.change / 100
+        %td= number_to_currency @transaction.change.to_f / 100

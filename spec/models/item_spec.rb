@@ -14,9 +14,4 @@ describe Item do
       Item.new(valid_data).should be_valid
     end
   end
-  
-  it "should have a unique sku" do
-    item = Factory.create(:item)
-    Factory.build(:item, :sku => item.sku).should_not be_valid
-  end
 end

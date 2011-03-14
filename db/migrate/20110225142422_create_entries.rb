@@ -6,7 +6,6 @@ class CreateEntries < ActiveRecord::Migration
       t.string    :description
       t.datetime  :time,        :null => false, :default => Time.now
       t.integer   :amount
-      t.string    :action
 
       t.timestamps
     end

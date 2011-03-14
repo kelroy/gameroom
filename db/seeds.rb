@@ -39,8 +39,8 @@ unless Rails.env.production?
   tills = []
   (1..3).each do |n|
     till = Factory.create(:till, :title => "Till #{n}", :retainable => true, :active => true)
-    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Deposit', :action => 'credit', :amount => 50000)
-    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Audit', :action => 'audit', :amount => 50000)
+    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Deposit', :amount => 50000)
+    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Audit', :amount => 50000)
     till.users << user
     tills.push(till)
   end

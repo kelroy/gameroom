@@ -54,9 +54,8 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-14 01:23:49', :null => false
+    t.datetime "time",        :default => '2011-03-14 22:42:43', :null => false
     t.integer  "amount"
-    t.string   "action"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

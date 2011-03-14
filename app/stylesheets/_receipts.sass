@@ -3,6 +3,7 @@ div.standard_receipt
   padding: 20px
   font-size: 14px
   font-family: LatinModernMonoLight10Bold, Tacoma, serif
+  background-color: $white
   
   hgroup
     text-align: center
@@ -16,16 +17,17 @@ div.standard_receipt
     h2
       font-family: LatinModernMonoLight10Bold, Tacoma, serif
       font-size: 12px
+  
+  p
+    text-align: center
+    margin-bottom: 10px
       
   table
     width: 100%
     margin-bottom: 20px
     
-  table.lines
+    th,
     td
       text-align: right
-      border: 4px white solid
-    
-  table.summary
-    td
-      text-align: right
+      border-left: 4px $white solid
+      border-right: 4px $white solid

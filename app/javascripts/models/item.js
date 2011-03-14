@@ -1,47 +1,68 @@
 var Item = new JS.Class({
   extend: {
-    find: function(id) {
-      credit = new Property();
-      credit.key = 'credit_price';
-      credit.value = 800;
-      cash = new Property();
-      cash.key = 'cash_price';
-      cash.value = 500;
-      return Factory.build('Item', {properties: [
-        credit,
-        cash
-      ]});
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/items/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        success: function(results) {
+          callback(results.item);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
     },
     
-    search: function(query) {
-      results = [];
-      credit = new Property();
-      credit.key = 'credit_price';
-      credit.value = 800;
-      cash = new Property();
-      cash.key = 'cash_price';
-      cash.value = 500;
-      for(i = 0; i < 5; i++){
-        results.push(Factory.build('Item', {properties: [
-          credit,
-          cash
-        ]}));
-      }
-      return results;
+    search: function(query, callback) {
+      $.ajax({
+        url: '/api/items/search',
+        data: JSON.stringify({
+          search: {
+            title_or_description_or_sku_contains: query
+          },
+          page: 1,
+          per_page: 25
+        }),
+        dataType: 'json',
+        accept: 'application/json',
+        contentType: 'application/json',
+        processData: false,
+        type: 'POST',
+        success: function(results) {
+          callback(results);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
     }
   },
   
-  initialize: function() {
-    this.id = null;
+  initialize: function(params) {
+    this.id = params.id;
     this.properties = [];
-    this.title = null;
-    this.description = null;
-    this.sku = null;
-    this.price = 0;
-    this.taxable = false;
-    this.discountable = false;
-    this.locked = false;
-    this.active = false;
+    for(property in params.properties) {
+      this.properties.push(new Property(params.properties[property]));
+    }
+    this.title = params.title;
+    this.description = params.description;
+    this.sku = params.sku;
+    this.price = params.price;
+    this.taxable = params.taxable;
+    this.discountable = params.discountable;
+    this.locked = params.locked;
+    this.active = params.active;
   },
   
   creditPrice: function() {

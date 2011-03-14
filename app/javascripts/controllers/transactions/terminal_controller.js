@@ -4,10 +4,8 @@
 var TerminalController = new JS.Class({
   
   initialize: function() {
-    
     this.transaction_controller = new TransactionController();
     this.till_controller = new TillController('div#till');
-    
     this.till_controller.view.show();
     this.till_controller.addObserver(this.updateTill, this);
     

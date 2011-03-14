@@ -4,7 +4,7 @@
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
-    this.customer = new Customer();
+    this.customer = new Customer({});
     this.callSuper();
   },
   
@@ -17,10 +17,18 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   },
   
   update: function(amount, amount_due, customer) {
-    if(customer.id != null) {
-      this.customer = customer;
-      $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
-      this.enable();
+    if(customer != undefined) {
+      if(customer.id != null) {
+        this.customer = customer;
+        if(this.customer.person != null) {
+          $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
+        } else {
+          $('div#payment_store_credit span#payment_customer').empty();
+        }
+        this.enable();
+      }
+    } else {
+      $('div#payment_store_credit span#payment_customer').empty();
     }
     this.callSuper(amount, amount_due);
   },
@@ -44,7 +52,7 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
       if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
         amount = Currency.format(event.data.instance.customer.credit);
       }
-      event.data.instance.notifyObservers(new Payment($(this).attr('data-payment-form'), Currency.toPennies(Math.abs(amount))));
+      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
     } else {
       $(this).val(null);
     }

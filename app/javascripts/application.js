@@ -1,5 +1,5 @@
 /* Gameroom */
-//= require "controllers/terminal/terminal_controller"
+//= require "controllers/transactions/terminal_controller"
 
 var terminal = {
   

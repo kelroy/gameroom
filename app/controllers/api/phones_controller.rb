@@ -38,8 +38,8 @@ class Api::PhonesController < ApplicationController
 
     respond_to do |format|
       if @phone.save
-        format.json  { render :json => @phone.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @phone ] }
-        format.xml  { render :xml => @phone.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @phone ] }
+        format.json  { render :json => @phone.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @phone.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @phone.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @phone.errors, :status => :unprocessable_entity }

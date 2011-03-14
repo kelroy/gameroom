@@ -1,6 +1,12 @@
 class Line < ActiveRecord::Base
   validates_presence_of   :quantity, :price
   
-  has_one                 :transaction
-  has_one                 :item
+  belongs_to                    :transaction
+  belongs_to                    :item
+  accepts_nested_attributes_for :item
+  
+  # Calculate subtotal in pennies
+  def subtotal
+    self.quantity * self.price
+  end
 end

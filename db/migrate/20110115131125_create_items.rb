@@ -3,7 +3,7 @@ class CreateItems < ActiveRecord::Migration
     create_table :items do |t|
       t.string  :title,                 :null => false
       t.string  :description
-      t.string  :sku,                   :null => false, :unique => true
+      t.string  :sku
       t.integer :price,                 :null => false, :default => 0
       t.boolean :taxable,               :null => false, :default => true
       t.boolean :discountable,          :null => false, :default => true

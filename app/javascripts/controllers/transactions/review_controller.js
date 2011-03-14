@@ -19,24 +19,33 @@ var ReviewController = new JS.Class(ViewController, {
     $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
     $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#review_lines table > tbody > tr', this.view).remove();
+    $('h2#review_customer', this.view).html("No customer");
   },
   
   update: function(transaction) {
     
-    if(transaction.customer.id == null) {
-      $('h2#review_customer', this.view).html("No customer");
-    } else {
-      $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+    if(transaction.customer != undefined) {
+      if(transaction.customer.id == null) {
+        $('h2#review_customer', this.view).html("No customer");
+      } else {
+        if(transaction.customer.person != null) {
+          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
+        } else {
+          $('h2#review_customer', this.view).empty();
+        }
+      }
     }
     
-    $('div#review_summary table > tbody > tr#payment', this.view).remove()
+    $('div#review_summary table > tbody > tr#payment', this.view).remove();
     $('div#review_lines table > tbody > tr', this.view).remove();
     
     for(line in transaction.lines) {
       var new_line = this.line.clone();
       $('td.quantity', new_line).html(transaction.lines[line].quantity);
       $('td.title', new_line).html(transaction.lines[line].item.title);
-      $('td.description', new_line).html(transaction.lines[line].item.description);
+      $('td.description', new_line).html(String.truncate(transaction.lines[line].item.description, 50)).attr('title', transaction.lines[line].item.description);
       $('td.sku', new_line).html(transaction.lines[line].item.sku);
       $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
       $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));

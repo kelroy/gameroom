@@ -10,7 +10,7 @@ var CartTableController = new JS.Class(TableController, {
       new_row.attr('data-object-id', items[item].id);
 
       $('td.title', new_row).html(items[item].title);
-      $('td.description', new_row).html(items[item].description);
+      $('td.description', new_row).html(String.truncate(items[item].description, 50)).attr('title', items[item].description);
       $('td.sku', new_row).html(items[item].sku);
       $('td.price', new_row).html(Currency.pretty(items[item].price));
       $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));

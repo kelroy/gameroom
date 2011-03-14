@@ -13,6 +13,7 @@ gem 'compass'
 gem 'authlogic', :git => 'git://github.com/odorcicd/authlogic.git', :branch => 'rails3'
 gem 'meta_where'
 gem 'meta_search'
+gem "will_paginate", "~> 3.0.pre2"
 
 # Use unicorn as the web server
 # gem 'unicorn'

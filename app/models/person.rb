@@ -1,5 +1,4 @@
 class Person < ActiveRecord::Base
-                        
   belongs_to  :customer
   belongs_to  :employee
   belongs_to  :user

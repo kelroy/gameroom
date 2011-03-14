@@ -32,8 +32,8 @@ class Api::TillsController < ApplicationController
 
     respond_to do |format|
       if @till.save
-        format.json  { render :json => @till.to_json(:include => :entries, :except => [:created_at, :updated_at]), :status => :created, :till => @till }
-        format.xml  { render :xml => @till.to_xml(:include => :entries, :except => [:created_at, :updated_at]), :status => :created, :till => @till }
+        format.json  { render :json => @till.to_json(:include => :entries, :except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @till.to_xml(:include => :entries, :except => [:created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @till.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @till.errors, :status => :unprocessable_entity }

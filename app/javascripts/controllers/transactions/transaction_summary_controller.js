@@ -1,17 +1,19 @@
 //= require "../view_controller"
 //= require "../../currency"
 
-var TerminalSummaryController = new JS.Class(ViewController, {
+var TransactionSummaryController = new JS.Class(ViewController, {
   
   reset: function() {
-    this.setCustomer(new Customer());
+    this.setCustomer(new Customer({}));
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();
   },
 
   update: function(transaction) {
-    this.setCustomer(transaction.customer);
+    if(transaction.customer != undefined) {
+      this.setCustomer(transaction.customer);
+    }
     this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
   },
@@ -24,7 +26,11 @@ var TerminalSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      if(customer.person != null) {
+        $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      } else {
+        $('h2#summary_customer', this.view).empty();
+      }
     }
   },
   

@@ -10,6 +10,10 @@ var String = new JS.Class({
         sentence[word] = String.ucfirst(sentence[word])
       }
       return sentence.join(' ');
+    },
+    
+    truncate: function(string, length) {
+      return string.substr(0, length - 1) + (string.length > length? '...' : '');
     }
   }
 });

@@ -18,8 +18,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.string   "second_line"
     t.string   "city",        :null => false
     t.string   "state",       :null => false
-    t.string   "province"
-    t.string   "country",     :null => false
+    t.string   "country"
     t.string   "zip",         :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -29,6 +28,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "credit",                 :default => 0,    :null => false
     t.string   "drivers_license_number"
     t.string   "drivers_license_state"
+    t.string   "notes"
     t.boolean  "active",                 :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "employees", :force => true do |t|
     t.string   "title"
     t.integer  "rate",       :default => 0,    :null => false
-    t.integer  "pin",                          :null => false
+    t.string   "pin",                          :null => false
     t.boolean  "active",     :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-12 02:45:33', :null => false
+    t.datetime "time",        :default => '2011-03-14 01:23:49', :null => false
     t.integer  "amount"
     t.string   "action"
     t.datetime "created_at"
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "items", :force => true do |t|
     t.string   "title",                           :null => false
     t.string   "description"
-    t.string   "sku",                             :null => false
+    t.string   "sku"
     t.integer  "price",        :default => 0,     :null => false
     t.boolean  "taxable",      :default => true,  :null => false
     t.boolean  "discountable", :default => true,  :null => false
@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
 
   create_table "transactions", :force => true do |t|
     t.integer  "till_id"
-    t.integer  "customer_id",                    :null => false
+    t.integer  "customer_id"
     t.decimal  "tax_rate",    :default => 0.0,   :null => false
     t.boolean  "complete",    :default => true,  :null => false
     t.boolean  "locked",      :default => false, :null => false

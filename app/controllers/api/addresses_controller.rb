@@ -38,8 +38,8 @@ class Api::AddressesController < ApplicationController
 
     respond_to do |format|
       if @address.save
-        format.json  { render :json => @address.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @address ] }
-        format.xml  { render :xml => @address.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @address ] }
+        format.json  { render :json => @address.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @address.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @address.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @address.errors, :status => :unprocessable_entity }

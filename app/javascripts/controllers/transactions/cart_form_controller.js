@@ -12,42 +12,45 @@ var CartFormController = new JS.Class(FormController, {
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
     $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
+    $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
   },
   
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
-      line = new Line();
-      item = new Item();
-      credit_property = new Property();
-      cash_property = new Property();
-      
-      item.title = $('input#item_title', this).val();
-      item.description = $('input#item_description', this).val();
-      item.price = parseInt(Currency.toPennies($('input#item_price', this).val()));
-      item.taxable = $('input#item_taxable', this).attr('checked');
-      
-      credit_property.key = 'credit_price';
       credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
-      if(credit_price > 0) {
-        credit_property.value = credit_price;
-      } else {
-        credit_property.value = 0;
+      if(credit_price <= 0) {
+        credit_price = 0;
       }
-      cash_property.key = 'cash_price'
+
       cash_price = parseInt(Currency.toPennies($('input#item_cash', this).val()));
-      if(cash_price > 0) {
-        cash_property.value = cash_price;
-      } else {
-        cash_property.value = 0;
+      if(cash_price <= 0) {
+        cash_price = 0;
       }
       
-      line.item = item;
-      line.sell = false;
-      line.condition = 5;
-      line.quantity = parseInt(Math.abs($('input#item_quantity', this).val()));
-      line.item.properties.push(credit_property);
-      line.item.properties.push(cash_property);
+      line = new Line({
+        sell: false,
+        condition: 5,
+        quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
+        price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+        item: {
+          title: $('input#item_title', this).val(),
+          description: $('input#item_description', this).val(),
+          price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+          taxable: $('input#item_taxable', this).attr('checked'),
+          properties: [
+            {
+              key: 'credit_price',
+              value: credit_price
+            },
+            {
+              key: 'cash_price',
+              value: cash_price
+            }
+          ]
+        }
+      });
+      
       if(line.valid()) {
         lines.push(line);
       }
@@ -71,7 +74,12 @@ var CartFormController = new JS.Class(FormController, {
   },
   
   onPrice: function(event) {
-    $(this).val(Currency.format(Currency.toPennies(Math.abs($(this).val()))));
+    value = $(this).val();
+    if(isNaN(value)) {
+      $(this).val(Currency.format(0));
+    } else {
+      $(this).val(Currency.format(Currency.toPennies(Math.abs(value))));
+    }
   },
   
   onMore: function(event) {
@@ -86,6 +94,17 @@ var CartFormController = new JS.Class(FormController, {
   
   onClear: function(event) {
     event.data.instance.reset();
+    event.preventDefault();
+  },
+  
+  onClearRow: function(event) {
+    $(this)
+      .closest('ul')
+      .find(':input')
+      .not(':button, :submit, :reset, :hidden')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
     event.preventDefault();
   }
 });

@@ -1,0 +1,44 @@
+%div{:class => 'standard_receipt'}
+  %hgroup
+    %h1 Gameroom
+    %h2 1709 O St. Lincoln NE 68508 
+    %h2 402-438-7161
+  %p= "ID #%09d" % @transaction.id
+  %p= @transaction.created_at.getlocal
+  %table{:class => 'lines'}
+    %thead
+      %tr
+        %th Qty.
+        %th Title
+        %th Subtotal
+    %tbody
+      - @transaction.lines.each do |line|
+        %tr
+          %td{:class => 'quantity'}= line.quantity
+          %td{:class => 'title'}= truncate line.item.title.upcase, :length => 10, :seperator => ''
+          %td{:class => 'subtotal'}= number_to_currency line.subtotal.to_f / 100
+  %table{:class => 'summary'}
+    %tbody
+      %tr{:id => 'subtotal'}
+        %td Subtotal
+        %td= number_to_currency @transaction.subtotal.to_f / 100
+      %tr{:id => 'tax'}
+        %td Tax
+        %td= number_to_currency @transaction.tax.to_f / 100
+      %tr{:id => 'divider'}
+        %td
+        %td =========
+      %tr{:id => 'total'}
+        %td Total
+        %td= number_to_currency @transaction.total.to_f / 100
+      %tr{:id => 'divider'}
+        %td
+        %td =========
+      - @transaction.payments.each do |payment|
+        - if payment.amount != 0
+          %tr{:id => 'payment'}
+            %td= payment.form.gsub('_', ' ').capitalize
+            %td= number_to_currency payment.amount.to_f / 100
+      %tr{:id => 'change'}
+        %td Change
+        %td= number_to_currency @transaction.change.to_f / 100

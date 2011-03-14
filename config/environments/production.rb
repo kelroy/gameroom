@@ -11,7 +11,10 @@ Gameroom::Application.configure do
 
   # Specifies the header that your server uses for sending files
   config.action_dispatch.x_sendfile_header = "X-Sendfile"
-
+  
+  # Set the timezone
+  config.time_zone = 'Central Time (US & Canada)'
+  
   # For nginx:
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
 

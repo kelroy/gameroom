@@ -38,8 +38,8 @@ class Api::EmailsController < ApplicationController
 
     respond_to do |format|
       if @email.save
-        format.json  { render :json => @email.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @email ] }
-        format.xml  { render :xml => @email.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created, :location => [ @person, @email ] }
+        format.json  { render :json => @email.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @email.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @email.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @email.errors, :status => :unprocessable_entity }

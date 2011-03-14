@@ -4,6 +4,7 @@ class CreateCustomers < ActiveRecord::Migration
       t.integer :credit,                  :null => false, :default => 0
       t.string  :drivers_license_number
       t.string  :drivers_license_state
+      t.string  :notes
       t.boolean :active,                  :null => false, :default => 1
       
       t.timestamps

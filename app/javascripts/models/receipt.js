@@ -1,7 +1,7 @@
 var Receipt = new JS.Class({
   
-  initialize: function(quantity) {
-    this.quantity = quantity;
+  initialize: function(params) {
+    this.quantity = params.quantity;
   },
   
   valid: function() {

@@ -1,9 +1,9 @@
 var Payment = new JS.Class({
   
-  initialize: function(form, amount) {
-    this.id = null;
-    this.form = form;
-    this.amount = amount;
+  initialize: function(params) {
+    this.id = params.id;
+    this.form = params.form;
+    this.amount = params.amount;
   },
   
   valid: function() {

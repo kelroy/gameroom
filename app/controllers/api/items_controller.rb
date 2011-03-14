@@ -7,8 +7,8 @@ class Api::ItemsController < ApplicationController
     @items = Item.all
     
     respond_to do |format|
-      format.json { render :json => @items.to_json(:except => [:created_at, :updated_at, :account_id]) }
-      format.xml  { render :xml => @items.to_xml(:except => [:created_at, :updated_at, :account_id]) }
+      format.json { render :json => @items.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @items.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -19,8 +19,20 @@ class Api::ItemsController < ApplicationController
     @item = Item.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @item.to_json(:except => [:created_at, :updated_at, :account_id]) }
-      format.xml  { render :xml => @item.to_xml(:except => [:created_at, :updated_at, :account_id]) }
+      format.json { render :json => @item.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @item.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
+    end
+  end
+  
+  # GET|POST /items/search
+  # GET|POST /items/search.xml
+  # GET|POST /items/search.json
+  def search
+    @items = Item.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @items.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @items.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
     end
   end
   
@@ -32,8 +44,8 @@ class Api::ItemsController < ApplicationController
 
     respond_to do |format|
       if @item.save
-        format.json  { render :json => @item.to_json(:except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @item }
-        format.xml  { render :xml => @item.to_xml(:except => [:created_at, :updated_at, :account_id]), :status => :created, :location => @item }
+        format.json  { render :json => @item.to_json(:include => [:properties], :except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @item.to_xml(:include => [:properties], :except => [:created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @item.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @item.errors, :status => :unprocessable_entity }

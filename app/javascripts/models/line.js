@@ -66,9 +66,9 @@ var Line = new JS.Class({
   
   valid: function() {
     if(this.item != undefined) {
-      return this.quantity > 0 && this.price > 0 && this.item.valid();
+      return this.quantity > 0 && this.price >= 0 && this.item.valid();
     } else {
-      return this.quantity > 0 && this.price > 0;
+      return this.quantity > 0 && this.price >= 0;
     }
   }
 });

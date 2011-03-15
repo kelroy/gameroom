@@ -94,6 +94,6 @@ var Item = new JS.Class({
   },
   
   valid: function() {
-    return this.title != '' && this.price > 0;
+    return this.title != '' && this.price >= 0;
   }
 });

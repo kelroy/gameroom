@@ -18,6 +18,11 @@ var CartFormController = new JS.Class(FormController, {
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
+      base_price = parseInt(Currency.toPennies($('input#item_price', this).val()));
+      if(base_price <= 0) {
+        base_price = 0;
+      }
+      
       credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
       if(credit_price <= 0) {
         credit_price = 0;
@@ -32,7 +37,7 @@ var CartFormController = new JS.Class(FormController, {
         sell: false,
         condition: 5,
         quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
-        price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+        price: base_price,
         item: {
           title: $('input#item_title', this).val(),
           description: $('input#item_description', this).val(),

@@ -1032,7 +1032,7 @@ var Line = new JS.Class({
     } else {
       this.price = this.item.price;
     }
-    return this.price;
+    return parseInt(this.price);
   },
 
   _cashPrice: function() {
@@ -1041,7 +1041,7 @@ var Line = new JS.Class({
     } else {
       this.price = this.item.price;
     }
-    return this.price;
+    return parseInt(this.price);
   },
 
   purchaseCreditSubtotal: function() {
@@ -1477,7 +1477,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     this.callSuper();
     this.enabled = false;
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
-    $('a.apply', this.view).bind('click', {instance: this}, this.onApply);
+    $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
   },
 
   enable: function() {
@@ -1490,7 +1490,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     this.callSuper();
   },
 
-  onApply: function(event) {
+  onAmountDue: function(event) {
     if(event.data.instance.amount_due != 0 && event.data.instance.enabled) {
       input = $('input.payment', event.data.instance.view);
       input.val(Currency.format(event.data.instance.amount_due));
@@ -1698,7 +1698,7 @@ var Transaction = new JS.Class({
     if(this.subtotal() >= 0) {
       payment_total = 0;
       for(payment in this.payments) {
-        payment_total += parseInt(Math.floor(this.payments[payment].amount));
+        payment_total += parseInt(this.payments[payment].amount);
       }
       return this.total() - payment_total;
     } else {
@@ -2073,7 +2073,7 @@ var Currency = new JS.Class({
     },
 
     toPennies: function(currency) {
-      return currency * 100;
+      return parseInt(Math.ceil(currency * 100));
     }
   }
 });

@@ -64,7 +64,7 @@ var Transaction = new JS.Class({
     if(this.subtotal() >= 0) {
       payment_total = 0;
       for(payment in this.payments) {
-        payment_total += parseInt(Math.floor(this.payments[payment].amount));
+        payment_total += parseInt(this.payments[payment].amount);
       }
       return this.total() - payment_total;
     } else {

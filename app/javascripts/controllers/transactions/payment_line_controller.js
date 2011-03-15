@@ -6,7 +6,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     this.callSuper();
     this.enabled = false;
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
-    $('a.apply', this.view).bind('click', {instance: this}, this.onApply);
+    $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
   },
   
   enable: function() {
@@ -19,7 +19,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     this.callSuper();
   },
   
-  onApply: function(event) {
+  onAmountDue: function(event) {
     if(event.data.instance.amount_due != 0 && event.data.instance.enabled) {
       input = $('input.payment', event.data.instance.view);
       input.val(Currency.format(event.data.instance.amount_due));

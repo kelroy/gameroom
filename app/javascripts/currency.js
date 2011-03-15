@@ -10,7 +10,7 @@ var Currency = new JS.Class({
     },
     
     toPennies: function(currency) {
-      return currency * 100;
+      return parseInt(Math.ceil(currency * 100));
     }
   }
 });

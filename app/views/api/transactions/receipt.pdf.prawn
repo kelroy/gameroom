@@ -20,12 +20,13 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
     ]
   end
   
-  payments = @transaction.payments.map do |payment|
+  
+  payments = []
+  @transaction.payments.each do |payment|
     unless payment.amount == 0
-      [payment.form.gsub('_', ' ').capitalize, number_to_currency(payment.amount.to_f / 100)]
+      payments.push([payment.form.gsub('_', ' ').capitalize, number_to_currency(payment.amount.to_f / 100)])
     end
   end
-  
   summary = [
     ['Subtotal', number_to_currency(@transaction.subtotal.to_f / 100)],
     ['Tax', number_to_currency(@transaction.tax.to_f / 100)],

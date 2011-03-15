@@ -28,7 +28,7 @@ var Line = new JS.Class({
     } else {
       this.price = this.item.price;
     }
-    return this.price;
+    return parseInt(this.price);
   },
   
   _cashPrice: function() {
@@ -37,7 +37,7 @@ var Line = new JS.Class({
     } else {
       this.price = this.item.price;
     }
-    return this.price;
+    return parseInt(this.price);
   },
   
   purchaseCreditSubtotal: function() {

@@ -14,6 +14,7 @@ gem 'authlogic', :git => 'git://github.com/odorcicd/authlogic.git', :branch => '
 gem 'meta_where'
 gem 'meta_search'
 gem "will_paginate", "~> 3.0.pre2"
+gem 'prawn_rails'
 
 # Use unicorn as the web server
 # gem 'unicorn'

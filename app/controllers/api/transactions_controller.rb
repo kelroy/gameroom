@@ -25,13 +25,13 @@ class Api::TransactionsController < ApplicationController
   end
   
   # GET /transactions/1/receipt
-  # GET /transactions/1/receipt.xml
-  # GET /transactions/1/receipt.json
+  # GET /transactions/1/receipt.svg
   def receipt
     @transaction = Transaction.find(params[:id])
     
     respond_to do |format|
-      format.html {render :layout => 'receipt'} # api/transactions/receipt.html.haml
+      format.html { render :layout => 'receipt' } # api/transactions/receipt.html.haml
+      format.pdf                                  # api/transactions/receipt.pdf.prawn
     end
   end
   

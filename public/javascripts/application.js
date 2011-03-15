@@ -1255,6 +1255,7 @@ var CartFormController = new JS.Class(FormController, {
 
   reset: function() {
     this.callSuper();
+    $('input#item_quantity', this.view).val(1);
     $('input#item_taxable', this.view).attr('checked', true);
   },
 

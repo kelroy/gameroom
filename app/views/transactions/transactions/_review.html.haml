@@ -4,7 +4,7 @@
       %ul
         %li
           = f.label :quantity, "Receipt Qty."
-          = f.text_field :quantity, :value => 1
+          = f.number_field :quantity, :value => 1, :min => 1
   %h2{:id => 'review_customer'} No customer
 %ul{:id => 'review_nav', :class => 'tab_nav'}
   %li

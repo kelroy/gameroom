@@ -77,7 +77,7 @@ var Customer = new JS.Class({
         active: this.active
       };
       
-      if(this.person != null) {
+      if(this.person != undefined) {
         customer.person_attributes = {
           first_name: this.person.first_name,
           middle_name: this.person.middle_name,
@@ -144,6 +144,14 @@ var Customer = new JS.Class({
   },
   
   valid: function() {
+    if(this.credit == undefined || this.credit == null) {
+      return false;
+    }
+    if(this.person != undefined) {
+      if(!this.person.valid()) {
+        return false;
+      }
+    }
     return true;
   }
 });

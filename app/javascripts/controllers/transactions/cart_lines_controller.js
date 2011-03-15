@@ -17,6 +17,8 @@ var CartLinesController = new JS.Class(ViewController, {
   },
   
   reset: function() {
+    this.lines = [];
+    this.line_controllers = [];
     this.clearLines();
     this.showCartNotice();
     this.hideCartNav();
@@ -72,8 +74,6 @@ var CartLinesController = new JS.Class(ViewController, {
   },
   
   clearLines: function() {
-    this.lines = [];
-    this.line_controllers = [];
     $('ul#cart_lines > li').remove();
   },
   

@@ -11,6 +11,9 @@ var SearchController = new JS.Class(ViewController, {
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
     this.reset();
   },
   

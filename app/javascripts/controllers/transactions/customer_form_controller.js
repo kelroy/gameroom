@@ -57,6 +57,10 @@ var CustomerFormController = new JS.Class(FormController, {
   },
   
   save: function() {
+    addresses = [];
+    phones = [];
+    emails = [];
+    
     address = new Address({
       first_line: $('input#customer_person_address_first_line', this.view).val(),
       second_line: $('input#customer_person_address_second_line', this.view).val(),
@@ -65,21 +69,33 @@ var CustomerFormController = new JS.Class(FormController, {
       zip: $('input#customer_person_address_zip', this.view).val(),
     });
     
+    if(address.valid()) {
+      addresses.push(address);
+    }
+    
     phone = new Phone({
       number: $('input#customer_person_phone_number', this.view).val()
     });
+    
+    if(phone.valid()) {
+      phones.push(phone);
+    }
     
     email = new Email({
       address: $('input#customer_person_email_address', this.view).val()
     });
     
+    if(email.valid()) {
+      emails.push(email);
+    }
+    
     person = new Person({
       first_name: $('input#customer_person_first_name', this.view).val(),
       middle_name: $('input#customer_person_middle_name', this.view).val(),
       last_name: $('input#customer_person_last_name', this.view).val(),
-      addresses: [address],
-      phones: [phone],
-      emails: [email]
+      addresses: addresses,
+      phones: phones,
+      emails: emails
     });
     
     customer = new Customer({
@@ -93,14 +109,24 @@ var CustomerFormController = new JS.Class(FormController, {
     });
     
     controller = this;
-    customer.save(function(customer) {
+    success = customer.save(function(customer) {
       controller.update(new Customer(customer));
       controller.notifyObservers(new Customer(customer));
     });
+    
+    if(!success) {
+      this.error();
+    };
+  },
+  
+  
+  error: function() {
+    $(':required', this.view).addClass('error');
   },
   
   reset: function() {
     this.callSuper();
     $('input#customer_credit', this.view).val(0);
+    $(':required', this.view).removeClass('error');
   }
 });

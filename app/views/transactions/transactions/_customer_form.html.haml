@@ -3,10 +3,10 @@
     = c.fields_for :person do |p|
       %li
         = p.label :first_name, "First Name"
-        = p.text_field :first_name
+        = p.text_field :first_name, :required => true
       %li
         = p.label :last_name, "Last Name"
-        = p.text_field :last_name
+        = p.text_field :last_name, :required => true
       %li
         = p.label :middle_name, "Middle Name"
         = p.text_field :middle_name
@@ -37,7 +37,7 @@
       = p.fields_for :email do |e|
         %li
           = e.label :address, "Email Address"
-          = e.text_field :address
+          = e.email_field :address
     %li
       = c.label :drivers_license_number, "Drivers License No."
       = c.text_field :drivers_license_number

@@ -17,8 +17,13 @@ form
       
   input, textarea, select
     font-family: LatinModernMonoLight10Regular, Tacoma, serif
+    
+    &.error
+      background-color: $light_gray
       
   input[type=text],
+  input[type=email],
+  input[type=number],
   input[type=password],
   textarea
     padding: 4px

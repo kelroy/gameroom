@@ -25,6 +25,27 @@ var Person = new JS.Class({
   },
   
   valid: function() {
+    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
+      return false;
+    }
+    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
+      return false;
+    }
+    for(address in this.addresses) {
+      if(!this.addresses[address].valid()) {
+        return false;
+      }
+    }
+    for(phone in this.phones) {
+      if(!this.phones[phone].valid()) {
+        return false;
+      }
+    }
+    for(email in this.emails) {
+      if(!this.emails[email].valid()) {
+        return false;
+      }
+    }
     return true;
   }
 });

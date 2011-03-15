@@ -31,7 +31,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
     this.customer_page_controller.reset();
-    this.showFormSection();
+    this.showReviewSection();
   },
   
   showReviewSection: function() {

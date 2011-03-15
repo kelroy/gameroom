@@ -10,6 +10,9 @@ var Email = new JS.Class({
   },
   
   valid: function() {
+    if(this.address == '' || this.address == undefined || this.address == null) {
+      return false;
+    }
     return true;
   }
 });

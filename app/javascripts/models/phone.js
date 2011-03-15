@@ -11,6 +11,9 @@ var Phone = new JS.Class({
   },
   
   valid: function() {
+    if(this.number == '' || this.number == undefined || this.number == null) {
+      return false;
+    }
     return true;
   }
 });

@@ -1,5 +1,6 @@
 class Transaction < ActiveRecord::Base
-  after_save              :update_customer, :update_till
+  after_create            :finish
+  after_create            'self.complete = true'
   attr_readonly           :till_id
   
   belongs_to  :till
@@ -58,7 +59,7 @@ class Transaction < ActiveRecord::Base
   
   # Update customer
   def update_customer
-    unless self.customer.nil?
+    unless self.complete? || self.customer.nil?
       credit = 0
       self.payments.each do |payment|
         if payment.form == 'store_credit'
@@ -71,7 +72,7 @@ class Transaction < ActiveRecord::Base
   
   # Update till
   def update_till
-    unless self.till.nil?
+    unless self.complete? || self.till.nil?
       cash_total = 0
       self.payments.each do |payment|
         if payment.form == 'cash'
@@ -79,14 +80,22 @@ class Transaction < ActiveRecord::Base
         end
       end
       if self.total < 0
-        if cash_total > 0
-          self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
+        if cash_total != 0
+          self.till.entries.create(:title => "Transaction: #{self.id}", :amount => cash_total)
         end
       elsif self.total > 0
         amount = cash_total - self.change
-        self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
+        if amount != 0
+          self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
+        end
       end
     end
+  end
+  
+  # Finish the transaction
+  def finish
+    self.update_customer
+    self.update_till
   end
   
   # Is transaction complete?

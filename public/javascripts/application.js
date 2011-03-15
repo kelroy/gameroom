@@ -155,6 +155,9 @@ var SearchController = new JS.Class(ViewController, {
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
     this.reset();
   },
 
@@ -273,6 +276,10 @@ var CustomerFormController = new JS.Class(FormController, {
   },
 
   save: function() {
+    addresses = [];
+    phones = [];
+    emails = [];
+
     address = new Address({
       first_line: $('input#customer_person_address_first_line', this.view).val(),
       second_line: $('input#customer_person_address_second_line', this.view).val(),
@@ -281,21 +288,33 @@ var CustomerFormController = new JS.Class(FormController, {
       zip: $('input#customer_person_address_zip', this.view).val(),
     });
 
+    if(address.valid()) {
+      addresses.push(address);
+    }
+
     phone = new Phone({
       number: $('input#customer_person_phone_number', this.view).val()
     });
+
+    if(phone.valid()) {
+      phones.push(phone);
+    }
 
     email = new Email({
       address: $('input#customer_person_email_address', this.view).val()
     });
 
+    if(email.valid()) {
+      emails.push(email);
+    }
+
     person = new Person({
       first_name: $('input#customer_person_first_name', this.view).val(),
       middle_name: $('input#customer_person_middle_name', this.view).val(),
       last_name: $('input#customer_person_last_name', this.view).val(),
-      addresses: [address],
-      phones: [phone],
-      emails: [email]
+      addresses: addresses,
+      phones: phones,
+      emails: emails
     });
 
     customer = new Customer({
@@ -309,15 +328,25 @@ var CustomerFormController = new JS.Class(FormController, {
     });
 
     controller = this;
-    customer.save(function(customer) {
+    success = customer.save(function(customer) {
       controller.update(new Customer(customer));
       controller.notifyObservers(new Customer(customer));
     });
+
+    if(!success) {
+      this.error();
+    };
+  },
+
+
+  error: function() {
+    $(':required', this.view).addClass('error');
   },
 
   reset: function() {
     this.callSuper();
     $('input#customer_credit', this.view).val(0);
+    $(':required', this.view).removeClass('error');
   }
 });
 
@@ -450,6 +479,27 @@ var Person = new JS.Class({
   },
 
   valid: function() {
+    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
+      return false;
+    }
+    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
+      return false;
+    }
+    for(address in this.addresses) {
+      if(!this.addresses[address].valid()) {
+        return false;
+      }
+    }
+    for(phone in this.phones) {
+      if(!this.phones[phone].valid()) {
+        return false;
+      }
+    }
+    for(email in this.emails) {
+      if(!this.emails[email].valid()) {
+        return false;
+      }
+    }
     return true;
   }
 });
@@ -529,7 +579,7 @@ var Customer = new JS.Class({
         active: this.active
       };
 
-      if(this.person != null) {
+      if(this.person != undefined) {
         customer.person_attributes = {
           first_name: this.person.first_name,
           middle_name: this.person.middle_name,
@@ -596,6 +646,14 @@ var Customer = new JS.Class({
   },
 
   valid: function() {
+    if(this.credit == undefined || this.credit == null) {
+      return false;
+    }
+    if(this.person != undefined) {
+      if(!this.person.valid()) {
+        return false;
+      }
+    }
     return true;
   }
 });
@@ -662,7 +720,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
     this.customer_page_controller.reset();
-    this.showFormSection();
+    this.showReviewSection();
   },
 
   showReviewSection: function() {
@@ -830,6 +888,8 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   reset: function() {
+    this.lines = [];
+    this.line_controllers = [];
     this.clearLines();
     this.showCartNotice();
     this.hideCartNav();
@@ -885,8 +945,6 @@ var CartLinesController = new JS.Class(ViewController, {
   },
 
   clearLines: function() {
-    this.lines = [];
-    this.line_controllers = [];
     $('ul#cart_lines > li').remove();
   },
 
@@ -2604,11 +2662,19 @@ var Address = new JS.Class({
     this.zip = params.zip;
   },
 
-  save: function() {
-
-  },
-
   valid: function() {
+    if(this.first_line == '' || this.first_line == undefined || this.first_line == null) {
+      return false;
+    }
+    if(this.city == '' || this.city == undefined || this.city == null) {
+      return false;
+    }
+    if(this.state == '' || this.state == undefined || this.state == null) {
+      return false;
+    }
+    if(this.zip == '' || this.zip == undefined || this.zip == null) {
+      return false;
+    }
     return true;
   }
 });
@@ -2624,6 +2690,9 @@ var Email = new JS.Class({
   },
 
   valid: function() {
+    if(this.address == '' || this.address == undefined || this.address == null) {
+      return false;
+    }
     return true;
   }
 });
@@ -2659,6 +2728,9 @@ var Phone = new JS.Class({
   },
 
   valid: function() {
+    if(this.number == '' || this.number == undefined || this.number == null) {
+      return false;
+    }
     return true;
   }
 });

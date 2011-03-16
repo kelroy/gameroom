@@ -9,12 +9,12 @@
         %li
           %a{:href => '#clear', :class => 'button clear'} Clear
         %li
-          %a{:href => '#save', :class => 'button save'} Add
+          %a{:href => '#save', :class => 'button save'} Add All To Cart
   - (1..5).each do
     %ul{:class => 'item_elements'}
       %li
         = g.label :quantity, "Qty."
-        = g.text_field :quantity
+        = g.text_field :quantity, :class => 'quantity'
       %li
         = g.label :title, "Title"
         = g.text_field :title
@@ -25,7 +25,7 @@
         = g.label :price, "Base Price"
         = g.text_field :price, :placeholder => '0.00', :class => 'price'
       %li
-        = g.label :credit, "Store Credit Price"
+        = g.label :credit, "Credit Price"
         = g.text_field :credit, :placeholder => '0.00', :class => 'price'
       %li
         = g.label :cash, "Cash Price"
@@ -36,3 +36,6 @@
       %li
         = g.label :clear
         %a{:href => '#clear', :class => 'button clear_row'} Clear
+      %li
+        = g.label :add
+        %a{:href => '#add', :class => 'button add_row'} Add

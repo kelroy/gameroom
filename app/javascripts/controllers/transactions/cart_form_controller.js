@@ -13,11 +13,17 @@ var CartFormController = new JS.Class(FormController, {
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
     $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
+    $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
   },
   
   save: function() {
     lines = [];
     $('ul.item_elements', this.view).each(function() {
+      base_price = parseInt(Currency.toPennies($('input#item_price', this).val()));
+      if(base_price <= 0) {
+        base_price = 0;
+      }
+      
       credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
       if(credit_price <= 0) {
         credit_price = 0;
@@ -32,7 +38,7 @@ var CartFormController = new JS.Class(FormController, {
         sell: false,
         condition: 5,
         quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
-        price: parseInt(Currency.toPennies($('input#item_price', this).val())),
+        price: base_price,
         item: {
           title: $('input#item_title', this).val(),
           description: $('input#item_description', this).val(),
@@ -70,6 +76,7 @@ var CartFormController = new JS.Class(FormController, {
   
   reset: function() {
     this.callSuper();
+    $('input#item_quantity', this.view).val(1);
     $('input#item_taxable', this.view).attr('checked', true);
   },
   
@@ -105,6 +112,10 @@ var CartFormController = new JS.Class(FormController, {
       .val(null)
       .removeAttr('checked')
       .removeAttr('selected');
+    event.preventDefault();
+  },
+  
+  onAddRow: function(event) {
     event.preventDefault();
   }
 });

@@ -1,19 +1,11 @@
-%div{:id => 'payment_summary', :class => 'payment_line'}
+%div{:id => 'payment_cart', :class => 'payment_line'}
   %ul
     %li
-      %span{:id => 'payment_summary_items', :class => 'payment_plain'}
+      %span{:id => 'payment_cart_items', :class => 'payment_plain'} 0 item(s)
     %li
       %span{:class => 'payment_symbol'} =
     %li
-      %span{:id => 'payment_summary_subtotal', :class => 'payment_pill'}
-    %li
-      %span{:class => 'payment_symbol'} +
-    %li
-      %span{:id => 'payment_summary_tax', :class => 'payment_pill'}
-    %li
-      %span{:class => 'payment_symbol'} =
-    %li 
-      %span{:id => 'payment_summary_total', :class => 'payment_pill'}
+      %span{:id => 'payment_cart_subtotal', :class => 'payment_pill'} $10.00
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} -
 %div{:id => 'payment_store_credit', :class => 'payment_line'}
@@ -29,6 +21,20 @@
       = form_for :store_credit, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
+%div{:id => 'payment_summary', :class => 'payment_line'}
+  %ul
+    %li
+      %span{:class => 'payment_symbol'} =
+    %li
+      %span{:id => 'payment_summary_subtotal', :class => 'payment_pill'}
+    %li
+      %span{:class => 'payment_symbol'} +
+    %li
+      %span{:id => 'payment_summary_tax', :class => 'payment_pill'}
+    %li
+      %span{:class => 'payment_symbol'} =
+    %li 
+      %span{:id => 'payment_summary_total', :class => 'payment_pill'}
 %div{:class => 'payment_divider'}
   %span{:class => 'payment_symbol'} +
 %div{:id => 'payment_gift_card', :class => 'payment_line'}

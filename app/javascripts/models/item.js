@@ -65,6 +65,10 @@ var Item = new JS.Class({
     this.active = params.active;
   },
   
+  basePrice: function() {
+    return this.price;
+  },
+  
   creditPrice: function() {
     var credit_price = 0;
     for(property in this.properties) {
@@ -94,6 +98,6 @@ var Item = new JS.Class({
   },
   
   valid: function() {
-    return this.title != '' && this.price > 0;
+    return this.title != '' && this.price >= 0;
   }
 });

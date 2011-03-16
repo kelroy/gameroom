@@ -64,18 +64,18 @@ var CartLineController = new JS.Class(ViewController, {
   },
   
   setPurchase: function() {
-    this.line.sell = false;
+    this.line.setPurchase();
     this.notifyObservers(this.line_index, this.line);
   },
   
   setSell: function() {
-    this.line.sell = true;
+    this.line.setSell();
     this.notifyObservers(this.line_index, this.line);
   },
   
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
+    event.data.instance.line.setCondition(parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition')));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -88,7 +88,7 @@ var CartLineController = new JS.Class(ViewController, {
   
   onPlus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
-    event.data.instance.line.quantity = parseInt(quantity) + 1;
+    event.data.instance.line.setQuantity(parseInt(quantity) + 1);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -96,7 +96,7 @@ var CartLineController = new JS.Class(ViewController, {
   onMinus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
-      event.data.instance.line.quantity = parseInt(quantity) - 1;
+      event.data.instance.line.setQuantity(parseInt(quantity) - 1);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();

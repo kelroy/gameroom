@@ -809,18 +809,18 @@ var CartLineController = new JS.Class(ViewController, {
   },
 
   setPurchase: function() {
-    this.line.sell = false;
+    this.line.setPurchase();
     this.notifyObservers(this.line_index, this.line);
   },
 
   setSell: function() {
-    this.line.sell = true;
+    this.line.setSell();
     this.notifyObservers(this.line_index, this.line);
   },
 
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.condition = parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition'));
+    event.data.instance.line.setCondition(parseInt($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition')));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -833,7 +833,7 @@ var CartLineController = new JS.Class(ViewController, {
 
   onPlus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
-    event.data.instance.line.quantity = parseInt(quantity) + 1;
+    event.data.instance.line.setQuantity(parseInt(quantity) + 1);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -841,7 +841,7 @@ var CartLineController = new JS.Class(ViewController, {
   onMinus: function(event) {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
-      event.data.instance.line.quantity = parseInt(quantity) - 1;
+      event.data.instance.line.setQuantity(parseInt(quantity) - 1);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();
@@ -1023,57 +1023,30 @@ var Line = new JS.Class({
   },
 
   subtotal: function() {
-    return this.quantity * this._creditPrice();
-  },
-
-  _creditPrice: function() {
-    if(this.sell) {
-      this.price = this.item.creditPrice() * (this.condition / 5) * -1;
-    } else {
-      this.price = this.item.price;
-    }
-    return parseInt(this.price);
-  },
-
-  _cashPrice: function() {
-    if(this.sell) {
-      this.price = this.item.cashPrice() * (this.condition / 5) * -1;
-    } else {
-      this.price = this.item.price;
-    }
-    return parseInt(this.price);
-  },
-
-  purchaseCreditSubtotal: function() {
-    if(this.sell) {
-      return 0;
-    } else {
-      return this.quantity * this._creditPrice();
-    }
-  },
-
-  creditSubtotal: function() {
-    if(this.sell) {
-      return this.quantity * this._creditPrice();
-    } else {
-      return 0;
-    }
-  },
-
-  cashSubtotal: function() {
-    if(this.sell) {
-      return this.quantity * this._cashPrice();
-    } else {
-      return 0;
-    }
+    return this.quantity * this.price;
   },
 
   valid: function() {
     if(this.item != undefined) {
-      return this.quantity > 0 && this.price > 0 && this.item.valid();
+      return this.quantity > 0 && this.price >= 0 && this.item.valid();
     } else {
-      return this.quantity > 0 && this.price > 0;
+      return this.quantity > 0 && this.price >= 0;
     }
+  },
+
+  setCondition: function(condition) {
+    this.condition = condition;
+    this.price = parseInt(this.item.creditPrice() * this.condition);
+  },
+
+  setPurchase: function() {
+    this.sell = false;
+    this.price = this.item.basePrice();
+  },
+
+  setSell: function() {
+    this.sell = true;
+    this.price = parseInt(this.item.creditPrice() * -1);
   }
 });
 var Item = new JS.Class({
@@ -1143,6 +1116,10 @@ var Item = new JS.Class({
     this.active = params.active;
   },
 
+  basePrice: function() {
+    return this.price;
+  },
+
   creditPrice: function() {
     var credit_price = 0;
     for(property in this.properties) {
@@ -1172,7 +1149,7 @@ var Item = new JS.Class({
   },
 
   valid: function() {
-    return this.title != '' && this.price > 0;
+    return this.title != '' && this.price >= 0;
   }
 });
 var Property = new JS.Class({

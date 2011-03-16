@@ -1484,6 +1484,9 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
     this.enabled = false;
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
   },
 
   enable: function() {
@@ -2107,11 +2110,14 @@ var ReviewController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
-    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
+    this.callSuper();
     this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
     this.line = $('div#review_lines table > tbody > tr', view).detach();
-    this.reset();
-    this.callSuper();
+
+    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
   },
 
   reset: function() {

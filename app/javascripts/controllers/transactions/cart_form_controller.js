@@ -13,6 +13,7 @@ var CartFormController = new JS.Class(FormController, {
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
     $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
+    $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
   },
   
   save: function() {
@@ -111,6 +112,10 @@ var CartFormController = new JS.Class(FormController, {
       .val(null)
       .removeAttr('checked')
       .removeAttr('selected');
+    event.preventDefault();
+  },
+  
+  onAddRow: function(event) {
     event.preventDefault();
   }
 });

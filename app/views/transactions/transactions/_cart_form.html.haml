@@ -9,7 +9,7 @@
         %li
           %a{:href => '#clear', :class => 'button clear'} Clear
         %li
-          %a{:href => '#save', :class => 'button save'} Add
+          %a{:href => '#save', :class => 'button save'} Add All To Cart
   - (1..5).each do
     %ul{:class => 'item_elements'}
       %li
@@ -36,3 +36,6 @@
       %li
         = g.label :clear
         %a{:href => '#clear', :class => 'button clear_row'} Clear
+      %li
+        = g.label :add
+        %a{:href => '#add', :class => 'button add_row'} Add

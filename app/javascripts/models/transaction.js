@@ -48,15 +48,33 @@ var Transaction = new JS.Class({
   },
   
   total: function() {
-    return parseInt(this.subtotal() + this.tax());
+    return parseInt(this.taxableSubtotal() + this.tax());
   },
   
   tax: function() {
     subtotal = this.subtotal();
     if(subtotal > 0) {
-      return parseInt(Math.floor(subtotal * this.tax_rate));
+      return parseInt(Math.floor(this.taxableSubtotal() * this.tax_rate));
     } else {
       return 0;
+    }
+  },
+  
+  ratio: function() {
+    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+  },
+  
+  taxableSubtotal: function() {
+    if(this.subtotal() >= 0) {
+      store_credit_payment = 0;
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(this.payments[payment].amount);
+        }
+      }
+      return this.subtotal() - store_credit_payment;
+    } else {
+      return this.subtotal();
     }
   },
   
@@ -64,26 +82,20 @@ var Transaction = new JS.Class({
     if(this.subtotal() >= 0) {
       payment_total = 0;
       for(payment in this.payments) {
-        payment_total += parseInt(this.payments[payment].amount);
+        if(this.payments[payment].form != 'store_credit') {
+          payment_total += parseInt(this.payments[payment].amount);
+        }
       }
       return this.total() - payment_total;
     } else {
-      cash_payment = new Payment({form: 'cash', amount: 0});
+      cash_payment = 0;
       for(payment in this.payments) {
         if(this.payments[payment].form == 'cash') {
-          cash_payment = this.payments[payment];
+          cash_payment += this.payments[payment].amount;
         }
       }
-      if(cash_payment.amount != 0) {
-        return cash_payment.amount;
-      } else {
-        return 0;
-      }
+      return cash_payment;
     }
-  },
-  
-  ratio: function() {
-    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
   },
   
   countItems: function() {
@@ -92,43 +104,6 @@ var Transaction = new JS.Class({
       count += this.lines[line].quantity;
     }
     return count;
-  },
-  
-  setLines: function(lines) {
-    this.lines = lines;
-    
-    subtotal = this.subtotal();
-    for(payment in this.payments) {
-      if(subtotal < 0 && this.payments[payment].amount > 0) {
-        this.payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && this.payments[payment].amount < 0) {
-        this.payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && this.payments[payment].form == 'store_credit' && this.payments[payment].amount > this.total()) {
-        this.payments[payment].amount = 0;
-      }
-      if(subtotal < 0 && this.payments[payment].form == 'store_credit') {
-        this.payments[payment].amount = this._calculateStoreCreditPayout(0) * -1;
-        this._updatePayment('cash', new Payment({form: 'cash', amount: 0}));
-      }
-    }
-  },
-  
-  purchaseCreditSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].purchaseCreditSubtotal();
-    }
-    return subtotal;
-  },
-  
-  payoutCreditSubtotal: function() {
-    return this.creditSubtotal() - this.purchaseCreditSubtotal();
-  },
-  
-  payoutCashSubtotal: function() {
-    return this.payoutCreditSubtotal() * this.ratio();
   },
   
   creditSubtotal: function() {
@@ -147,44 +122,65 @@ var Transaction = new JS.Class({
     return Math.abs(subtotal);
   },
   
-  updatePayment: function(updated_payment) {
-    if(this.subtotal() < 0) {
-      switch(updated_payment.form) {
-        case 'store_credit':
-          store_credit_subtotal = this.payoutCreditSubtotal();
-          if(Math.abs(updated_payment.amount) > store_credit_subtotal) {
-            updated_payment.amount = store_credit_subtotal * -1;
-          }
-          this._updatePayment('cash', new Payment({form: 'cash', amount: this._calculateCashPayout(Math.abs(updated_payment.amount)) * -1}));
-          break;
-        case 'cash':
-          cash_subtotal = this.payoutCashSubtotal();
-          if(Math.abs(updated_payment.amount) > cash_subtotal) {
-            updated_payment.amount = cash_subtotal * -1;
-          }
-          this._updatePayment('store_credit', new Payment({form: 'store_credit', amount: this._calculateStoreCreditPayout(Math.abs(updated_payment.amount)) * -1}));
-          break;
-        default:
-          break;
+  setLines: function(lines) {
+    this.lines = lines;
+    
+    subtotal = this.subtotal();
+    credit_payout = 0;
+    cash_payout = 0;
+    for(payment in this.payments) {
+      if(subtotal < 0 && this.payments[payment].amount > 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].amount < 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(this.payments[payment].form == 'store_credit') {
+        credit_payout = this.payments[payment].amount;
+      }
+      if(this.payments[payment].form == 'cash') {
+        cash_payout = this.payments[payment].amount;
       }
     }
-    this._updatePayment(updated_payment.form, updated_payment);
+    if(subtotal < 0) {
+      if(credit_payout == 0 && cash_payout == 0) {
+        this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
+      }
+    }
   },
   
-  _updatePayment: function(form, updated_payment) {
+  updateCreditPayout: function(amount) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      // this.setPayoutRatio(?);
+    }
+  },
+  
+  updateCashPayout: function(amount) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      // this.setPayoutRatio(?);
+    }
+  },
+  
+  updatePayoutRatio: function(ratio) {
+    if(ratio < 0 || ratio > 1) {
+      ratio = 1;
+    }
+    credit_cash_ratio = this.ratio();
+    subtotal = this.subtotal();
+    credit_payout = parseInt(subtotal * ratio);
+    cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
+    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
+    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
+  },
+  
+  updatePayment: function(updated_payment) {
     for(payment in this.payments) {
-      if(this.payments[payment].form == form) {
+      if(this.payments[payment].form == updated_payment.form) {
         this.payments[payment] = updated_payment;
       }
     }
-  },
-  
-  _calculateStoreCreditPayout: function(cash_amount) {
-    return (1.0 / this.ratio()) * (this.payoutCashSubtotal() - cash_amount);
-  },
-  
-  _calculateCashPayout: function(store_credit_amount) {
-    return (this.payoutCreditSubtotal() - store_credit_amount) * this.ratio();
   },
   
   save: function(callback) {

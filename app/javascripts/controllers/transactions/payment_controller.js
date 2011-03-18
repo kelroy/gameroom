@@ -27,7 +27,6 @@ var PaymentController = new JS.Class(ViewController, {
     this.cash_controller.addObserver(this.updatePayment, this);
     this.store_credit_payout_controller.addObserver(this.updatePayment, this);
     this.cash_payout_controller.addObserver(this.updatePayment, this);
-    this.scale_controller.addObserver(this.onScale, this);
     this.reset();
   },
   
@@ -38,8 +37,8 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   resetSummary: function() {
-    $('div#payment_summary span#payment_summary_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html('$0.00');
+    $('div#payment_summary span#payment_cart_items', this.view).html('0 item(s) in cart');
+    $('div#payment_summary span#payment_cart_subtotal', this.view).html('$0.00');
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
     $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');
@@ -80,7 +79,7 @@ var PaymentController = new JS.Class(ViewController, {
     for(payment in transaction.payments) {
       switch(transaction.payments[payment].form) {
         case 'store_credit':
-          this.store_credit_controller.update(transaction.payments[payment].amount, amount_due, transaction.customer);
+          this.store_credit_controller.update(transaction.payments[payment].amount, transaction.subtotal(), transaction.customer);
           this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
           break;
         case 'cash':
@@ -99,7 +98,6 @@ var PaymentController = new JS.Class(ViewController, {
       }
     }
     
-    this.scale_controller.update(transaction);
     this.updateSummary(transaction);
     
     if(transaction.total() >= 0) {
@@ -109,18 +107,15 @@ var PaymentController = new JS.Class(ViewController, {
     }
   },
   
-  onScale: function(amount) {
-    this.store_credit_payout_controller.set(Currency.format(amount));
-  },
-  
   updatePayment: function(payment) {
     this.notifyObservers(payment);
   },
   
   updateSummary: function(transaction) {
     amount_due = transaction.amountDue();
-    $('div#payment_summary span#payment_summary_items', this.view).html(transaction.countItems() + ' item(s) in cart');
-    $('div#payment_summary span#payment_summary_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
+    $('div#payment_cart span#payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
+    $('div#payment_cart span#payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
+    $('div#payment_summary span#payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.taxableSubtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
     if(amount_due >= 0) {

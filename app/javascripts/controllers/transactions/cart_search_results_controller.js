@@ -32,9 +32,9 @@ var CartSearchResultsController = new JS.Class(ViewController, {
       if(item != null) {
         line = new Line({
           sell: false,
-          condition: 5,
+          condition: 1,
           quantity: 1,
-          item: item
+          item: item,
         });
         controller.notifyObservers([new Line(line)]);
       }

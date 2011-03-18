@@ -36,9 +36,8 @@ var CartFormController = new JS.Class(FormController, {
       
       line = new Line({
         sell: false,
-        condition: 5,
+        condition: 1,
         quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
-        price: base_price,
         item: {
           title: $('input#item_title', this).val(),
           description: $('input#item_description', this).val(),

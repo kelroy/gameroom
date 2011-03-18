@@ -39,7 +39,7 @@ var Line = new JS.Class({
   
   creditSubtotal: function() {
     if(this.sell) {
-      return parseInt(Math.ceil(this.quantity * this.item.creditPrice() * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
     } else {
       return 0;
     }
@@ -47,7 +47,7 @@ var Line = new JS.Class({
   
   cashSubtotal: function() {
     if(this.sell) {
-      return parseInt(Math.ceil(this.quantity * this.item.cashPrice() * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
     } else {
       return 0;
     }

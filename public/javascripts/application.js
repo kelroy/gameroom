@@ -327,17 +327,35 @@ var CustomerFormController = new JS.Class(FormController, {
       active: !$('input#customer_flagged', this.view).is(':checked')
     });
 
-    controller = this;
-    success = customer.save(function(customer) {
-      controller.update(new Customer(customer));
-      controller.notifyObservers(new Customer(customer));
-    });
-
-    if(!success) {
+    if(this.valid()) {
+      controller = this;
+      success = customer.save(function(customer) {
+        controller.update(new Customer(customer));
+        controller.notifyObservers(new Customer(customer));
+      });
+      if(!success) {
+        this.error();
+      }
+    } else {
       this.error();
-    };
+    }
   },
 
+  valid: function() {
+    if($('input#customer_person_first_name', this.view).val() == null) {
+      return false;
+    }
+    if($('input#customer_person_last_name', this.view).val() == null) {
+      return false;
+    }
+    if($('input#customer_person_phone_number', this.view).val() == null &&
+       $('input#customer_person_email_address', this.view).val() == null &&
+       $('input#customer_drivers_license_number', this.view).val() == null &&
+       $('input#customer_drivers_license_number', this.view).val() == null) {
+      return false;
+    }
+    return true;
+  },
 
   error: function() {
     $(':required', this.view).addClass('error');
@@ -1033,7 +1051,7 @@ var Line = new JS.Class({
 
   creditSubtotal: function() {
     if(this.sell) {
-      return parseInt(Math.ceil(this.quantity * this.item.creditPrice() * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
     } else {
       return 0;
     }
@@ -1041,7 +1059,7 @@ var Line = new JS.Class({
 
   cashSubtotal: function() {
     if(this.sell) {
-      return parseInt(Math.ceil(this.quantity * this.item.cashPrice() * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
     } else {
       return 0;
     }
@@ -1549,6 +1567,11 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
+    this.callSuper();
+    this.customer = null;
+  },
+
+  reset: function() {
     this.customer = new Customer({});
     this.callSuper();
   },
@@ -1703,7 +1726,7 @@ var Transaction = new JS.Class({
   tax: function() {
     subtotal = this.subtotal();
     if(subtotal > 0) {
-      return parseInt(Math.floor(this.taxableSubtotal() * this.tax_rate));
+      return parseInt(Math.round(this.taxableSubtotal() * this.tax_rate));
     } else {
       return 0;
     }
@@ -1902,9 +1925,9 @@ var Transaction = new JS.Class({
   },
 
   valid: function() {
-    if(this.total() > 0 && this.amountDue() <= 0) {
+    if(this.subtotal() > 0 && this.amountDue() <= 0) {
       return true;
-    } else if(this.total() < 0) {
+    } else if(this.subtotal() < 0) {
       if(this.customer != undefined) {
         if(this.customer.valid()) {
           return true;
@@ -2070,7 +2093,7 @@ var Currency = new JS.Class({
     },
 
     toPennies: function(currency) {
-      return parseInt(Math.ceil(currency * 100));
+      return parseInt(Math.round(currency * 100));
     }
   }
 });

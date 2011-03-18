@@ -108,17 +108,35 @@ var CustomerFormController = new JS.Class(FormController, {
       active: !$('input#customer_flagged', this.view).is(':checked')
     });
     
-    controller = this;
-    success = customer.save(function(customer) {
-      controller.update(new Customer(customer));
-      controller.notifyObservers(new Customer(customer));
-    });
-    
-    if(!success) {
+    if(this.valid()) {
+      controller = this;
+      success = customer.save(function(customer) {
+        controller.update(new Customer(customer));
+        controller.notifyObservers(new Customer(customer));
+      });
+      if(!success) {
+        this.error();
+      }
+    } else {
       this.error();
-    };
+    }
   },
   
+  valid: function() {
+    if($('input#customer_person_first_name', this.view).val() == null) {
+      return false;
+    }
+    if($('input#customer_person_last_name', this.view).val() == null) {
+      return false;
+    }
+    if($('input#customer_person_phone_number', this.view).val() == null &&
+       $('input#customer_person_email_address', this.view).val() == null &&
+       $('input#customer_drivers_license_number', this.view).val() == null &&
+       $('input#customer_drivers_license_number', this.view).val() == null) {
+      return false;
+    }
+    return true;
+  },
   
   error: function() {
     $(':required', this.view).addClass('error');

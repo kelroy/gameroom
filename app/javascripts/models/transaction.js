@@ -54,7 +54,7 @@ var Transaction = new JS.Class({
   tax: function() {
     subtotal = this.subtotal();
     if(subtotal > 0) {
-      return parseInt(Math.floor(this.taxableSubtotal() * this.tax_rate));
+      return parseInt(Math.round(this.taxableSubtotal() * this.tax_rate));
     } else {
       return 0;
     }
@@ -255,9 +255,9 @@ var Transaction = new JS.Class({
   },
   
   valid: function() {
-    if(this.total() > 0 && this.amountDue() <= 0) {
+    if(this.subtotal() > 0 && this.amountDue() <= 0) {
       return true;
-    } else if(this.total() < 0) {
+    } else if(this.subtotal() < 0) {
       if(this.customer != undefined) {
         if(this.customer.valid()) {
           return true;

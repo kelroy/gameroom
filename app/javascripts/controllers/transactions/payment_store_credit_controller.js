@@ -4,6 +4,11 @@
 var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
+    this.callSuper();
+    this.customer = null;
+  },
+  
+  reset: function() {
     this.customer = new Customer({});
     this.callSuper();
   },

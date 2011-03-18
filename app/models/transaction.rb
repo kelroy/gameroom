@@ -25,7 +25,7 @@ class Transaction < ActiveRecord::Base
   # Calculate tax in pennies
   def tax
     if(self.subtotal > 0)
-      (self.subtotal * self.tax_rate).floor.to_i
+      (self.subtotal * self.tax_rate).round.to_i
     else
       0
     end

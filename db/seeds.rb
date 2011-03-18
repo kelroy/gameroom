@@ -51,8 +51,8 @@ unless Rails.env.production?
     description = (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize
     sku = (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase
     price = (rand(9999) + 1)
-    credit_price = (price * 0.8).floor
-    cash_price = (credit_price / 2).floor
+    credit_price = (price * 0.8).round
+    cash_price = (credit_price / 2).round
     item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :taxable => rand(100).even?, :locked => true, :active => true)
     item.properties << Factory.create(:property, :item => item, :key => 'credit_price', :value => credit_price)
     item.properties << Factory.create(:property, :item => item, :key => 'cash_price', :value => cash_price)

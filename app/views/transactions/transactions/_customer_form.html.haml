@@ -33,17 +33,17 @@
       = p.fields_for :phone do |h|
         %li
           = h.label :number, "Phone Number"
-          = h.text_field :number
+          = h.text_field :number, :required => true
       = p.fields_for :email do |e|
         %li
           = e.label :address, "Email Address"
-          = e.email_field :address
+          = e.email_field :address, :required => true
     %li
       = c.label :drivers_license_number, "Drivers License No."
-      = c.text_field :drivers_license_number
+      = c.text_field :drivers_license_number, :required => true
     %li
       = c.label :drivers_license_state, "Drivers License State"
-      = c.text_field :drivers_license_state
+      = c.text_field :drivers_license_state, :required => true
   %ul
     %li
       = c.label :credit, "Store Credit"

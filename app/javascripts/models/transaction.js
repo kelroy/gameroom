@@ -52,19 +52,23 @@ var Transaction = new JS.Class({
   },
   
   tax: function() {
-    taxable_subtotal = 0;
-    store_credit_payment = 0;
-    for(line in this.lines) {
-      if(this.lines[line].item.taxable) {
-        taxable_subtotal += this.lines[line].subtotal();
+    if(this.subtotal() > 0) {
+      taxable_subtotal = 0;
+      store_credit_payment = 0;
+      for(line in this.lines) {
+        if(this.lines[line].item.taxable) {
+          taxable_subtotal += this.lines[line].subtotal();
+        }
       }
-    }
-    for(payment in this.payments) {
-      if(this.payments[payment].form == 'store_credit') {
-        store_credit_payment += parseInt(this.payments[payment].amount);
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(this.payments[payment].amount);
+        }
       }
+      return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
+    } else {
+      return 0;
     }
-    return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
   },
   
   ratio: function() {

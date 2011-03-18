@@ -1719,33 +1719,41 @@ var Transaction = new JS.Class({
   },
 
   total: function() {
-    return parseInt(this.taxableSubtotal() + this.tax());
+    return parseInt(this.purchaseSubtotal() + this.tax());
   },
 
   tax: function() {
-    subtotal = this.subtotal();
-    if(subtotal > 0) {
-      return parseInt(Math.round(this.taxableSubtotal() * this.tax_rate));
-    } else {
-      return 0;
+    taxable_subtotal = 0;
+    store_credit_payment = 0;
+    for(line in this.lines) {
+      if(this.lines[line].item.taxable) {
+        taxable_subtotal += this.lines[line].subtotal();
+      }
     }
+    for(payment in this.payments) {
+      if(this.payments[payment].form == 'store_credit') {
+        store_credit_payment += parseInt(this.payments[payment].amount);
+      }
+    }
+    return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
   },
 
   ratio: function() {
     return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
   },
 
-  taxableSubtotal: function() {
-    if(this.subtotal() >= 0) {
+  purchaseSubtotal: function() {
+    subtotal = this.subtotal();
+    if(subtotal >= 0) {
       store_credit_payment = 0;
       for(payment in this.payments) {
         if(this.payments[payment].form == 'store_credit') {
           store_credit_payment += parseInt(this.payments[payment].amount);
         }
       }
-      return this.subtotal() - store_credit_payment;
+      return subtotal - store_credit_payment;
     } else {
-      return this.subtotal();
+      return subtotal;
     }
   },
 
@@ -1841,6 +1849,7 @@ var Transaction = new JS.Class({
       ratio = 1;
     }
     credit_cash_ratio = this.ratio();
+    console.log(credit_cash_ratio);
     subtotal = this.subtotal();
     credit_payout = parseInt(subtotal * ratio);
     cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
@@ -2062,7 +2071,7 @@ var PaymentController = new JS.Class(ViewController, {
     amount_due = transaction.amountDue();
     $('div#payment_cart span#payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
     $('div#payment_cart span#payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
-    $('div#payment_summary span#payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.taxableSubtotal()));
+    $('div#payment_summary span#payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.purchaseSubtotal()));
     $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
     $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
     if(amount_due >= 0) {

@@ -24,16 +24,38 @@ class Transaction < ActiveRecord::Base
   
   # Calculate tax in pennies
   def tax
-    if(self.subtotal > 0)
-      (self.subtotal * self.tax_rate).round.to_i
-    else
-      0
+    taxable_subtotal = 0
+    store_credit_payment = 0
+    self.lines.each do |line|
+      taxable_subtotal += line.subtotal if line.item.taxable?
     end
+    self.payments.each do |payment|
+      if payment.form == 'store_credit'
+        store_credit_payment += payment.amount
+      end
+    end
+    ((taxable_subtotal - store_credit_payment) * self.tax_rate).round
   end
   
   # Calculate total in pennies
   def total
-    self.subtotal + self.tax
+    self.purchase_subtotal + self.tax
+  end
+  
+  # Calculate the purchase subtotal
+  def purchase_subtotal
+    subtotal = self.subtotal
+    if subtotal >= 0
+      store_credit_payment = 0
+      self.payments.each do |payment|
+        if payment.form == 'store_credit'
+          store_credit_payment += payment.amount
+        end
+      end
+      return subtotal - store_credit_payment
+    else
+      return subtotal
+    end
   end
   
   # Calculate change in pennies
@@ -42,7 +64,9 @@ class Transaction < ActiveRecord::Base
     if(self.subtotal > 0)
       payment_total = 0
       self.payments.each do |payment|
-        payment_total += payment.amount
+        if payment.form != 'store_credit'
+          payment_total += payment.amount
+        end
       end
       change = payment_total - self.total
     else

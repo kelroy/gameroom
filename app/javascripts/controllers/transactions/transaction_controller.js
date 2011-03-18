@@ -35,14 +35,10 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller.addObserver(this.updateCart, this);
     this.payment_controller.addObserver(this.updatePayment, this);
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
+    this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
+    this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
     this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
-    
-    this.addObserver(this.cart_controller.update, this.cart_controller);
-    this.addObserver(this.payment_controller.update, this.payment_controller);
-    this.addObserver(this.review_controller.update, this.review_controller);
-    this.addObserver(this.summary_controller.update, this.summary_controller);
-    this.addObserver(this.finish_controller.update, this.finish_controller);
     
     $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
@@ -65,28 +61,42 @@ var TransactionController = new JS.Class(ViewController, {
   updateCustomer: function(customer) {
     if(this.transaction) {
       this.transaction.customer = customer;
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
   
   updateCart: function(lines) {
     if(this.transaction) {
       this.transaction.setLines(lines);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
   
   updatePayment: function(payment) {
     if(this.transaction) {
       this.transaction.updatePayment(payment);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
   
   updatePayoutRatio: function(ratio) {
     if(this.transaction) {
       this.transaction.updatePayoutRatio(ratio);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
+    }
+  },
+  
+  updateCreditPayout: function(payment) {
+    if(this.transaction) {
+      this.transaction.updateCreditPayout(payment);
+      this.notifyControllers(this.transaction);
+    }
+  },
+  
+  updateCashPayout: function(payment) {
+    if(this.transaction) {
+      this.transaction.updateCashPayout(payment);
+      this.notifyControllers(this.transaction);
     }
   },
   
@@ -94,6 +104,19 @@ var TransactionController = new JS.Class(ViewController, {
     if(this.transaction) {
       this.transaction.receipt.quantity = quantity;
     }
+  },
+  
+  presentReceipt: function(url) {
+    this.receipt_controller.update(url);
+    this.receipt_controller.show();
+  },
+  
+  notifyControllers: function(transaction) {
+    this.cart_controller.update(transaction);
+    this.payment_controller.update(transaction);
+    this.review_controller.update(transaction);
+    this.summary_controller.update(transaction);
+    this.finish_controller.update(transaction);
   },
   
   newTransaction: function(till) {
@@ -104,15 +127,14 @@ var TransactionController = new JS.Class(ViewController, {
   
   setTransaction: function(transaction) {
     this.transaction = transaction;
-    this.notifyObservers(transaction);
+    this.notifyControllers(transaction);
   },
   
   saveTransaction: function() {
     controller = this;
     this.transaction.save(function(transaction) {
       controller.newTransaction(controller.till);
-      url = '/api/transactions/' + transaction.id + '/receipt';
-      window.open(url, "transaction_receipt", "toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=260");
+      controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
     });
   }
 });

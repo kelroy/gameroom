@@ -5,9 +5,8 @@ var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {
+    this.callSuper();
     $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
-    
-    return this.callSuper();
   },
   
   doSelect: function(event) {

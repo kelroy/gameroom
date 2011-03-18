@@ -129,9 +129,8 @@ var TillController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
+    this.callSuper();
     $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
-
-    return this.callSuper();
   },
 
   doSelect: function(event) {
@@ -1821,13 +1820,13 @@ var Transaction = new JS.Class({
     }
   },
 
-  updateCreditPayout: function(amount) {
+  updateCreditPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
     }
   },
 
-  updateCashPayout: function(amount) {
+  updateCashPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
     }
@@ -1971,8 +1970,6 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller.addObserver(this.updatePayment, this);
     this.credit_card_controller.addObserver(this.updatePayment, this);
     this.cash_controller.addObserver(this.updatePayment, this);
-    this.store_credit_payout_controller.addObserver(this.updatePayment, this);
-    this.cash_payout_controller.addObserver(this.updatePayment, this);
     this.reset();
   },
 
@@ -2340,14 +2337,10 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller.addObserver(this.updateCart, this);
     this.payment_controller.addObserver(this.updatePayment, this);
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
+    this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
+    this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
     this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
-
-    this.addObserver(this.cart_controller.update, this.cart_controller);
-    this.addObserver(this.payment_controller.update, this.payment_controller);
-    this.addObserver(this.review_controller.update, this.review_controller);
-    this.addObserver(this.summary_controller.update, this.summary_controller);
-    this.addObserver(this.finish_controller.update, this.finish_controller);
 
     $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
@@ -2370,28 +2363,42 @@ var TransactionController = new JS.Class(ViewController, {
   updateCustomer: function(customer) {
     if(this.transaction) {
       this.transaction.customer = customer;
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
 
   updateCart: function(lines) {
     if(this.transaction) {
       this.transaction.setLines(lines);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
 
   updatePayment: function(payment) {
     if(this.transaction) {
       this.transaction.updatePayment(payment);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
     }
   },
 
   updatePayoutRatio: function(ratio) {
     if(this.transaction) {
       this.transaction.updatePayoutRatio(ratio);
-      this.notifyObservers(this.transaction);
+      this.notifyControllers(this.transaction);
+    }
+  },
+
+  updateCreditPayout: function(payment) {
+    if(this.transaction) {
+      this.transaction.updateCreditPayout(payment);
+      this.notifyControllers(this.transaction);
+    }
+  },
+
+  updateCashPayout: function(payment) {
+    if(this.transaction) {
+      this.transaction.updateCashPayout(payment);
+      this.notifyControllers(this.transaction);
     }
   },
 
@@ -2399,6 +2406,19 @@ var TransactionController = new JS.Class(ViewController, {
     if(this.transaction) {
       this.transaction.receipt.quantity = quantity;
     }
+  },
+
+  presentReceipt: function(url) {
+    this.receipt_controller.update(url);
+    this.receipt_controller.show();
+  },
+
+  notifyControllers: function(transaction) {
+    this.cart_controller.update(transaction);
+    this.payment_controller.update(transaction);
+    this.review_controller.update(transaction);
+    this.summary_controller.update(transaction);
+    this.finish_controller.update(transaction);
   },
 
   newTransaction: function(till) {
@@ -2409,15 +2429,14 @@ var TransactionController = new JS.Class(ViewController, {
 
   setTransaction: function(transaction) {
     this.transaction = transaction;
-    this.notifyObservers(transaction);
+    this.notifyControllers(transaction);
   },
 
   saveTransaction: function() {
     controller = this;
     this.transaction.save(function(transaction) {
       controller.newTransaction(controller.till);
-      url = '/api/transactions/' + transaction.id + '/receipt';
-      window.open(url, "transaction_receipt", "toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=260");
+      controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
     });
   }
 });
@@ -2438,15 +2457,24 @@ var TerminalController = new JS.Class({
   initialize: function() {
     this.terminal_user_controller = new TerminalUserController('ul#user_nav');
     this.transaction_controller = new TransactionController('div#transaction');
+    this.receipt_controller = new ReceiptController('div#receipt');
     this.till_controller = new TillController('div#till');
+
     this.till_controller.addObserver(this.updateTill, this);
+    this.transaction_controller.addObserver(this.presentReceipt, this);
 
     this.reset();
   },
 
   reset: function() {
     this.transaction_controller.view.hide();
+    this.receipt_controller.view.hide();
     this.till_controller.view.show();
+  },
+
+  presentReceipt: function(url) {
+    this.receipt_controller.update(url);
+    this.receipt_controller.view.show();
   },
 
   updateTill: function(till) {
@@ -2604,6 +2632,30 @@ var CustomerSearchController = new JS.Class(ViewController, {
 
   onChange: function(event) {
     event.data.instance.notifyObservers(event.data.instance.query.val());
+    event.preventDefault();
+  }
+});
+
+var ReceiptController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    $('ul#receipt_nav a.close', view).bind('click', {instance: this}, this.doClose);
+    $('ul#receipt_nav a.print', view).bind('click', {instance: this}, this.doPrint);
+  },
+
+  update: function(url) {
+    $('object#receipt_window', this.view).attr('data', url);
+  },
+
+  doClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  doPrint: function(event) {
+    window.frames['receipt_window'].print();
     event.preventDefault();
   }
 });

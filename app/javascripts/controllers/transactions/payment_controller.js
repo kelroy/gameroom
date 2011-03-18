@@ -25,8 +25,6 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller.addObserver(this.updatePayment, this);
     this.credit_card_controller.addObserver(this.updatePayment, this);
     this.cash_controller.addObserver(this.updatePayment, this);
-    this.store_credit_payout_controller.addObserver(this.updatePayment, this);
-    this.cash_payout_controller.addObserver(this.updatePayment, this);
     this.reset();
   },
   

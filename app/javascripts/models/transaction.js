@@ -149,17 +149,17 @@ var Transaction = new JS.Class({
     }
   },
   
-  updateCreditPayout: function(amount) {
+  updateCreditPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
-      // this.setPayoutRatio(?);
+      // this.updatePayoutRatio(?);
     }
   },
   
-  updateCashPayout: function(amount) {
+  updateCashPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
-      // this.setPayoutRatio(?);
+      // this.updatePayoutRatio(?);
     }
   },
   

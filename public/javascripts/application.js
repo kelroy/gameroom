@@ -1823,12 +1823,16 @@ var Transaction = new JS.Class({
   updateCreditPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
+      this.updatePayoutRatio(payment.amount / subtotal);
     }
   },
 
   updateCashPayout: function(payment) {
     subtotal = this.subtotal();
     if(subtotal < 0) {
+      credit_cash_ratio = this.ratio();
+      cash_payout = parseInt(Math.round((credit_cash_ratio - (credit_cash_ratio * 0)) * subtotal));
+      this.updatePayoutRatio(1 - (payment.amount / cash_payout));
     }
   },
 

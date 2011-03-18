@@ -1736,7 +1736,11 @@ var Transaction = new JS.Class({
           store_credit_payment += parseInt(this.payments[payment].amount);
         }
       }
-      return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
+      if(taxable_subtotal > 0) {
+        return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
+      } else {
+        return 0;
+      }
     } else {
       return 0;
     }

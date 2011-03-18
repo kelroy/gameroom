@@ -35,7 +35,11 @@ class Transaction < ActiveRecord::Base
           store_credit_payment += payment.amount
         end
       end
-      return ((taxable_subtotal - store_credit_payment) * self.tax_rate).round
+      if taxable_subtotal > 0
+        return ((taxable_subtotal - store_credit_payment) * self.tax_rate).round
+      else
+        return 0
+      end
     else
       return 0
     end

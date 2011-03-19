@@ -37,7 +37,7 @@
       - @transaction.payments.each do |payment|
         - if payment.amount != 0
           %tr{:id => 'payment'}
-            %td= payment.form.gsub('_', ' ').capitalize
+            %td= payment.form.gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' ')
             %td= number_to_currency payment.amount.to_f / 100
       %tr{:id => 'change'}
         %td Change

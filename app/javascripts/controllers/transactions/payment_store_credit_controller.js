@@ -57,6 +57,9 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
       if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
         amount = Currency.format(event.data.instance.customer.credit);
       }
+      if(Currency.toPennies(amount) > event.data.instance.amount_due) {
+        amount = Currency.format(event.data.instance.amount_due);
+      }
       event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
     } else {
       $(this).val(null);

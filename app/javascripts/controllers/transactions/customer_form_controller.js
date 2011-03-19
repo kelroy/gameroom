@@ -115,6 +115,7 @@ var CustomerFormController = new JS.Class(FormController, {
         controller.notifyObservers(new Customer(customer));
       });
       if(!success) {
+        console.log('here');
         this.error();
       }
     } else {

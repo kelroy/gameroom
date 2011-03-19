@@ -138,6 +138,8 @@ var Customer = new JS.Class({
         password: 'x'
         
       });
+      
+      return true;
     } else {
       return false;
     }

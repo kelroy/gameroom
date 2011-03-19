@@ -333,6 +333,7 @@ var CustomerFormController = new JS.Class(FormController, {
         controller.notifyObservers(new Customer(customer));
       });
       if(!success) {
+        console.log('here');
         this.error();
       }
     } else {
@@ -657,6 +658,8 @@ var Customer = new JS.Class({
         password: 'x'
 
       });
+
+      return true;
     } else {
       return false;
     }
@@ -1618,6 +1621,9 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
     if(!isNaN(amount)) {
       if(Currency.toPennies(amount) > event.data.instance.customer.credit) {
         amount = Currency.format(event.data.instance.customer.credit);
+      }
+      if(Currency.toPennies(amount) > event.data.instance.amount_due) {
+        amount = Currency.format(event.data.instance.amount_due);
       }
       event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
     } else {

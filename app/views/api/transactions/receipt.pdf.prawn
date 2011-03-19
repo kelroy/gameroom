@@ -24,7 +24,7 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   payments = []
   @transaction.payments.each do |payment|
     unless payment.amount == 0
-      payments.push([payment.form.gsub('_', ' ').capitalize, number_to_currency(payment.amount.to_f / 100)])
+      payments.push([payment.form.gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' '), number_to_currency(payment.amount.to_f / 100)])
     end
   end
   summary = [

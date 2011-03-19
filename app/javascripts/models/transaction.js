@@ -53,22 +53,17 @@ var Transaction = new JS.Class({
   
   tax: function() {
     if(this.subtotal() > 0) {
+      purchase_subtotal = this.purchaseSubtotal();
       taxable_subtotal = 0;
-      store_credit_payment = 0;
       for(line in this.lines) {
         if(this.lines[line].taxable) {
           taxable_subtotal += this.lines[line].subtotal();
         }
       }
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'store_credit') {
-          store_credit_payment += parseInt(this.payments[payment].amount);
-        }
-      }
-      if(taxable_subtotal > 0) {
-        return parseInt(Math.round((taxable_subtotal - store_credit_payment) * this.tax_rate));
+      if(taxable_subtotal < purchase_subtotal) {
+        return parseInt(Math.round(taxable_subtotal * this.tax_rate));
       } else {
-        return 0;
+        return parseInt(Math.round(purchase_subtotal * this.tax_rate));
       }
     } else {
       return 0;

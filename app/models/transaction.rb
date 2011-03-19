@@ -25,20 +25,15 @@ class Transaction < ActiveRecord::Base
   # Calculate tax in pennies
   def tax
     if self.subtotal > 0
+      purchase_subtotal = self.purchase_subtotal
       taxable_subtotal = 0
-      store_credit_payment = 0
       self.lines.each do |line|
         taxable_subtotal += line.subtotal if line.taxable?
       end
-      self.payments.each do |payment|
-        if payment.form == 'store_credit'
-          store_credit_payment += payment.amount
-        end
-      end
-      if taxable_subtotal > 0
-        return ((taxable_subtotal - store_credit_payment) * self.tax_rate).round
+      if taxable_subtotal < purchase_subtotal
+        return (taxable_subtotal * self.tax_rate).round
       else
-        return 0
+        return (purchase_subtotal * self.tax_rate).round
       end
     else
       return 0

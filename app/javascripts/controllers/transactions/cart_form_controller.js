@@ -18,50 +18,61 @@ var CartFormController = new JS.Class(FormController, {
   
   save: function() {
     lines = [];
-    $('ul.item_elements', this.view).each(function() {
-      base_price = parseInt(Currency.toPennies($('input#item_price', this).val()));
-      if(base_price <= 0) {
-        base_price = 0;
-      }
-      
-      credit_price = parseInt(Currency.toPennies($('input#item_credit', this).val()));
-      if(credit_price <= 0) {
-        credit_price = 0;
-      }
-
-      cash_price = parseInt(Currency.toPennies($('input#item_cash', this).val()));
-      if(cash_price <= 0) {
-        cash_price = 0;
-      }
-      
-      line = new Line({
-        sell: false,
-        condition: 1,
-        quantity: parseInt(Math.abs($('input#item_quantity', this).val())),
-        item: {
-          title: $('input#item_title', this).val(),
-          description: $('input#item_description', this).val(),
-          price: parseInt(Currency.toPennies($('input#item_price', this).val())),
-          taxable: $('input#item_taxable', this).attr('checked'),
-          properties: [
-            {
-              key: 'credit_price',
-              value: credit_price
-            },
-            {
-              key: 'cash_price',
-              value: cash_price
-            }
-          ]
-        }
-      });
-      
-      if(line.valid()) {
+    controller = this;
+    $('ul.item_elements', this.view).each(function(index, value) {
+      line = controller.saveLine(index);
+      if(line != false) {
         lines.push(line);
       }
     });
     if(this.valid(lines)) {
       this.notifyObservers(lines);
+    }
+  },
+  
+  saveLine: function(index) {
+    item = $('ul.item_elements', this.view).eq(index);
+    
+    base_price = parseInt(Currency.toPennies($('input#item_price', item).val()));
+    if(base_price <= 0) {
+      base_price = 0;
+    }
+    credit_price = parseInt(Currency.toPennies($('input#item_credit', item).val()));
+    if(credit_price <= 0) {
+      credit_price = 0;
+    }
+    cash_price = parseInt(Currency.toPennies($('input#item_cash', item).val()));
+    if(cash_price <= 0) {
+      cash_price = 0;
+    }
+    
+    line = new Line({
+      sell: false,
+      condition: 1,
+      quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      taxable: $('input#item_taxable', item).attr('checked'),
+      item: {
+        title: $('input#item_title', item).val(),
+        description: $('input#item_description', item).val(),
+        price: parseInt(Currency.toPennies($('input#item_price', item).val())),
+        taxable: $('input#item_taxable', item).attr('checked'),
+        properties: [
+          {
+            key: 'credit_price',
+            value: credit_price
+          },
+          {
+            key: 'cash_price',
+            value: cash_price
+          }
+        ]
+      }
+    });
+    
+    if(line.valid()) {
+      return line;
+    } else {
+      return false;
     }
   },
   
@@ -115,6 +126,11 @@ var CartFormController = new JS.Class(FormController, {
   },
   
   onAddRow: function(event) {
+    index = $('ul.item_elements li > a.add_row', event.data.instance.view).index(this);
+    line = event.data.instance.saveLine(index);
+    if(line != false) {
+      event.data.instance.notifyObservers([line]);
+    }
     event.preventDefault();
   }
 });

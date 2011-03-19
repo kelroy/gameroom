@@ -9,4 +9,9 @@ class Line < ActiveRecord::Base
   def subtotal
     self.quantity * self.price
   end
+  
+  # Is line taxable?
+  def taxable?
+    self.taxable
+  end
 end

@@ -11,7 +11,8 @@ describe Line do
         :transaction_id => 1,
         :item_id => 1,
         :quantity => 0,
-        :price => 0
+        :price => 0,
+        :taxable => true
       }
       Line.new(valid_data).should be_valid
     end

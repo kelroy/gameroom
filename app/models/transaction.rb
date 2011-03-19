@@ -28,7 +28,7 @@ class Transaction < ActiveRecord::Base
       taxable_subtotal = 0
       store_credit_payment = 0
       self.lines.each do |line|
-        taxable_subtotal += line.subtotal if line.item.taxable?
+        taxable_subtotal += line.subtotal if line.taxable?
       end
       self.payments.each do |payment|
         if payment.form == 'store_credit'

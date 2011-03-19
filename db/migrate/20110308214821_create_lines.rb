@@ -5,6 +5,7 @@ class CreateLines < ActiveRecord::Migration
       t.integer :item_id
       t.integer :quantity,                      :null => false
       t.integer :price,                         :null => false
+      t.boolean :taxable,                       :null => false, :default => true
 
       t.timestamps
     end

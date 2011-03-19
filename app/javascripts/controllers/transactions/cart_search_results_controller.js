@@ -34,6 +34,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
           sell: false,
           condition: 1,
           quantity: 1,
+          taxable: item.taxable,
           item: item,
         });
         controller.notifyObservers([new Line(line)]);

@@ -5,6 +5,7 @@ var Line = new JS.Class({
     this.condition = 1;
     this.quantity = 0;
     this.price = 0;
+    this.taxable = params.taxable;
     this.sell = false;
     if(params.transaction != undefined) {
       this.transaction = new Transaction(params.transaction);

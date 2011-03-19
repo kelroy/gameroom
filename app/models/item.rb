@@ -6,22 +6,22 @@ class Item < ActiveRecord::Base
   has_many                      :transactions,  :through => :lines
   accepts_nested_attributes_for :properties
   
-  # Is good taxable?
+  # Is item taxable?
   def taxable?
     self.taxable
   end
   
-  # Is good discountable?
+  # Is item discountable?
   def discountable?
     self.discountable
   end
   
-  # Is good locked?
+  # Is item locked?
   def locked?
     self.locked
   end
   
-  # Is good active?
+  # Is item active?
   def active?
     self.active
   end

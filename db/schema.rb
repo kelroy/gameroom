@@ -54,21 +54,20 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-14 22:42:43', :null => false
+    t.datetime "time",        :default => '2011-03-19 00:43:14', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "items", :force => true do |t|
-    t.string   "title",                           :null => false
+    t.string   "title",                          :null => false
     t.string   "description"
     t.string   "sku"
-    t.integer  "price",        :default => 0,     :null => false
-    t.boolean  "taxable",      :default => true,  :null => false
-    t.boolean  "discountable", :default => true,  :null => false
-    t.boolean  "locked",       :default => false, :null => false
-    t.boolean  "active",       :default => false, :null => false
+    t.integer  "price",       :default => 0,     :null => false
+    t.boolean  "taxable",     :default => true,  :null => false
+    t.boolean  "locked",      :default => false, :null => false
+    t.boolean  "active",      :default => false, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -76,8 +75,9 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "lines", :force => true do |t|
     t.integer  "transaction_id"
     t.integer  "item_id"
-    t.integer  "quantity",       :null => false
-    t.integer  "price",          :null => false
+    t.integer  "quantity",                         :null => false
+    t.integer  "price",                            :null => false
+    t.boolean  "taxable",        :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -56,7 +56,7 @@ var Transaction = new JS.Class({
       taxable_subtotal = 0;
       store_credit_payment = 0;
       for(line in this.lines) {
-        if(this.lines[line].item.taxable) {
+        if(this.lines[line].taxable) {
           taxable_subtotal += this.lines[line].subtotal();
         }
       }
@@ -223,12 +223,14 @@ var Transaction = new JS.Class({
           transaction.lines_attributes.push({
             item_id: this.lines[line].item.id,
             quantity: this.lines[line].quantity,
-            price: this.lines[line].price
+            price: this.lines[line].price,
+            taxable: this.lines[line].taxable
           });
         } else {
           transaction.lines_attributes.push({
             quantity: this.lines[line].quantity,
             price: this.lines[line].price,
+            taxable: this.lines[line].taxable,
             item_attributes: {
               title: this.lines[line].item.title,
               description: this.lines[line].item.description,

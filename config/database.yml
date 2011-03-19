@@ -17,9 +17,13 @@ test: &test
 
 production:
   adapter: sqlite3
-  database: db/production.sqlite3
+  database: db/test.sqlite3
   pool: 5
   timeout: 5000
 
 cucumber:
   <<: *test
+  
+# Replace the above database details with information from ./config/dblogin.yml
+<%= file = File.join(Rails.root, "config", "login.yml") 
+    IO.read(file) if File.exist?(file) %>

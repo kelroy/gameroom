@@ -137,8 +137,6 @@ var Transaction = new JS.Class({
     this.lines = lines;
     
     subtotal = this.subtotal();
-    credit_payout = 0;
-    cash_payout = 0;
     for(payment in this.payments) {
       if(subtotal < 0 && this.payments[payment].amount > 0) {
         this.payments[payment].amount = 0;
@@ -146,17 +144,10 @@ var Transaction = new JS.Class({
       if(subtotal >= 0 && this.payments[payment].amount < 0) {
         this.payments[payment].amount = 0;
       }
-      if(this.payments[payment].form == 'store_credit') {
-        credit_payout = this.payments[payment].amount;
-      }
-      if(this.payments[payment].form == 'cash') {
-        cash_payout = this.payments[payment].amount;
-      }
     }
     if(subtotal < 0) {
-      if(credit_payout == 0 && cash_payout == 0) {
-        this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
-      }
+      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
+      this.updatePayment(new Payment({form: 'cash', amount: 0}));
     }
   },
   

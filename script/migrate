@@ -1,0 +1,59 @@
+# Migrate the old POS data
+# Inside rails root: rails runner -e production script/migrate
+
+PASSWORD = ''
+
+mediaenc = Mysql2::Client.new(:host => 'localhost', :username => 'root', :password => PASSWORD, :database => 'mediaenc_MediaE')
+
+Customer.delete_all
+Person.delete_all
+Email.delete_all
+Phone.delete_all
+Address.delete_all
+Item.delete_all
+Property.delete_all
+
+customers = mediaenc.query("SELECT * FROM storecredit LEFT JOIN customers ON storecredit.customer_id=customers.id")
+customers.each do |row|
+  unless row["dl"].nil?
+    unless row["dl"][0].nil?
+      drivers_license_number = row["dl"].upcase if row["dl"][0].chr.upcase == 'H'
+    else
+      drivers_license_number = nil
+    end
+  end
+  unless row["status"].nil?
+    active = row["status"].even?
+  else
+    active = true
+  end
+  customer = Customer.create({
+    :credit => (row["balance"] * 100),
+    :drivers_license_number => drivers_license_number,
+    :drivers_license_state => 'NE',
+    :notes => row["notes"],
+    :active => active
+  })
+  person = Person.create({
+    :customer_id => customer.id,
+    :first_name => row["firstname"].to_s.capitalize,
+    :last_name => row["lastname"].to_s.capitalize,
+    :date_of_birth => row["dob"]
+  })
+  person.phones.create({:number => row["phonenumber"]})
+end
+
+items = mediaenc.query("SELECT * FROM items")
+items.each do |row|
+  item = Item.create({
+    :title => row["title"],
+    :sku => row["upc"],
+    :price => row["base_price"] * 100
+  })
+  if item.valid?
+    item.properties.create({:key => 'type', :value => row["type"]})
+    item.properties.create({:key => 'platform', :value => row["platform"]})
+    item.properties.create({:key => 'credit_price', :value => ((row["base_price"] * (1 - row["credit_ratio"])) * 100).round})
+    item.properties.create({:key => 'cash_price', :value => ((row["base_price"] * (1 - row["cash_ratio"])) * 100).round})
+  end
+end

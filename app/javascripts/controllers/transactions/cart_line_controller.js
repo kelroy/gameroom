@@ -18,6 +18,11 @@ var CartLineController = new JS.Class(ViewController, {
   },
   
   set: function(line) {
+    
+    if(line.item.description == null || line.item.description == undefined) {
+      line.item.description = '';
+    }
+    
     $('input#quantity_amount', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3', this.view).html(line.item.title);
     $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);

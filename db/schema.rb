@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "transactions", :force => true do |t|
     t.integer  "till_id"
     t.integer  "customer_id"
-    t.decimal  "tax_rate",    :precision => 10, :scale => 0, :default => 0,     :null => false
+    t.decimal  "tax_rate",    :precision => 10, :scale => 2, :default => 0,     :null => false
     t.boolean  "complete",                                   :default => true,  :null => false
     t.boolean  "locked",                                     :default => false, :null => false
     t.datetime "created_at"

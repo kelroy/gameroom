@@ -1937,6 +1937,8 @@ var Transaction = new JS.Class({
         transaction.customer_id = this.customer.id;
       }
 
+      console.log('Tax Rate: ' + this.tax_rate + ' ' + transaction.tax_rate);
+
       $.ajax({
         url: '/api/transactions',
         accept: 'application/json',

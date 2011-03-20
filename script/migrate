@@ -1,17 +1,10 @@
+#!/usr/bin/env ruby
 # Migrate the old POS data
 # Inside rails root: rails runner -e production script/migrate
 
 PASSWORD = ''
 
 mediaenc = Mysql2::Client.new(:host => 'localhost', :username => 'root', :password => PASSWORD, :database => 'mediaenc_MediaE')
-
-Customer.delete_all
-Person.delete_all
-Email.delete_all
-Phone.delete_all
-Address.delete_all
-Item.delete_all
-Property.delete_all
 
 customers = mediaenc.query("SELECT * FROM storecredit LEFT JOIN customers ON storecredit.customer_id=customers.id")
 customers.each do |row|

@@ -65,5 +65,9 @@ unless Rails.env.production?
     transaction.lines << Factory.create(:line, :quantity => (rand(9) + 1), :price => item.price, :taxable => item.taxable, :item => item, :transaction => transaction)
   end
   transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
+
+else
+  
+  User.create(:person => Person.create(:first_name => 'Root', :last_name => 'User'), :email => 'root@example.com', :login => 'root', :password => 'password', :password_confirmation => 'password', :administrator => true)
   
 end

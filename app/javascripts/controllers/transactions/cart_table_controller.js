@@ -8,7 +8,11 @@ var CartTableController = new JS.Class(TableController, {
     for(item in items){
       new_row = $(this.table_row).clone();
       new_row.attr('data-object-id', items[item].id);
-
+      
+      if(items[item].description == null || items[item].description == undefined) {
+        items[item].description = '';
+      }
+ 
       $('td.title', new_row).html(items[item].title);
       $('td.description', new_row).html(String.truncate(items[item].description, 50)).attr('title', items[item].description);
       $('td.sku', new_row).html(items[item].sku);

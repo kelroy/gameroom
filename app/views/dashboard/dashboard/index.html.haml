@@ -5,7 +5,10 @@
       %h2 1709 O St. Lincoln NE 68508 402-438-7161
     - if current_user
       %ul{:id => 'user_nav', :class => 'link_nav'}
-        %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
+        - unless current_user.person.nil?
+          %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
+        - else
+          %li{:class => 'current_user_login'}= "#{current_user.login}"
         %li &#124;
         %li
           = link_to "Dashboard", dashboard_root_path

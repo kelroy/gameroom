@@ -1126,7 +1126,7 @@ var Item = new JS.Class({
         url: '/api/items/search',
         data: JSON.stringify({
           search: {
-            title_or_description_or_sku_contains: query
+            title_or_description_or_sku_contains_any: query.split(" ")
           },
           page: 1,
           per_page: 25

@@ -46,7 +46,7 @@ items.each do |row|
   if item.valid?
     item.properties.create({:key => 'type', :value => row["type"]})
     item.properties.create({:key => 'platform', :value => row["platform"]})
-    item.properties.create({:key => 'credit_price', :value => ((row["base_price"] * (1 - row["credit_ratio"])) * 100).round})
-    item.properties.create({:key => 'cash_price', :value => ((row["base_price"] * (1 - row["cash_ratio"])) * 100).round})
+    item.properties.create({:key => 'credit_price', :value => ((row["base_price"] * row["credit_ratio"]) * 100).round})
+    item.properties.create({:key => 'cash_price', :value => ((row["base_price"] * row["cash_ratio"]) * 100).round})
   end
 end

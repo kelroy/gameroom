@@ -26,3 +26,11 @@ var reports = {
   }
   
 };
+
+var users = {
+  
+  run: function() {
+
+  }
+  
+};

@@ -44,6 +44,10 @@ Gameroom::Application.routes.draw do
     root :to => 'dashboard#index'
   end
   
+  namespace 'users' do
+    root :to => 'users#index'
+  end
+  
   root :to => redirect("/dashboard")
   match '*path', :to => redirect("/dashboard")
   

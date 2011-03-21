@@ -16,8 +16,11 @@
       %img{:src => '/images/support.png', :alt => 'Support'}
       %span Support
   - if current_user.admin?
-    
     %li
       %a{:href => "#{reports_root_path}"}
         %img{:src => '/images/reports.png', :alt => 'Reports'}
         %span Reports
+    %li
+      %a{:href => "#{users_root_path}"}
+        %img{:src => '/images/users.png', :alt => 'Users'}
+        %span Users

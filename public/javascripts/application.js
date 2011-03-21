@@ -1937,8 +1937,6 @@ var Transaction = new JS.Class({
         transaction.customer_id = this.customer.id;
       }
 
-      console.log('Tax Rate: ' + this.tax_rate + ' ' + transaction.tax_rate);
-
       $.ajax({
         url: '/api/transactions',
         accept: 'application/json',
@@ -2323,6 +2321,13 @@ var TransactionFinishController = new JS.Class(ViewController, {
   }
 });
 
+var TransactionNavController = new JS.Class(ViewController, {
+
+  update: function(till) {
+    $('li#transaction_nav_till', this.view).html(till.title);
+  }
+});
+
 var PageController = new JS.Class(ViewController, {
 
   initialize: function(view, sections) {
@@ -2364,11 +2369,12 @@ var TransactionController = new JS.Class(ViewController, {
     this.till = null;
     this.transaction = null;
 
+    this.transaction_nav_controller = new TransactionNavController('ul#transaction_nav');
     this.customer_controller = new CustomerController('section#customer');
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.section_controller = new PageController('ul#section_nav', [
+    this.section_controller = new PageController('ul#transactions_nav', [
       this.customer_controller.view,
       this.cart_controller.view,
       this.payment_controller.view,
@@ -2485,21 +2491,9 @@ var TransactionController = new JS.Class(ViewController, {
   }
 });
 
-var TerminalUserController = new JS.Class(ViewController, {
-
-  initialize: function(view) {
-    this.callSuper();
-  },
-
-  update: function(till) {
-    $('li.current_user_till', this.view).html(till.title);
-  }
-});
-
 var TerminalController = new JS.Class({
 
   initialize: function() {
-    this.terminal_user_controller = new TerminalUserController('ul#user_nav');
     this.transaction_controller = new TransactionController('div#transaction');
     this.receipt_controller = new ReceiptController('div#receipt');
     this.till_controller = new TillController('div#till');
@@ -2523,7 +2517,7 @@ var TerminalController = new JS.Class({
 
   updateTill: function(till) {
     this.transaction_controller.newTransaction(till);
-    this.terminal_user_controller.update(till);
+    this.transaction_controller.transaction_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transaction_controller.view.show();
   }
@@ -2548,6 +2542,14 @@ var dashboard = {
 };
 
 var reports = {
+
+  run: function() {
+
+  }
+
+};
+
+var users = {
 
   run: function() {
 

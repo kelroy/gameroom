@@ -780,7 +780,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
     $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
     $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
-    $('input#quantity_amount', this.view).bind('change', {instance: this}, this.onQuantity);
+    $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
   },
 
   set: function(line) {
@@ -789,7 +789,7 @@ var CartLineController = new JS.Class(ViewController, {
       line.item.description = '';
     }
 
-    $('input#quantity_amount', this.view).val(line.quantity);
+    $('input.quantity', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3', this.view).html(line.item.title);
     $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
@@ -848,14 +848,14 @@ var CartLineController = new JS.Class(ViewController, {
   },
 
   onPlus: function(event) {
-    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    quantity = $('input.quantity', event.data.instance.view).val();
     event.data.instance.line.setQuantity(parseInt(quantity) + 1);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
   onMinus: function(event) {
-    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity > 1) {
       event.data.instance.line.setQuantity(parseInt(quantity) - 1);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
@@ -863,11 +863,13 @@ var CartLineController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  onQuantity: function(event) {
-    quantity = $('input#quantity_amount', event.data.instance.view).val();
+  onSubmit: function(event) {
+    quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity >= 1) {
       event.data.instance.line.setQuantity(parseInt(quantity));
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    } else {
+      $('input.quantity', event.data.instance.view).val(1);
     }
     event.preventDefault();
   },

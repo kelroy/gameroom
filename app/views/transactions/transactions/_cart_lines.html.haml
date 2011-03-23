@@ -21,7 +21,7 @@
         %li
           = form_for :quantity, :method => 'get', :url => root_path do |f|
             %div
-              = f.text_field :amount, :value => 1
+              = f.text_field :amount, :value => 1, :class => 'quantity'
         %li
           %a{:href => '#plus', :class => 'button plus'} +
         %li

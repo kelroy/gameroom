@@ -28,7 +28,7 @@ var Customer = new JS.Class({
         url: '/api/customers/search',
         data: JSON.stringify({
           search: {
-            person_first_name_or_person_last_name_contains: query
+            person_first_name_or_person_last_name_contains_any: query.split(" ")
           },
           page: 1,
           per_page: 25

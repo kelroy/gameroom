@@ -548,7 +548,7 @@ var Customer = new JS.Class({
         url: '/api/customers/search',
         data: JSON.stringify({
           search: {
-            person_first_name_or_person_last_name_contains: query
+            person_first_name_or_person_last_name_contains_any: query.split(" ")
           },
           page: 1,
           per_page: 25
@@ -1126,7 +1126,7 @@ var Item = new JS.Class({
         url: '/api/items/search',
         data: JSON.stringify({
           search: {
-            title_or_description_or_sku_or_properties_value_contains_any: query.split(" ")
+            title_or_description_or_sku_contains_any: query.split(" ")
           },
           page: 1,
           per_page: 25

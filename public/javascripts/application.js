@@ -1974,6 +1974,8 @@ var Transaction = new JS.Class({
           return true;
         }
       }
+    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
+      return true;
     }
     return false;
   }

@@ -780,6 +780,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
     $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
     $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('input#quantity_amount', this.view).bind('change', {instance: this}, this.onQuantity);
   },
 
   set: function(line) {
@@ -862,6 +863,15 @@ var CartLineController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
+  onQuantity: function(event) {
+    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    if(quantity >= 1) {
+      event.data.instance.line.setQuantity(parseInt(quantity));
+      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    }
+    event.preventDefault();
+  },
+
   onAction: function(event) {
     index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
     if(index == 0) {
@@ -894,12 +904,12 @@ var CartLinesController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
     this.line_controllers = [];
-    this.line = $('li.cart_line', view).detach();
+    this.line = $('li.cart_line', this.view).detach();
     this.hideCartNav();
-    $('ul#cart_lines_nav a.remove', view).bind('click', {instance: this}, this.onRemove);
-    $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
-    $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
-    $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
+    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
   },
 
   reset: function() {

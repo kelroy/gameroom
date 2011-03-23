@@ -8,12 +8,12 @@ var CartLinesController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
     this.line_controllers = [];
-    this.line = $('li.cart_line', view).detach();
+    this.line = $('li.cart_line', this.view).detach();
     this.hideCartNav();
-    $('ul#cart_lines_nav a.remove', view).bind('click', {instance: this}, this.onRemove);
-    $('ul#cart_lines_nav a.info', view).bind('click', {instance: this}, this.onInfo);
-    $('ul#cart_lines_nav a.purchase', view).bind('click', {instance: this}, this.onPurchase);
-    $('ul#cart_lines_nav a.sell', view).bind('click', {instance: this}, this.onSell);
+    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
   },
   
   reset: function() {

@@ -15,6 +15,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
     $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
     $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('input#quantity_amount', this.view).bind('change', {instance: this}, this.onQuantity);
   },
   
   set: function(line) {
@@ -92,6 +93,15 @@ var CartLineController = new JS.Class(ViewController, {
     quantity = $('input#quantity_amount', event.data.instance.view).val();
     if(quantity > 1) {
       event.data.instance.line.setQuantity(parseInt(quantity) - 1);
+      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    }
+    event.preventDefault();
+  },
+  
+  onQuantity: function(event) {
+    quantity = $('input#quantity_amount', event.data.instance.view).val();
+    if(quantity >= 1) {
+      event.data.instance.line.setQuantity(parseInt(quantity));
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();

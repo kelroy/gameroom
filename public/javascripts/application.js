@@ -201,7 +201,9 @@ var SearchController = new JS.Class(ViewController, {
   onChange: function(event) {
     event.data.instance.page = 1;
     event.data.instance.query = event.data.instance.input.val();
-    event.data.instance.notifyObservers(event.data.instance.query, 1);
+    if(query.length > 0) {
+      event.data.instance.notifyObservers(event.data.instance.query, 1);
+    }
     event.preventDefault();
   }
 });

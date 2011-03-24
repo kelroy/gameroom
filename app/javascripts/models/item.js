@@ -20,12 +20,16 @@ var Item = new JS.Class({
     },
     
     search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { title_or_description_or_sku_contains_all: query.split(" ") };
+      } else {
+        search = { title_starts_with: query };
+      }
+      
       $.ajax({
         url: '/api/items/search',
         data: JSON.stringify({
-          search: {
-            title_or_description_or_sku_contains_all: query.split(" ")
-          },
+          search: search,
           page: page,
           per_page: 10
         }),

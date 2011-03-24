@@ -24,12 +24,16 @@ var Customer = new JS.Class({
     },
     
     search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
+      } else {
+        search = { person_last_name_starts_with: query };
+      }
+      
       $.ajax({
         url: '/api/customers/search',
         data: JSON.stringify({
-          search: {
-            person_first_name_or_person_last_name_contains_any: query.split(" ")
-          },
+          search: search,
           page: page,
           per_page: 25
         }),

@@ -192,6 +192,8 @@ var SearchController = new JS.Class(ViewController, {
   },
 
   onClear: function(event) {
+    event.data.instance.page = 1;
+    event.data.instance.query = null;
     event.data.instance.input.val(null);
     event.preventDefault();
   },
@@ -568,12 +570,16 @@ var Customer = new JS.Class({
     },
 
     search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
+      } else {
+        search = { person_last_name_starts_with: query };
+      }
+
       $.ajax({
         url: '/api/customers/search',
         data: JSON.stringify({
-          search: {
-            person_first_name_or_person_last_name_contains_any: query.split(" ")
-          },
+          search: search,
           page: page,
           per_page: 25
         }),
@@ -1161,12 +1167,16 @@ var Item = new JS.Class({
     },
 
     search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { title_or_description_or_sku_contains_all: query.split(" ") };
+      } else {
+        search = { title_starts_with: query };
+      }
+
       $.ajax({
         url: '/api/items/search',
         data: JSON.stringify({
-          search: {
-            title_or_description_or_sku_contains_all: query.split(" ")
-          },
+          search: search,
           page: page,
           per_page: 10
         }),

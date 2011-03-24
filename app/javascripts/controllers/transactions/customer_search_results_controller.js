@@ -14,9 +14,12 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     this.customer_table_controller.reset();
   },
   
-  search: function(query) {
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
     controller = this;
-    Customer.search(query, function(customers) {
+    Customer.search(query, page, function(customers) {
       customers_results = [];
       for(customer in customers) {
         customers_results.push(new Customer(customers[customer].customer));

@@ -15,9 +15,12 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     this.cart_table_controller.reset();
   },
   
-  search: function(query) {
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
     controller = this;
-    Item.search(query, function(items) {
+    Item.search(query, page, function(items) {
       items_results = [];
       for(item in items) {
         items_results.push(new Item(items[item].item));

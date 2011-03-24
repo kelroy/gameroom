@@ -5,12 +5,16 @@ var SearchController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
+    this.page = 1;
+    this.query = null;
     
-    this.query = $('input.query', this.view);
-    this.query.bind('change', {instance: this}, this.onChange);
+    this.input = $('input.query', this.view);
+    this.input.bind('change', {instance: this}, this.onChange);
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
+    $('a.next', this.view).bind('click', {instance: this}, this.onNext);
     $('form', this.view).submit(function(event) {
       event.preventDefault();
     });
@@ -18,21 +22,41 @@ var SearchController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    this.query.val(null);
+    this.input.val(null);
   },
   
   onLetter: function(letter) {
-    this.query.val(letter);
-    this.query.trigger('change');
+    this.input.val(letter);
+    this.input.trigger('change');
+  },
+  
+  onPrev: function(event) {
+    if(event.data.instance.query != null) {
+      if(event.data.instance.page > 1) {
+        event.data.instance.page -= 1;
+      }
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
+  },
+  
+  onNext: function(event) {
+    if(event.data.instance.query != null) {
+      event.data.instance.page += 1;
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
   },
   
   onClear: function(event) {
-    event.data.instance.query.val(null);
+    event.data.instance.input.val(null);
     event.preventDefault();
   },
   
   onChange: function(event) {
-    event.data.instance.notifyObservers(event.data.instance.query.val());
+    event.data.instance.page = 1;
+    event.data.instance.query = event.data.instance.input.val();
+    event.data.instance.notifyObservers(event.data.instance.query, 1);
     event.preventDefault();
   }
 });

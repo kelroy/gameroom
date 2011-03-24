@@ -8,6 +8,8 @@
       %div
         = text_field_tag :query, nil, :class => 'query', :placeholder => 'Search for an item...'
         %a{:href => '#clear', :class => 'button clear'} X
+        %a{:href => '#next', :class => 'button next'} >
+        %a{:href => '#prev', :class => 'button prev'} <
   %h2{:id => 'cart_summary'} 0 item(s): $0.00
 %ul{:id => 'cart_nav', :class => 'tab_nav'}
   %li

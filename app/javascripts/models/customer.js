@@ -23,14 +23,14 @@ var Customer = new JS.Class({
       });
     },
     
-    search: function(query, callback) {
+    search: function(query, page, callback) {
       $.ajax({
         url: '/api/customers/search',
         data: JSON.stringify({
           search: {
             person_first_name_or_person_last_name_contains_any: query.split(" ")
           },
-          page: 1,
+          page: page,
           per_page: 25
         }),
         dataType: 'json',

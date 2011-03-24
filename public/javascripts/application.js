@@ -148,12 +148,16 @@ var SearchController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.page = 1;
+    this.query = null;
 
-    this.query = $('input.query', this.view);
-    this.query.bind('change', {instance: this}, this.onChange);
+    this.input = $('input.query', this.view);
+    this.input.bind('change', {instance: this}, this.onChange);
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
+    $('a.next', this.view).bind('click', {instance: this}, this.onNext);
     $('form', this.view).submit(function(event) {
       event.preventDefault();
     });
@@ -161,21 +165,41 @@ var SearchController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    this.query.val(null);
+    this.input.val(null);
   },
 
   onLetter: function(letter) {
-    this.query.val(letter);
-    this.query.trigger('change');
+    this.input.val(letter);
+    this.input.trigger('change');
+  },
+
+  onPrev: function(event) {
+    if(event.data.instance.query != null) {
+      if(event.data.instance.page > 1) {
+        event.data.instance.page -= 1;
+      }
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
+  },
+
+  onNext: function(event) {
+    if(event.data.instance.query != null) {
+      event.data.instance.page += 1;
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
   },
 
   onClear: function(event) {
-    event.data.instance.query.val(null);
+    event.data.instance.input.val(null);
     event.preventDefault();
   },
 
   onChange: function(event) {
-    event.data.instance.notifyObservers(event.data.instance.query.val());
+    event.data.instance.page = 1;
+    event.data.instance.query = event.data.instance.input.val();
+    event.data.instance.notifyObservers(event.data.instance.query, 1);
     event.preventDefault();
   }
 });
@@ -543,14 +567,14 @@ var Customer = new JS.Class({
       });
     },
 
-    search: function(query, callback) {
+    search: function(query, page, callback) {
       $.ajax({
         url: '/api/customers/search',
         data: JSON.stringify({
           search: {
             person_first_name_or_person_last_name_contains_any: query.split(" ")
           },
-          page: 1,
+          page: page,
           per_page: 25
         }),
         dataType: 'json',
@@ -691,9 +715,12 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     this.customer_table_controller.reset();
   },
 
-  search: function(query) {
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
     controller = this;
-    Customer.search(query, function(customers) {
+    Customer.search(query, page, function(customers) {
       customers_results = [];
       for(customer in customers) {
         customers_results.push(new Customer(customers[customer].customer));
@@ -1133,15 +1160,15 @@ var Item = new JS.Class({
       });
     },
 
-    search: function(query, callback) {
+    search: function(query, page, callback) {
       $.ajax({
         url: '/api/items/search',
         data: JSON.stringify({
           search: {
             title_or_description_or_sku_contains_all: query.split(" ")
           },
-          page: 1,
-          per_page: 25
+          page: page,
+          per_page: 10
         }),
         dataType: 'json',
         accept: 'application/json',
@@ -1413,9 +1440,12 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     this.cart_table_controller.reset();
   },
 
-  search: function(query) {
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
     controller = this;
-    Item.search(query, function(items) {
+    Item.search(query, page, function(items) {
       items_results = [];
       for(item in items) {
         items_results.push(new Item(items[item].item));

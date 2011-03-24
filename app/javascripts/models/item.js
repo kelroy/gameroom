@@ -19,15 +19,15 @@ var Item = new JS.Class({
       });
     },
     
-    search: function(query, callback) {
+    search: function(query, page, callback) {
       $.ajax({
         url: '/api/items/search',
         data: JSON.stringify({
           search: {
             title_or_description_or_sku_contains_all: query.split(" ")
           },
-          page: 1,
-          per_page: 25
+          page: page,
+          per_page: 10
         }),
         dataType: 'json',
         accept: 'application/json',

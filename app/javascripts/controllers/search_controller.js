@@ -49,6 +49,8 @@ var SearchController = new JS.Class(ViewController, {
   },
   
   onClear: function(event) {
+    event.data.instance.page = 1;
+    event.data.instance.query = null;
     event.data.instance.input.val(null);
     event.preventDefault();
   },

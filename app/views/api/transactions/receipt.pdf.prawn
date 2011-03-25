@@ -3,7 +3,7 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   pdf.font_size = 14
   
   pdf.text "Gameroom", :align => :center, :style => :bold, :size => 18
-  pdf.text "1709 O St. Lincoln NE 68508", :align => :center, :size => 10
+  pdf.text "1713 O St. Lincoln NE 68508", :align => :center, :size => 10
   pdf.text "402-438-7161", :align => :center, :size => 10
   pdf.move_down 10
   
@@ -55,4 +55,9 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
     :align => :right,
     :padding => 1,
     :border_width => 0
+    
+  pdf.move_down 20
+  pdf.text "Open 10a-10p 7 Days", :align => :center
+  pdf.move_down 10
+  pdf.text "www.gameroomlincoln.com", :align => :center
 end

@@ -583,7 +583,7 @@ var Customer = new JS.Class({
         data: JSON.stringify({
           search: search,
           page: page,
-          per_page: 25
+          per_page: 10
         }),
         dataType: 'json',
         accept: 'application/json',

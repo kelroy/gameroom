@@ -1766,6 +1766,7 @@ var Transaction = new JS.Class({
 
   initialize: function(params) {
     this.id = params.id;
+    this.user_id = params.user_id;
     if(params.till != undefined) {
       this.till = new Till(params.till);
     } else {
@@ -1950,6 +1951,7 @@ var Transaction = new JS.Class({
     if(this.valid()) {
       transaction = {
         till_id: this.till.id,
+        user_id: this.user_id,
         tax_rate: this.tax_rate,
         complete: this.complete,
         locked: this.locked,
@@ -2424,6 +2426,7 @@ var TransactionController = new JS.Class(ViewController, {
   initialize: function() {
     this.callSuper();
     this.till = null;
+    this.user_id = null;
     this.transaction = null;
 
     this.transaction_nav_controller = new TransactionNavController('ul#transaction_nav');
@@ -2528,10 +2531,11 @@ var TransactionController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
 
-  newTransaction: function(till) {
+  newTransaction: function(till, user_id) {
     this.reset();
     this.till = till;
-    this.setTransaction(new Transaction({till: till, tax_rate: 0.07, complete: false, locked: false}));
+    this.user_id = user_id;
+    this.setTransaction(new Transaction({user_id: user_id, till: till, tax_rate: 0.07, complete: false, locked: false}));
   },
 
   setTransaction: function(transaction) {
@@ -2543,7 +2547,7 @@ var TransactionController = new JS.Class(ViewController, {
     controller = this;
     this.transaction.complete = true;
     this.transaction.save(function(transaction) {
-      controller.newTransaction(controller.till);
+      controller.newTransaction(controller.till, controller.user_id);
       controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
     });
   }
@@ -2574,7 +2578,7 @@ var TerminalController = new JS.Class({
   },
 
   updateTill: function(till) {
-    this.transaction_controller.newTransaction(till);
+    this.transaction_controller.newTransaction(till, $('ul#user_nav li.current_user_login').attr('data-user-id'));
     this.transaction_controller.transaction_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transaction_controller.view.show();

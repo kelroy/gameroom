@@ -4,6 +4,8 @@
     %h2 1709 O St. Lincoln NE 68508 
     %h2 402-438-7161
   %p= "ID #%09d" % @transaction.id
+  - unless @transaction.user.nil?
+    %p= @transaction.user.login
   %p= @transaction.created_at.getlocal
   %table{:class => 'lines'}
     %thead

@@ -26,7 +26,7 @@ var TerminalController = new JS.Class({
   },
   
   updateTill: function(till) {
-    this.transaction_controller.newTransaction(till);
+    this.transaction_controller.newTransaction(till, $('ul#user_nav li.current_user_login').attr('data-user-id'));
     this.transaction_controller.transaction_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transaction_controller.view.show();

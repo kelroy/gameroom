@@ -9,6 +9,10 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   
   pdf.text "#{"ID #%09d" % @transaction.id}", :align => :center
   pdf.move_down 10
+  unless @transaction.user.nil?
+    pdf.text "#{@transaction.user.login}", :align => :center
+    pdf.move_down 10
+  end
   pdf.text "#{@transaction.created_at.getlocal}", :align => :center
   pdf.move_down 10
   

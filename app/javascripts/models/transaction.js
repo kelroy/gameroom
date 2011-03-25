@@ -8,6 +8,7 @@ var Transaction = new JS.Class({
   
   initialize: function(params) {
     this.id = params.id;
+    this.user_id = params.user_id;
     if(params.till != undefined) {
       this.till = new Till(params.till);
     } else {
@@ -192,6 +193,7 @@ var Transaction = new JS.Class({
     if(this.valid()) {
       transaction = {
         till_id: this.till.id,
+        user_id: this.user_id,
         tax_rate: this.tax_rate,
         complete: this.complete,
         locked: this.locked,

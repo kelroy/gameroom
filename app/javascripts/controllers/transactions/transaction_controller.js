@@ -134,6 +134,7 @@ var TransactionController = new JS.Class(ViewController, {
   
   saveTransaction: function() {
     controller = this;
+    this.transaction.complete = true;
     this.transaction.save(function(transaction) {
       controller.newTransaction(controller.till);
       controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');

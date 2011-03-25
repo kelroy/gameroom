@@ -1,6 +1,5 @@
 class Transaction < ActiveRecord::Base
   after_create            :finish
-  after_create            'self.complete = true'
   attr_readonly           :till_id
   
   belongs_to  :till

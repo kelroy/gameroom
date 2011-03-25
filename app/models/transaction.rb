@@ -86,7 +86,7 @@ class Transaction < ActiveRecord::Base
   
   # Update customer
   def update_customer
-    unless self.complete? || self.customer.nil?
+    unless self.customer.nil?
       credit = 0
       self.payments.each do |payment|
         if payment.form == 'store_credit'
@@ -99,7 +99,7 @@ class Transaction < ActiveRecord::Base
   
   # Update till
   def update_till
-    unless self.complete? || self.till.nil?
+    unless self.till.nil?
       cash_total = 0
       self.payments.each do |payment|
         if payment.form == 'cash'

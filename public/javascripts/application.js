@@ -2466,7 +2466,7 @@ var TransactionController = new JS.Class(ViewController, {
   },
 
   onReset: function(event) {
-    event.data.instance.newTransaction(event.data.instance.till);
+    event.data.instance.newTransaction(event.data.instance.till, event.data.instance.user_id);
     event.preventDefault();
   },
 

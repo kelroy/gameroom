@@ -2381,6 +2381,7 @@ var TransactionNavController = new JS.Class(ViewController, {
 
   update: function(till) {
     $('li#transaction_nav_till', this.view).html(till.title);
+    this.view.show();
   }
 });
 
@@ -2580,7 +2581,7 @@ var TerminalController = new JS.Class({
   }
 });
 
-var terminal = {
+var transactions = {
 
   run: function() {
 

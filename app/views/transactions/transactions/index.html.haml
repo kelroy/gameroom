@@ -1,32 +1,13 @@
-.main_container
-  %header
-    %hgroup
-      %h1 GAMEROOM
-      %h2 1709 O St. Lincoln NE 68508 402-438-7161
-    - if current_user
-      %ul{:id => 'user_nav', :class => 'link_nav'}
-        %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
-        %li &#124;
-        %li
-          = link_to "Dashboard", dashboard_root_path
-        %li &#124;
-        %li
-          = link_to "Logout", logout_path, :method => :delete
-  %div{:id => 'transaction', :class => 'section_container'}
-    %ul{:id => 'transaction_nav', :class => 'drop_nav'}
-      %li{:id => 'transaction_nav_till'}
-      %li
-        %a{:href => '#reset', :class => 'button reset'} Reset
-    %section{:id => 'customer'}
-      = render :partial => 'customer'
-    %section{:id => 'cart'}
-      = render :partial => 'cart'
-    %section{:id => 'payment'}
-      = render :partial => 'payment'
-    %section{:id => 'review'}
-      = render :partial => 'review'
-%footer
-  = render :partial => 'footer'
-.overlay
-= render :partial => 'till'
-= render :partial => 'receipt'
+%div{:id => 'transaction', :class => 'section_container'}
+  %ul{:id => 'transaction_nav', :class => 'drop_nav'}
+    %li{:id => 'transaction_nav_till'}
+    %li
+      %a{:href => '#reset', :class => 'button reset'} Reset
+  %section{:id => 'customer'}
+    = render :partial => 'customer'
+  %section{:id => 'cart'}
+    = render :partial => 'cart'
+  %section{:id => 'payment'}
+    = render :partial => 'payment'
+  %section{:id => 'review'}
+    = render :partial => 'review'

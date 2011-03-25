@@ -1,22 +1,5 @@
-.main_container
-  %header
-    %hgroup
-      %h1 GAMEROOM
-      %h2 1709 O St. Lincoln NE 68508 402-438-7161
-    - if current_user
-      %ul{:id => 'user_nav', :class => 'link_nav'}
-        %li{:class => 'current_user_login'}= "#{current_user.person.first_name} #{current_user.person.last_name}"
-        %li &#124;
-        %li
-          = link_to "Dashboard", dashboard_root_path
-        %li &#124;
-        %li
-          = link_to "Logout", logout_path, :method => :delete
-  .section_container
-    %section{:id => 'list'}
-      = render :partial => 'list'
-    %section{:id => 'form'}
-      = render :partial => 'form'
-%footer
-  = render :partial => 'footer'
-.overlay
+%div{:id => 'users', :class => 'section_container'}
+  %section{:id => 'list'}
+    = render :partial => 'list'
+  %section{:id => 'form'}
+    = render :partial => 'form'

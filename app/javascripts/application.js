@@ -1,7 +1,7 @@
 /* Gameroom */
 //= require "controllers/transactions/terminal_controller"
 
-var terminal = {
+var transactions = {
   
   run: function() {
     

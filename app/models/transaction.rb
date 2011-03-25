@@ -4,6 +4,7 @@ class Transaction < ActiveRecord::Base
   
   belongs_to  :till
   belongs_to  :customer
+  belongs_to  :user
   has_many    :payments
   has_many    :lines
   has_many    :items,    :through => :lines

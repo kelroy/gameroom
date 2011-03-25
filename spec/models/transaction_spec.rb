@@ -9,6 +9,7 @@ describe Transaction do
     it "should be valid" do
       valid_data = {
         :customer_id => 1,
+        :user_id => 1,
         :tax_rate => 0.06,
         :complete => true,
         :locked => false

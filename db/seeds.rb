@@ -59,7 +59,7 @@ unless Rails.env.production?
     items.push(item)
   end
   
-  transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0])
+  transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
   (1...5).each do |n|
     item = items[n]
     transaction.lines << Factory.create(:line, :quantity => (rand(9) + 1), :price => item.price, :taxable => item.taxable, :item => item, :transaction => transaction)

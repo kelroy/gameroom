@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-19 21:56:07', :null => false
+    t.datetime "time",        :default => '2011-03-25 07:12:33', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -137,7 +137,8 @@ ActiveRecord::Schema.define(:version => 20110308214821) do
   create_table "transactions", :force => true do |t|
     t.integer  "till_id"
     t.integer  "customer_id"
-    t.decimal  "tax_rate",    :precision => 10, :scale => 2, :default => 0,     :null => false
+    t.integer  "user_id"
+    t.decimal  "tax_rate",    :precision => 10, :scale => 2, :default => 0.07,  :null => false
     t.boolean  "complete",                                   :default => true,  :null => false
     t.boolean  "locked",                                     :default => false, :null => false
     t.datetime "created_at"

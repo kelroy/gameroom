@@ -46,7 +46,7 @@ var CartController = new JS.Class(ViewController, {
   },
   
   showFormSection: function() {
-    this.cart_page_controller.showSection(1);
+    this.cart_section_controller.showSection(1);
   },
   
   showSearchSection: function() {

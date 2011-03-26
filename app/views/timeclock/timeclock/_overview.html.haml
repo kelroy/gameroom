@@ -1,0 +1,11 @@
+%div{:id => 'overview_header', :class => 'header_container'}
+  %h2{:id => 'overview_datetime'}
+  %ul{:id => 'overview_action_nav'}
+    %li
+      %a{:href => '#clock_in_out', :class => 'button big'} Clock In / Out
+%ul{:id => 'overview_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#overview_chart', :class => 'overview_chart selected'} Chart
+%div{:id => 'overview_pages', :class => 'page_container'}
+  %div{:id => 'overview_chart'}
+    = render :partial => 'overview_chart'

@@ -4,9 +4,7 @@
 var transactions = {
   
   run: function() {
-    
     new TerminalController();
-
   }
   
 };
@@ -23,6 +21,14 @@ var reports = {
   
   run: function() {
 
+  }
+  
+};
+
+var timeclock = {
+  
+  run: function() {
+    new TimeclockController();
   }
   
 };

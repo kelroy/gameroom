@@ -6,7 +6,7 @@
 //= require "transaction_summary_controller"
 //= require "transaction_finish_controller"
 //= require "transaction_nav_controller"
-//= require "../page_controller"
+//= require "../section_controller"
 //= require "../../models/till"
 //= require "../../models/transaction"
 //= require "../../currency"
@@ -25,7 +25,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.section_controller = new PageController('ul#transactions_nav', [
+    this.section_controller = new SectionController('ul#transactions_nav', [
       this.customer_controller.view,
       this.cart_controller.view,
       this.payment_controller.view,

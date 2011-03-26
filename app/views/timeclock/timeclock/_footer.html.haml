@@ -1,0 +1,6 @@
+%ul{:id => 'timeclock_nav', :class => 'large_tab_nav'}
+  %li
+    %a{:href => '#overview', :class => 'overview'} Overview
+  - if current_user.admin?
+    %li
+      %a{:href => '#admin', :class => 'admin'} Admin

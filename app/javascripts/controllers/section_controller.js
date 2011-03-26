@@ -1,6 +1,6 @@
 //= require "view_controller"
 
-var PageController = new JS.Class(ViewController, {
+var SectionController = new JS.Class(ViewController, {
   
   initialize: function(view, sections) {
     this.callSuper();

@@ -12,7 +12,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller = new CustomerFormController('div#customer_form');
     this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
-    this.customer_page_controller = new PageController('ul#customer_nav', [
+    this.customer_section_controller = new SectionController('ul#customer_nav', [
       this.customer_review_controller.view,
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
@@ -30,21 +30,21 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
-    this.customer_page_controller.reset();
+    this.customer_section_controller.reset();
     this.showReviewSection();
   },
   
   showReviewSection: function() {
-    this.customer_page_controller.showSection(0);
+    this.customer_section_controller.showSection(0);
   },
   
   showFormSection: function() {
-    this.customer_page_controller.showSection(1);
+    this.customer_section_controller.showSection(1);
   },
   
   showSearchSection: function(query) {
     if(query) {
-      this.customer_page_controller.showSection(2);
+      this.customer_section_controller.showSection(2);
     }
   },
   

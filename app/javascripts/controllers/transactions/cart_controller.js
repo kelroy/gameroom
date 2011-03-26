@@ -13,7 +13,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller = new CartFormController('div#cart_form');
     this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
-    this.cart_page_controller = new PageController('ul#cart_nav', [
+    this.cart_section_controller = new SectionController('ul#cart_nav', [
       this.cart_lines_controller.view,
       this.cart_form_controller.view,
       this.cart_search_results_controller.view
@@ -32,7 +32,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller.reset();
     this.cart_search_controller.reset();
     this.cart_search_results_controller.reset();
-    this.cart_page_controller.reset();
+    this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
   },
   
@@ -41,11 +41,11 @@ var CartController = new JS.Class(ViewController, {
   },
   
   showLinesSection: function() {
-    this.cart_page_controller.showSection(0);
+    this.cart_section_controller.showSection(0);
   },
   
   showSearchSection: function() {
-    this.cart_page_controller.showSection(2);
+    this.cart_section_controller.showSection(2);
   },
   
   addLines: function(lines) {

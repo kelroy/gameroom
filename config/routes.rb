@@ -44,6 +44,10 @@ Gameroom::Application.routes.draw do
     root :to => 'dashboard#index'
   end
   
+  namespace 'timeclock' do
+    root :to => 'timeclock#index'
+  end
+  
   namespace 'users' do
     root :to => 'users#index'
   end

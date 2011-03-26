@@ -756,7 +756,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller = new CustomerFormController('div#customer_form');
     this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
-    this.customer_page_controller = new PageController('ul#customer_nav', [
+    this.customer_section_controller = new SectionController('ul#customer_nav', [
       this.customer_review_controller.view,
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
@@ -774,21 +774,21 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
-    this.customer_page_controller.reset();
+    this.customer_section_controller.reset();
     this.showReviewSection();
   },
 
   showReviewSection: function() {
-    this.customer_page_controller.showSection(0);
+    this.customer_section_controller.showSection(0);
   },
 
   showFormSection: function() {
-    this.customer_page_controller.showSection(1);
+    this.customer_section_controller.showSection(1);
   },
 
   showSearchSection: function(query) {
     if(query) {
-      this.customer_page_controller.showSection(2);
+      this.customer_section_controller.showSection(2);
     }
   },
 
@@ -1517,7 +1517,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller = new CartFormController('div#cart_form');
     this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
-    this.cart_page_controller = new PageController('ul#cart_nav', [
+    this.cart_section_controller = new SectionController('ul#cart_nav', [
       this.cart_lines_controller.view,
       this.cart_form_controller.view,
       this.cart_search_results_controller.view
@@ -1536,7 +1536,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller.reset();
     this.cart_search_controller.reset();
     this.cart_search_results_controller.reset();
-    this.cart_page_controller.reset();
+    this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
   },
 
@@ -1545,11 +1545,11 @@ var CartController = new JS.Class(ViewController, {
   },
 
   showLinesSection: function() {
-    this.cart_page_controller.showSection(0);
+    this.cart_section_controller.showSection(0);
   },
 
   showSearchSection: function() {
-    this.cart_page_controller.showSection(2);
+    this.cart_section_controller.showSection(2);
   },
 
   addLines: function(lines) {
@@ -2412,7 +2412,7 @@ var TransactionNavController = new JS.Class(ViewController, {
   }
 });
 
-var PageController = new JS.Class(ViewController, {
+var SectionController = new JS.Class(ViewController, {
 
   initialize: function(view, sections) {
     this.callSuper();
@@ -2459,7 +2459,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.section_controller = new PageController('ul#transactions_nav', [
+    this.section_controller = new SectionController('ul#transactions_nav', [
       this.customer_controller.view,
       this.cart_controller.view,
       this.payment_controller.view,
@@ -2613,9 +2613,7 @@ var TerminalController = new JS.Class({
 var transactions = {
 
   run: function() {
-
     new TerminalController();
-
   }
 
 };
@@ -2632,6 +2630,14 @@ var reports = {
 
   run: function() {
 
+  }
+
+};
+
+var timeclock = {
+
+  run: function() {
+    new TimeclockController();
   }
 
 };
@@ -2655,6 +2661,56 @@ var AlphabetController = new JS.Class(ViewController, {
   onSelect: function(event) {
     event.data.instance.notifyObservers($(this).html());
     event.preventDefault();
+  }
+});
+
+var AdminController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.reset();
+  },
+
+  reset: function() {
+  }
+});
+
+var OverviewController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.updateClock();
+    this.clock_interval = window.setInterval(this.updateClock, 1000);
+    this.reset();
+  },
+
+  reset: function() {
+  },
+
+  updateClock: function() {
+    date = new Date();
+    $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
+  }
+});
+
+var TimeclockController = new JS.Class({
+
+  initialize: function() {
+    this.overview_controller = new OverviewController('section#overview');
+    this.admin_controller = new AdminController('section#admin');
+    this.section_controller = new SectionController('ul#timeclock_nav', [
+      this.overview_controller.view,
+      this.admin_controller.view
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_controller.reset();
+    this.admin_controller.reset();
+    this.section_controller.reset();
   }
 });
 

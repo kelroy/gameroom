@@ -36,6 +36,14 @@
           %a{:href => '#purchase', :class => 'purchase'} Purchase From Store
         %li
           %a{:href => '#sell', :class => 'sell'} Sell To Store
+      %ul{:class => 'cart_line_purchase_control'}
+        %li
+          %span Item Discount %:
+        %li
+          %ul{:class => 'cart_line_purchase_discount group_nav'}
+            - (0..30).step(5) do |n|
+              %li
+                %a{:href => '#cart_line_purchase_discount', :'data-discount' => "#{n}"}= n
       %ul{:class => 'cart_line_sell_control'}
         %li
           %span Item Condition:

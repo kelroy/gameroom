@@ -15,6 +15,7 @@ var CartLineController = new JS.Class(ViewController, {
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
     $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
     $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('ul.cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
     $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
   },
   
@@ -33,12 +34,15 @@ var CartLineController = new JS.Class(ViewController, {
     $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(line.item.cashPrice() * line.condition));
     $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
     $('ul.cart_line_sell_condition li a', this.view).eq((line.condition * 5) - 1).addClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).eq((line.discount * 100) / 5).addClass('selected');
     if(line.sell) {
       $('ul.cart_line_action li a.sell', this.view).addClass('selected');
-      this.showControls();
+      this.showSellControls();
+      this.hidePurchaseControls();
     } else {
       $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
-      this.hideControls();
+      this.showPurchaseControls();
+      this.hideSellControls();
     }
     if(this.isOpen()) {
       $('div.cart_info', this.view).css('display', 'block');
@@ -67,6 +71,13 @@ var CartLineController = new JS.Class(ViewController, {
   setSell: function() {
     this.line.setSell();
     this.notifyObservers(this.line_index, this.line);
+  },
+  
+  onDiscount: function(event) {
+    index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
+    event.data.instance.line.setDiscount($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    event.preventDefault();
   },
   
   onCondition: function(event) {
@@ -125,11 +136,19 @@ var CartLineController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  showControls: function() {
+  showSellControls: function() {
     $('ul.cart_line_sell_control', this.view).css('display', 'block');
   },
   
-  hideControls: function() {
+  hideSellControls: function() {
     $('ul.cart_line_sell_control', this.view).hide();
+  },
+  
+  showPurchaseControls: function() {
+    $('ul.cart_line_purchase_control', this.view).css('display', 'block');
+  },
+  
+  hidePurchaseControls: function() {
+    $('ul.cart_line_purchase_control', this.view).hide();
   }
 });

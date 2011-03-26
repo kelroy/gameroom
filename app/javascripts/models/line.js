@@ -3,6 +3,7 @@ var Line = new JS.Class({
   initialize: function(params) {
     this.id = params.id;
     this.condition = 1;
+    this.discount = 0;
     this.quantity = 0;
     this.price = 0;
     this.taxable = params.taxable;
@@ -58,6 +59,11 @@ var Line = new JS.Class({
     this.quantity = quantity;
   },
   
+  setDiscount: function(discount) {
+    this.discount = discount;
+    this._calculatePrice();
+  },
+  
   setCondition: function(condition) {
     this.condition = condition;
     this._calculatePrice();
@@ -77,7 +83,7 @@ var Line = new JS.Class({
     if(this.sell) {
       this.price = parseInt(this.item.creditPrice() * this.condition * -1);
     } else {
-      this.price = this.item.basePrice();
+      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
     }
   }
 });

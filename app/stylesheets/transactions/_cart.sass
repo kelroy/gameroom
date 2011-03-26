@@ -124,6 +124,7 @@ section#cart
           ul.cart_line_action
             float: left
           
+          ul.cart_line_purchase_control,
           ul.cart_line_sell_control
             display: none
             float: right
@@ -137,13 +138,17 @@ section#cart
               float: left
               margin-right: 10px
               
-              ul.cart_line_sell_condition
-                li
-                  a
-                    border: 1px $white solid
-                    height: 14px
-                    line-height: 14px
-                    margin-top: 2px
+              &:last-child
+                margin-right: 0px
+
+            ul.cart_line_purchase_discount,
+            ul.cart_line_sell_condition
+              li
+                a
+                  border: 1px $white solid
+                  height: 14px
+                  line-height: 14px
+                  margin-top: 2px
     
   div#cart_form
     display: none

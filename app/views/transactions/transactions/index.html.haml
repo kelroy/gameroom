@@ -3,10 +3,10 @@
     %li{:id => 'transaction_nav_till'}
     %li
       %a{:href => '#reset', :class => 'button reset'} Reset
-  %section{:id => 'customer'}
-    = render :partial => 'customer'
   %section{:id => 'cart'}
     = render :partial => 'cart'
+  %section{:id => 'customer'}
+    = render :partial => 'customer'
   %section{:id => 'payment'}
     = render :partial => 'payment'
   %section{:id => 'review'}

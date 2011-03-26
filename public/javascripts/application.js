@@ -1538,6 +1538,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_page_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
+    this.showFormSection();
   },
 
   update: function(transaction) {
@@ -1546,6 +1547,10 @@ var CartController = new JS.Class(ViewController, {
 
   showLinesSection: function() {
     this.cart_page_controller.showSection(0);
+  },
+
+  showFormSection: function() {
+    this.cart_page_controller.showSection(1);
   },
 
   showSearchSection: function() {
@@ -2460,8 +2465,8 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
     this.section_controller = new PageController('ul#transactions_nav', [
-      this.customer_controller.view,
       this.cart_controller.view,
+      this.customer_controller.view,
       this.payment_controller.view,
       this.review_controller.view
     ]);

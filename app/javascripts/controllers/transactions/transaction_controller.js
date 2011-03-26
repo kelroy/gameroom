@@ -25,9 +25,14 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
+<<<<<<< HEAD
     this.section_controller = new SectionController('ul#transactions_nav', [
       this.customer_controller.view,
+=======
+    this.section_controller = new PageController('ul#transactions_nav', [
+>>>>>>> master
       this.cart_controller.view,
+      this.customer_controller.view,
       this.payment_controller.view,
       this.review_controller.view
     ]);

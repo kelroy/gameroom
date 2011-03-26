@@ -34,6 +34,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
+    this.showFormSection();
   },
   
   update: function(transaction) {
@@ -42,6 +43,10 @@ var CartController = new JS.Class(ViewController, {
   
   showLinesSection: function() {
     this.cart_section_controller.showSection(0);
+  },
+  
+  showFormSection: function() {
+    this.cart_page_controller.showSection(1);
   },
   
   showSearchSection: function() {

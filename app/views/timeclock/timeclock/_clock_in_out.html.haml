@@ -1,0 +1,18 @@
+%div{:id => 'clock_in_out', :class => 'modal'}
+  %h2 Clock In / Out
+  = form_for :user, :method => 'get', :url => '#users' do |u|
+    %ul
+      %li
+        = u.label :employee
+        = u.select :id, [["Joe Example", 1]]
+    %ul
+      %li
+        = u.label :pin
+        = u.password_field :pin
+    %ul
+      %li
+        %ul{:id => 'clock_in_out_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#cancel', :class => 'cancel button'} Cancel
+          %li
+            %a{:href => '#clock_in_out', :class => 'clock_in_out button'} Clock In / Out

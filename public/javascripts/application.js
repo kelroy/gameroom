@@ -2749,14 +2749,40 @@ var OverviewChartController = new JS.Class(ViewController, {
   }
 });
 
+var OverviewInController = new JS.Class(OverviewChartController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  refresh: function() {
+
+  },
+
+  update: function(date) {
+
+  }
+});
+
+var OverviewOutController = new JS.Class(OverviewChartController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  refresh: function() {
+
+  }
+});
+
 var OverviewController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
 
     this.clock_in_out_controller = new ClockInOutController('div#clock_in_out');
-    this.overview_in_controller = new OverviewChartController('div#overview_in');
-    this.overview_out_controller = new OverviewChartController('div#overview_out');
+    this.overview_in_controller = new OverviewInController('div#overview_in');
+    this.overview_out_controller = new OverviewOutController('div#overview_out');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
       this.overview_in_controller.view,
       this.overview_out_controller.view
@@ -2801,7 +2827,6 @@ var OverviewController = new JS.Class(ViewController, {
   updateClock: function() {
     date = new Date();
     this.overview_in_controller.update(date);
-    this.overview_out_controller.update(date);
     $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
   }
 });

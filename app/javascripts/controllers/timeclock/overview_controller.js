@@ -1,7 +1,8 @@
 //= require "../view_controller"
 //= require "../section_controller"
 //= require "clock_in_out_controller"
-//= require "overview_chart_controller"
+//= require "overview_in_controller"
+//= require "overview_out_controller"
 
 var OverviewController = new JS.Class(ViewController, {
   
@@ -9,8 +10,8 @@ var OverviewController = new JS.Class(ViewController, {
     this.callSuper();
     
     this.clock_in_out_controller = new ClockInOutController('div#clock_in_out');
-    this.overview_in_controller = new OverviewChartController('div#overview_in');
-    this.overview_out_controller = new OverviewChartController('div#overview_out');
+    this.overview_in_controller = new OverviewInController('div#overview_in');
+    this.overview_out_controller = new OverviewOutController('div#overview_out');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
       this.overview_in_controller.view,
       this.overview_out_controller.view
@@ -55,7 +56,6 @@ var OverviewController = new JS.Class(ViewController, {
   updateClock: function() {
     date = new Date();
     this.overview_in_controller.update(date);
-    this.overview_out_controller.update(date);
     $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
   }
 });

@@ -2681,21 +2681,127 @@ var AdminController = new JS.Class(ViewController, {
   }
 });
 
-var OverviewController = new JS.Class(ViewController, {
+var ClockInOutController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
+
+    $('a.cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
+    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
+  },
+
+  doClockInOut: function(event) {
+    id = '';
+    pin = '';
+
+    event.data.instance.validateUser(id, pin, function(valid) {
+      if(valid) {
+        event.data.instance.timestampUser(id, function() {
+          event.data.instance.view.hide();
+          event.data.instance.notifyObservers();
+        });
+      }
+    });
+    event.preventDefault();
+  },
+
+  hideClockInOut: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  timestampUser: function(id, callback) {
+    callback();
+  },
+
+  validateUser: function(id, pin, callback) {
+    callback(true);
+  }
+});
+
+var OverviewChartController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
+  },
+
+  reset: function() {
+
+  },
+
+  refresh: function() {
+
+  },
+
+  update: function(date) {
+
+  },
+
+  doRefresh: function(event) {
+    event.data.instance.refresh();
+    event.preventDefault();
+  }
+});
+
+var OverviewController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.clock_in_out_controller = new ClockInOutController('div#clock_in_out');
+    this.overview_in_controller = new OverviewChartController('div#overview_in');
+    this.overview_out_controller = new OverviewChartController('div#overview_out');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_in_controller.view,
+      this.overview_out_controller.view
+    ]);
+
+    controller = this;
     this.updateClock();
-    this.clock_interval = window.setInterval(this.updateClock, 1000);
+    this.clock_interval = window.setInterval(function() {
+      controller.updateClock();
+    }, 1000);
+
+    this.clock_in_out_controller.addObserver(this.updateCharts, this);
+
+    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
     this.reset();
   },
 
   reset: function() {
+    this.overview_in_controller.reset();
+    this.overview_out_controller.reset();
+    this.showInSection();
+  },
+
+  showInSection: function() {
+    this.overview_section_controller.showSection(0);
+  },
+
+  showOutSection: function() {
+    this.overview_section_controller.showSection(1);
+  },
+
+  showClockInOut: function(event) {
+    event.data.instance.clock_in_out_controller.view.show();
+    event.preventDefault();
+  },
+
+  updateCharts: function() {
+    this.overview_in_controller.refresh();
+    this.overview_out_controller.refresh();
   },
 
   updateClock: function() {
     date = new Date();
+    this.overview_in_controller.update(date);
+    this.overview_out_controller.update(date);
     $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
   }
 });

@@ -21,7 +21,7 @@ unless Rails.env.production?
     person.phones << Factory.create(:phone, :person => person)
     
     customer = Factory.create(:customer, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => true)
-    employee = Factory.create(:employee, :rate => (rand(19) + 1), :pin => '0000', :active => true)
+    employee = Factory.create(:employee, :rate => (rand(19) + 1), :active => true)
     
     customer.person = person
     employee.person = person
@@ -34,7 +34,7 @@ unless Rails.env.production?
   person.emails << Factory.create(:email, :person => person)
   person.addresses << Factory.create(:address, :person => person)
   person.phones << Factory.create(:phone, :person => person)
-  user = Factory.create(:user, :person => person, :email => 'example@example.com', :login => 'login', :administrator => true)
+  user = Factory.create(:user, :person => person, :pin => '1111', :email => 'example@example.com', :login => 'login', :administrator => true)
   
   tills = []
   (1..3).each do |n|

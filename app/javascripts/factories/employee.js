@@ -1,11 +1,12 @@
 //= require "../factory"
 
-Factory.define('Email', {
+Factory.define('Employee', {
   id: {
     sequence: 'id'
   },
   person: {
     factory: 'Person'
   },
-  address: 'example@example.com'
+  rate: 0,
+  active: true
 });

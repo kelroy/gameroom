@@ -1,45 +1,39 @@
 class Api::PropertiesController < ApplicationController
-  before_filter :set_parent
   
-  # Set the parent resource based on route param
-  def set_parent
-    @good ||= Good.find(params[:good_id])
-  end
-  
-  # GET /goods/:id/properties
-  # GET /goods/:id/properties.xml
-  # GET /goods/:id/properties.json
+  # GET /properties
+  # GET /properties.xml
+  # GET /properties.json
   def index
-    @properties = @good.properties
+    @properties = Property.all
     
     respond_to do |format|
-      format.json { render :json => @properties.to_json(:except => [:good_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @properties.to_xml(:except => [:good_id, :created_at, :updated_at]) }
+      format.json { render :json => @properties.to_json(:except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @properties.to_xml(:except => [:created_at, :updated_at]) }
     end
   end
   
-  # GET /goods/:id/properties/1
-  # GET /goods/:id/properties/1.xml
-  # GET /goods/:id/properties/1.json
+  # GET /properties/1
+  # GET /properties/1.xml
+  # GET /properties/1.json
   def show
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]) }
+      format.json { render :json => @property.to_json(:except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @property.to_xml(:except => [:created_at, :updated_at]) }
     end
   end
   
-  # POST /goods/:id/properties
-  # POST /goods/:id/properties.xml
-  # POST /goods/:id/properties.json
+  # POST /properties
+  # POST /properties.xml
+  # POST /properties.json
   def create
-    @property = @good.properties.create(params[:property])
+    @property = Property.create(params[:property])
 
     respond_to do |format|
       if @property.save
-        format.json  { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @property.to_json(:except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @property.to_xml(:except => [:created_at, :updated_at]), :status => :created }
       else
         format.html { render :action => "new" }
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }
@@ -48,11 +42,11 @@ class Api::PropertiesController < ApplicationController
     end
   end
 
-  # PUT /goods/:id/properties/1
-  # PUT /goods/:id/properties/1.xml
-  # PUT /goods/:id/properties/1.json
+  # PUT /properties/1
+  # PUT /properties/1.xml
+  # PUT /properties/1.json
   def update
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
 
     respond_to do |format|
       if @property.update_attributes(params[:property])
@@ -65,10 +59,10 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
-  # DELETE /goods/:id/properties/1
-  # DELETE /goods/:id/properties/1.xml
+  # DELETE /properties/1
+  # DELETE /properties/1.xml
   def destroy
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
     @property.destroy
 
     respond_to do |format|

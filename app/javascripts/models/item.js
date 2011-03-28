@@ -1,3 +1,6 @@
+//= require "property"
+//= require "line"
+
 var Item = new JS.Class({
   extend: {
     find: function(id, callback) {
@@ -55,10 +58,6 @@ var Item = new JS.Class({
   
   initialize: function(params) {
     this.id = params.id;
-    this.properties = [];
-    for(property in params.properties) {
-      this.properties.push(new Property(params.properties[property]));
-    }
     this.title = params.title;
     this.description = params.description;
     this.sku = params.sku;

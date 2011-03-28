@@ -1,27 +1,48 @@
+//= require "user"
+//= require "customer"
+//= require "employee"
+//= require "address"
+//= require "phone"
+//= require "email"
+
 var Person = new JS.Class({
+  extend: {
+    find: function(id) {
+      person = undefined;
+      $.ajax({
+        url: '/api/people/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          person = results.person;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return person;
+    }
+  },
   
   initialize: function(params) {
     this.id = params.id;
+    this.user_id = params.user_id;
+    this.customer_id = params.customer_id;
+    this.employee_id = params.employee_id;
     this.first_name = params.first_name;
     this.middle_name = params.middle_name;
     this.last_name = params.last_name;
     this.date_of_birth = params.date_of_birth;
-    this.addresses = [];
-    for(address in params.addresses) {
-      this.addresses.push(new Address(params.addresses[address]));
-    }
-    this.phones = [];
-    for(phone in params.phones) {
-      this.phones.push(new Phone(params.phones[phone]));
-    }
-    this.emails = [];
-    for(email in params.emails) {
-      this.emails.push(new Email(params.emails[email]));
-    }
   },
 
   save: function() {
-    
+
   },
   
   valid: function() {

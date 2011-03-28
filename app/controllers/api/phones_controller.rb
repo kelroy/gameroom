@@ -1,45 +1,39 @@
 class Api::PhonesController < ApplicationController
-  before_filter :set_parent
   
-  # Set the parent resource based on route param
-  def set_parent
-    @person ||= Person.find(params[:person_id])
-  end
-  
-  # GET /persons/:id/phones
-  # GET /persons/:id/phones.xml
-  # GET /persons/:id/phones.json
+  # GET /phones
+  # GET /phones.xml
+  # GET /phones.json
   def index
-    @phones = @person.phones
+    @phones = Phone.all
     
     respond_to do |format|
-      format.json { render :json => @phones.to_json(:except => [:person_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @phones.to_xml(:except => [:person_id, :created_at, :updated_at]) }
+      format.json { render :json => @phones.to_json(:except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @phones.to_xml(:except => [:created_at, :updated_at]) }
     end
   end
   
-  # GET /persons/:id/phones/1
-  # GET /persons/:id/phones/1.xml
-  # GET /persons/:id/phones/1.json
+  # GET /phones/1
+  # GET /phones/1.xml
+  # GET /phones/1.json
   def show
-    @phone = @person.phones.find(params[:id])
+    @phone = Phone.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @phone.to_json(:except => [:person_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @phone.to_xml(:except => [:person_id, :created_at, :updated_at]) }
+      format.json { render :json => @phone.to_json(:except => [:created_at, :updated_at]) }
+      format.xml  { render :xml => @phone.to_xml(:except => [:created_at, :updated_at]) }
     end
   end
   
-  # POST /persons/:id/phones
-  # POST /persons/:id/phones.xml
-  # POST /persons/:id/phones.json
+  # POST /phones
+  # POST /phones.xml
+  # POST /phones.json
   def create
-    @phone = @person.phones.create(params[:phone])
+    @phone = Phone.create(params[:phone])
 
     respond_to do |format|
       if @phone.save
-        format.json  { render :json => @phone.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @phone.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @phone.to_json(:except => [:created_at, :updated_at]), :status => :created }
+        format.xml  { render :xml => @phone.to_xml(:except => [:created_at, :updated_at]), :status => :created }
       else
         format.json  { render :json => @phone.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @phone.errors, :status => :unprocessable_entity }
@@ -47,11 +41,11 @@ class Api::PhonesController < ApplicationController
     end
   end
 
-  # PUT /persons/:id/phones/1
-  # PUT /persons/:id/phones/1.xml
-  # PUT /persons/:id/phones/1.json
+  # PUT /phones/1
+  # PUT /phones/1.xml
+  # PUT /phones/1.json
   def update
-    @phone = @person.phones.find(params[:id])
+    @phone = Phone.find(params[:id])
 
     respond_to do |format|
       if @phone.update_attributes(params[:phone])
@@ -64,10 +58,10 @@ class Api::PhonesController < ApplicationController
     end
   end
   
-  # DELETE /persons/:id/phones/1
-  # DELETE /persons/:id/phones/1.xml
+  # DELETE /phones/1
+  # DELETE /phones/1.xml
   def destroy
-    @phone = @person.phones.find(params[:id])
+    @phone = Phone.find(params[:id])
     @phone.destroy
 
     respond_to do |format|

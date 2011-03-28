@@ -1,7 +1,7 @@
 //= require "till"
 //= require "customer"
-//= require "receipt"
 //= require "item"
+//= require "line"
 //= require "payment"
 
 var Transaction = new JS.Class({
@@ -9,25 +9,8 @@ var Transaction = new JS.Class({
   initialize: function(params) {
     this.id = params.id;
     this.user_id = params.user_id;
-    if(params.till != undefined) {
-      this.till = new Till(params.till);
-    } else {
-      this.till = undefined;
-    }
-    if(params.customer != undefined) {
-      this.customer = new Customer(params.customer);
-    } else {
-      this.customer = undefined;
-    }
-    if(params.receipt != undefined) {
-      this.receipt = new Receipt(params.receipt);
-    } else {
-      this.receipt = undefined;
-    }
-    this.lines = [];
-    for(line in params.lines) {
-      this.lines.push(new Line(params.lines[line].line));
-    }
+    this.till_id = params.till_id;
+    this.customer_id = params.customer_id;
     this.payments = [
       new Payment({form: 'store_credit', amount: 0}),
       new Payment({form: 'gift_card', amount: 0}),

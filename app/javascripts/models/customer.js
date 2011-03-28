@@ -1,16 +1,16 @@
-//= require "../factory"
-//= require "../factories/customer"
 //= require "person"
 
 var Customer = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      customer = undefined;
       $.ajax({
         url: '/api/customers/' + id,
         accept: 'application/json',
         dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.customer);
+          customer = results.customer;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -21,6 +21,7 @@ var Customer = new JS.Class({
         username: 'x',
         password: 'x'
       });
+      return customer;
     },
     
     search: function(query, page, callback) {
@@ -59,11 +60,6 @@ var Customer = new JS.Class({
   
   initialize: function(params) {
     this.id = params.id;
-    if(params.person != undefined) {
-      this.person = new Person(params.person);
-    } else {
-      this.person = undefined;
-    }
     this.credit = params.credit;
     this.drivers_license_number = params.drivers_license_number;
     this.drivers_license_state = params.drivers_license_state;

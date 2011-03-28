@@ -2,22 +2,14 @@ var Line = new JS.Class({
   
   initialize: function(params) {
     this.id = params.id;
+    this.transaction_id = params.transaction_id;
+    this.item_id = params.item_id;
     this.condition = 1;
     this.discount = 0;
     this.quantity = 0;
     this.price = 0;
     this.taxable = params.taxable;
     this.sell = false;
-    if(params.transaction != undefined) {
-      this.transaction = new Transaction(params.transaction);
-    } else {
-      this.transaction = undefined;
-    }
-    if(params.item != undefined) {
-      this.item = new Item(params.item);
-    } else {
-      this.item = undefined;
-    }
     this.setQuantity(params.quantity);
     this.setCondition(params.condition);
     if(params.sell) {

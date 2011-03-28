@@ -1,13 +1,28 @@
+//= require "person"
+
 var Address = new JS.Class({
   
   initialize: function(params) {
     this.id = params.id;
+    this.person_id = params.person_id;
     this.first_line = params.first_line;
     this.second_line = params.second_line;
     this.city = params.city;
     this.state = params.state;
     this.country = params.country;
     this.zip = params.zip;
+  },
+  
+  person: function() {
+    if(this.person_id != undefined) {
+      return Person.find(this.person_id);
+    } else {
+      return undefined;
+    }
+  },
+
+  save: function() {
+
   },
   
   valid: function() {

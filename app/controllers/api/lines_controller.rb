@@ -1,16 +1,10 @@
 class Api::LinesController < ApplicationController
-  before_filter :set_parent
   
-  # Set the parent resource based on route param
-  def set_parent
-    @transaction ||= Transaction.find(params[:transaction_id])
-  end
-  
-  # GET /transactions/:id/lines
-  # GET /transactions/:id/lines.xml
-  # GET /transactions/:id/lines.json
+  # GET /lines
+  # GET /lines.xml
+  # GET /lines.json
   def index
-    @lines = @transaction.lines
+    @lines = Line.all
     
     respond_to do |format|
       format.json { render :json => @lines }
@@ -18,11 +12,11 @@ class Api::LinesController < ApplicationController
     end
   end
   
-  # GET /transactions/:id/lines/1
-  # GET /transactions/:id/lines/1.xml
-  # GET /transactions/:id/lines/1.json
+  # GET /lines/1
+  # GET /lines/1.xml
+  # GET /lines/1.json
   def show
-    @line = @transaction.lines.find(params[:id])
+    @line = Line.find(params[:id])
     
     respond_to do |format|
       format.json { render :json => @line }
@@ -30,11 +24,11 @@ class Api::LinesController < ApplicationController
     end
   end
   
-  # POST /transactions/:id/lines
-  # POST /transactions/:id/lines.xml
-  # POST /transactions/:id/lines.json
+  # POST /lines
+  # POST /lines.xml
+  # POST /lines.json
   def create
-    @line = @transaction.lines.create(params[:line].merge(:account_id => @account.id))
+    @line = Line.create(params[:line])
 
     respond_to do |format|
       if @line.save
@@ -47,18 +41,18 @@ class Api::LinesController < ApplicationController
     end
   end
   
-  # PUT /transactions/:id/lines/1
-  # PUT /transactions/:id/lines/1.json
-  # PUT /transactions/:id/lines/1.xml
+  # PUT /lines/1
+  # PUT /lines/1.json
+  # PUT /lines/1.xml
   def update
     respond_to do |format|
       format.any { render :nothing => true, :status => :method_not_allowed }
     end
   end
   
-  # DELETE /transactions/:id/lines/1
-  # DELETE /transactions/:id/lines/1.json
-  # DELETE /transactions/:id/lines/1.xml
+  # DELETE /lines/1
+  # DELETE /lines/1.json
+  # DELETE /lines/1.xml
   def destroy
     respond_to do |format|
       format.any { render :nothing => true, :status => :method_not_allowed }

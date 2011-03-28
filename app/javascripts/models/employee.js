@@ -1,13 +1,14 @@
-//= require "entry"
-
-var Till = new JS.Class({
+var Employee = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      employee = undefined;
       $.ajax({
-        url: '/api/tills/' + id,
+        url: '/api/employees/' + id,
         accept: 'application/json',
+        dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.till);
+          employee = results.employee;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -16,23 +17,21 @@ var Till = new JS.Class({
           console.log(XMLHttpRequest);
         },
         username: 'x',
-        password: 'x',
-        dataType: 'json'
+        password: 'x'
       });
+      return employee;
     }
   },
   
   initialize: function(params) {
     this.id = params.id;
     this.title = params.title;
-    this.entries = [];
-    for(entry in params.entries) {
-      this.entries.push(new Entry($.extend(params.entries[entry], {till: this})));
-    }
+    this.rate = params.rate;
+    this.active = params.active;
   },
-  
+
   save: function() {
-    
+
   },
   
   valid: function() {

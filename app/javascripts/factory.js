@@ -6,19 +6,18 @@ var Factory = new JS.Class({
       var factory = this._factory_fetch(klass);
       if(factory != null && window[klass] != undefined) {
         var properties = this._merge_properties(factory.properties, properties);
-        var object = new window[klass];
         for(property in properties) {
           if(properties[property].sequence != undefined) {
-            object[property] = this.sequence(klass, properties[property].sequence);
+            properties[property] = this.sequence(klass, properties[property].sequence);
           } else if(properties[property].factory != undefined) {
-            object[property] = this.build(properties[property].factory);
+            //properties[property] = this.build(properties[property].factory);
           } else if(properties[property].factories != undefined) {
-            object[property] = [this.build(properties[property].factories)];
+            //properties[property] = [this.build(properties[property].factories)];
           } else {
-            object[property] = properties[property];
+            properties[property] = properties[property];
           }
         }
-        return object;
+        return new window[klass](properties);
       } else {
         return null;
       }

@@ -1,8 +1,907 @@
 /* Gameroom */
-var ViewController = new JS.Class({
 
-  initialize: function(view) {
-    this.view = $(view);
+var User = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.login = params.login;
+    this.pin = params.pin;
+    this.email = params.email;
+    this.active = params.active;
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Customer = new JS.Class({
+  extend: {
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/customers/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        success: function(results) {
+          callback(results.customer);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    },
+
+    search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
+      } else {
+        search = { person_last_name_starts_with: query };
+      }
+
+      $.ajax({
+        url: '/api/customers/search',
+        data: JSON.stringify({
+          search: search,
+          page: page,
+          per_page: 10
+        }),
+        dataType: 'json',
+        accept: 'application/json',
+        contentType: 'application/json',
+        processData: false,
+        type: 'POST',
+        success: function(results) {
+          callback(results);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    }
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.credit = params.credit;
+    this.drivers_license_number = params.drivers_license_number;
+    this.drivers_license_state = params.drivers_license_state;
+    this.notes = params.notes;
+    this.active = params.active;
+  },
+
+  save: function(callback) {
+    if(this.valid()) {
+      customer = {
+        credit: this.credit,
+        drivers_license_number: this.drivers_license_number,
+        drivers_license_state: this.drivers_license_state,
+        notes: this.notes,
+        active: this.active
+      };
+
+      if(this.person != undefined) {
+        customer.person_attributes = {
+          first_name: this.person.first_name,
+          middle_name: this.person.middle_name,
+          last_name: this.person.last_name,
+          emails_attributes: [],
+          addresses_attributes: [],
+          phones_attributes: []
+        }
+        for(email in this.person.emails) {
+          customer.person_attributes.emails_attributes.push({
+            address: this.person.emails[email].address
+          });
+        }
+        for(address in this.person.addresses) {
+          customer.person_attributes.addresses_attributes.push({
+            first_line: this.person.addresses[address].first_line,
+            second_line: this.person.addresses[address].second_line,
+            city: this.person.addresses[address].city,
+            state: this.person.addresses[address].state,
+            country: this.person.addresses[address].country,
+            zip: this.person.addresses[address].zip
+          });
+        }
+        for(phone in this.person.phones) {
+          customer.person_attributes.phones_attributes.push({
+            title: this.person.phones[phone].title,
+            number: this.person.phones[phone].number
+          });
+        }
+      }
+
+      if(this.id == undefined || this.id == 0) {
+        url = '/api/customers';
+        type = 'POST';
+      } else {
+        url = '/api/customers/' + this.id;
+        type = 'PUT';
+      }
+
+      $.ajax({
+        url: url,
+        accept: 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify({customer: customer}),
+        dataType: 'json',
+        processData: false,
+        type: type,
+        success: function(result) {
+          callback(result.customer);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+
+      });
+
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  valid: function() {
+    if(this.credit == undefined || this.credit == null) {
+      return false;
+    }
+    if(this.person != undefined) {
+      if(!this.person.valid()) {
+        return false;
+      }
+    }
+    return true;
+  }
+});
+
+var Employee = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.rate = params.rate;
+    this.active = params.active;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Phone = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.person != undefined) {
+      if(this.person == undefined) {
+        this.person = new Person(params.person);
+      }
+    } else {
+      this.person = undefined;
+    }
+    this.title = params.title;
+    this.number = params.number;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    if(this.number == '' || this.number == undefined || this.number == null) {
+      return false;
+    }
+    return true;
+  }
+});
+
+var Email = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.person_id = params.person_id;
+    this.address = params.address;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    if(this.address == '' || this.address == undefined || this.address == null) {
+      return false;
+    }
+    return true;
+  }
+});
+
+var Person = new JS.Class({
+  extend: {
+    find: function(id) {
+      person = null;
+      $.ajax({
+        url: '/api/people/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          person = results.person;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return person;
+    }
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.user_id = params.user_id;
+    this.customer_id = params.customer_id;
+    this.employee_id = params.employee_id;
+    this.first_name = params.first_name;
+    this.middle_name = params.middle_name;
+    this.last_name = params.last_name;
+    this.date_of_birth = params.date_of_birth;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
+      return false;
+    }
+    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
+      return false;
+    }
+    for(address in this.addresses) {
+      if(!this.addresses[address].valid()) {
+        return false;
+      }
+    }
+    for(phone in this.phones) {
+      if(!this.phones[phone].valid()) {
+        return false;
+      }
+    }
+    for(email in this.emails) {
+      if(!this.emails[email].valid()) {
+        return false;
+      }
+    }
+    return true;
+  }
+});
+
+var Address = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.person_id = params.person_id;
+    this.first_line = params.first_line;
+    this.second_line = params.second_line;
+    this.city = params.city;
+    this.state = params.state;
+    this.country = params.country;
+    this.zip = params.zip;
+  },
+
+  person: function() {
+    if(this.person_id != undefined) {
+      return Person.find(this.person_id);
+    } else {
+      return undefined;
+    }
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    if(this.first_line == '' || this.first_line == undefined || this.first_line == null) {
+      return false;
+    }
+    if(this.city == '' || this.city == undefined || this.city == null) {
+      return false;
+    }
+    if(this.state == '' || this.state == undefined || this.state == null) {
+      return false;
+    }
+    if(this.zip == '' || this.zip == undefined || this.zip == null) {
+      return false;
+    }
+    return true;
+  }
+});
+
+var Till = new JS.Class({
+  extend: {
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/tills/' + id,
+        accept: 'application/json',
+        success: function(results) {
+          callback(results.till);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x',
+        dataType: 'json'
+      });
+    }
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.entries = [];
+    for(entry in params.entries) {
+      this.entries.push(new Entry($.extend(params.entries[entry], {till: this})));
+    }
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Entry = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.till_id = params.till_id;
+    this.title = params.title;
+    this.description = params.description;
+    this.time = params.time;
+    this.amount = params.amount;
+    this.action = params.action;
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Property = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.item != undefined) {
+      if(this.item == undefined) {
+        this.item = new Item(params.item);
+      }
+    } else {
+      this.item = undefined;
+    }
+    this.key = params.key;
+    this.value = params.value;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+var Line = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.transaction_id = params.transaction_id;
+    this.item_id = params.item_id;
+    this.condition = 1;
+    this.discount = 0;
+    this.quantity = 0;
+    this.price = 0;
+    this.taxable = params.taxable;
+    this.sell = false;
+    this.setQuantity(params.quantity);
+    this.setCondition(params.condition);
+    if(params.sell) {
+      this.setSell();
+    } else {
+      this.setPurchase();
+    }
+  },
+
+  subtotal: function() {
+    return this.quantity * this.price;
+  },
+
+  valid: function() {
+    if(this.item != undefined) {
+      return this.quantity > 0 && this.price >= 0 && this.item.valid();
+    } else {
+      return false;
+    }
+  },
+
+  creditSubtotal: function() {
+    if(this.sell) {
+      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
+    } else {
+      return 0;
+    }
+  },
+
+  cashSubtotal: function() {
+    if(this.sell) {
+      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
+    } else {
+      return 0;
+    }
+  },
+
+  setQuantity: function(quantity) {
+    this.quantity = quantity;
+  },
+
+  setDiscount: function(discount) {
+    this.discount = discount;
+    this._calculatePrice();
+  },
+
+  setCondition: function(condition) {
+    this.condition = condition;
+    this._calculatePrice();
+  },
+
+  setPurchase: function() {
+    this.sell = false;
+    this._calculatePrice();
+  },
+
+  setSell: function() {
+    this.sell = true;
+    this._calculatePrice();
+  },
+
+  _calculatePrice: function() {
+    if(this.sell) {
+      this.price = parseInt(this.item.creditPrice() * this.condition * -1);
+    } else {
+      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
+    }
+  }
+});
+
+var Item = new JS.Class({
+  extend: {
+    find: function(id, callback) {
+      $.ajax({
+        url: '/api/items/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        success: function(results) {
+          callback(results.item);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    },
+
+    search: function(query, page, callback) {
+      if(query.length > 1) {
+        search = { title_or_description_or_sku_contains_all: query.split(" ") };
+      } else {
+        search = { title_starts_with: query };
+      }
+
+      $.ajax({
+        url: '/api/items/search',
+        data: JSON.stringify({
+          search: search,
+          page: page,
+          per_page: 10
+        }),
+        dataType: 'json',
+        accept: 'application/json',
+        contentType: 'application/json',
+        processData: false,
+        type: 'POST',
+        success: function(results) {
+          callback(results);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    }
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.description = params.description;
+    this.sku = params.sku;
+    this.price = params.price;
+    this.taxable = params.taxable;
+    this.discountable = params.discountable;
+    this.locked = params.locked;
+    this.active = params.active;
+  },
+
+  basePrice: function() {
+    return this.price;
+  },
+
+  creditPrice: function() {
+    var credit_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'credit_price':
+          credit_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return credit_price;
+  },
+
+  cashPrice: function() {
+    var cash_price = 0;
+    for(property in this.properties) {
+      switch(this.properties[property].key) {
+        case 'cash_price':
+          cash_price = parseInt(this.properties[property].value);
+          break;
+        case 'default':
+          break;
+      }
+    }
+    return cash_price;
+  },
+
+  valid: function() {
+    return this.title != '' && this.price >= 0;
+  }
+});
+
+var Transaction = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.user_id = params.user_id;
+    this.till_id = params.till_id;
+    this.customer_id = params.customer_id;
+    this.payments = [
+      new Payment({form: 'store_credit', amount: 0}),
+      new Payment({form: 'gift_card', amount: 0}),
+      new Payment({form: 'credit_card', amount: 0}),
+      new Payment({form: 'check', amount: 0}),
+      new Payment({form: 'cash', amount: 0})
+    ];
+    this.tax_rate = params.tax_rate;
+    this.complete = params.complete;
+    this.locked = params.locked;
+  },
+
+  subtotal: function() {
+    subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].subtotal();
+    }
+    return parseInt(subtotal);
+  },
+
+  total: function() {
+    return parseInt(this.purchaseSubtotal() + this.tax());
+  },
+
+  tax: function() {
+    if(this.subtotal() > 0) {
+      purchase_subtotal = this.purchaseSubtotal();
+      taxable_subtotal = 0;
+      for(line in this.lines) {
+        if(this.lines[line].taxable) {
+          taxable_subtotal += this.lines[line].subtotal();
+        }
+      }
+      if(taxable_subtotal < purchase_subtotal) {
+        return parseInt(Math.round(taxable_subtotal * this.tax_rate));
+      } else {
+        return parseInt(Math.round(purchase_subtotal * this.tax_rate));
+      }
+    } else {
+      return 0;
+    }
+  },
+
+  ratio: function() {
+    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+  },
+
+  purchaseSubtotal: function() {
+    subtotal = this.subtotal();
+    if(subtotal >= 0) {
+      store_credit_payment = 0;
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(this.payments[payment].amount);
+        }
+      }
+      return subtotal - store_credit_payment;
+    } else {
+      return subtotal;
+    }
+  },
+
+  amountDue: function() {
+    if(this.subtotal() >= 0) {
+      payment_total = 0;
+      for(payment in this.payments) {
+        if(this.payments[payment].form != 'store_credit') {
+          payment_total += parseInt(this.payments[payment].amount);
+        }
+      }
+      return this.total() - payment_total;
+    } else {
+      cash_payment = 0;
+      for(payment in this.payments) {
+        if(this.payments[payment].form == 'cash') {
+          cash_payment += this.payments[payment].amount;
+        }
+      }
+      return cash_payment;
+    }
+  },
+
+  countItems: function() {
+    count = 0;
+    for(line in this.lines) {
+      count += this.lines[line].quantity;
+    }
+    return count;
+  },
+
+  creditSubtotal: function() {
+    var subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].creditSubtotal();
+    }
+    return Math.abs(subtotal);
+  },
+
+  cashSubtotal: function() {
+    var subtotal = 0;
+    for(line in this.lines) {
+      subtotal += this.lines[line].cashSubtotal();
+    }
+    return Math.abs(subtotal);
+  },
+
+  setLines: function(lines) {
+    this.lines = lines;
+
+    subtotal = this.subtotal();
+    for(payment in this.payments) {
+      if(subtotal < 0 && this.payments[payment].amount > 0) {
+        this.payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && this.payments[payment].amount < 0) {
+        this.payments[payment].amount = 0;
+      }
+    }
+    if(subtotal < 0) {
+      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
+      this.updatePayment(new Payment({form: 'cash', amount: 0}));
+    }
+  },
+
+  updateCreditPayout: function(payment) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      this.updatePayoutRatio(payment.amount / subtotal);
+    }
+  },
+
+  updateCashPayout: function(payment) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      credit_cash_ratio = this.ratio();
+      cash_payout = parseInt(Math.round((credit_cash_ratio - (credit_cash_ratio * 0)) * subtotal));
+      this.updatePayoutRatio(1 - (payment.amount / cash_payout));
+    }
+  },
+
+  updatePayoutRatio: function(ratio) {
+    if(ratio < 0 || ratio > 1) {
+      ratio = 1;
+    }
+    credit_cash_ratio = this.ratio();
+    console.log(credit_cash_ratio);
+    subtotal = this.subtotal();
+    credit_payout = parseInt(subtotal * ratio);
+    cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
+    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
+    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
+  },
+
+  updatePayment: function(updated_payment) {
+    for(payment in this.payments) {
+      if(this.payments[payment].form == updated_payment.form) {
+        this.payments[payment] = updated_payment;
+      }
+    }
+  },
+
+  save: function(callback) {
+    if(this.valid()) {
+      transaction = {
+        till_id: this.till.id,
+        user_id: this.user_id,
+        tax_rate: this.tax_rate,
+        complete: this.complete,
+        locked: this.locked,
+        payments_attributes: [],
+        lines_attributes: []
+      };
+      for(payment in this.payments) {
+        transaction.payments_attributes.push({
+          form: this.payments[payment].form,
+          amount: this.payments[payment].amount
+        });
+      }
+      for(line in this.lines) {
+        if(this.lines[line].item.id != undefined) {
+          transaction.lines_attributes.push({
+            item_id: this.lines[line].item.id,
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price,
+            taxable: this.lines[line].taxable
+          });
+        } else {
+          transaction.lines_attributes.push({
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price,
+            taxable: this.lines[line].taxable,
+            item_attributes: {
+              title: this.lines[line].item.title,
+              description: this.lines[line].item.description,
+              price: this.lines[line].item.price,
+              taxable: this.lines[line].item.taxable,
+              discountable: this.lines[line].item.discountable,
+              locked: this.lines[line].item.locked,
+              active: this.lines[line].item.active,
+            }
+          });
+        }
+      }
+      if(this.customer != undefined) {
+        transaction.customer_id = this.customer.id;
+      }
+
+      $.ajax({
+        url: '/api/transactions',
+        accept: 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify({transaction: transaction}),
+        dataType: 'json',
+        processData: false,
+        type: 'POST',
+        success: function(result) {
+          callback(result.transaction);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+
+      });
+
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  valid: function() {
+    if(this.subtotal() > 0 && this.amountDue() <= 0) {
+      return true;
+    } else if(this.subtotal() < 0) {
+      if(this.customer != undefined) {
+        if(this.customer.valid()) {
+          return true;
+        }
+      }
+    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
+      return true;
+    }
+    return false;
+  }
+});
+
+var Payment = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.transaction_id = params.transaction_id;
+    this.form = params.form;
+    this.amount = params.amount;
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Timecard = new JS.Class({
+
+  initialize: function(params) {
+    this.id = params.id;
+    if(params.employee != undefined) {
+      if(this.employee == undefined) {
+        this.employee = new Employee(params.employee);
+      }
+    } else {
+      this.employee = undefined;
+    }
+    this.begin = params.begin;
+    this.end = params.end;
+  },
+
+  save: function() {
+
+  },
+
+  valid: function() {
+    return true;
   }
 });
 var Factory = new JS.Class({
@@ -13,19 +912,16 @@ var Factory = new JS.Class({
       var factory = this._factory_fetch(klass);
       if(factory != null && window[klass] != undefined) {
         var properties = this._merge_properties(factory.properties, properties);
-        var object = new window[klass];
         for(property in properties) {
           if(properties[property].sequence != undefined) {
-            object[property] = this.sequence(klass, properties[property].sequence);
+            properties[property] = this.sequence(klass, properties[property].sequence);
           } else if(properties[property].factory != undefined) {
-            object[property] = this.build(properties[property].factory);
           } else if(properties[property].factories != undefined) {
-            object[property] = [this.build(properties[property].factories)];
           } else {
-            object[property] = properties[property];
+            properties[property] = properties[property];
           }
         }
-        return object;
+        return new window[klass](properties);
       } else {
         return null;
       }
@@ -86,6 +982,149 @@ var Factory = new JS.Class({
   }
 });
 
+Factory.define('Address', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  first_line: '555 Street Way',
+  second_line: 'Suite 309',
+  city: 'Lincoln',
+  state: 'NE',
+  province: '',
+  country: 'US',
+  zip: '68508'
+});
+
+Factory.define('Customer', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  credit: 1000,
+  drivers_license_number: 'H12000000',
+  drivers_license_state: 'NE',
+  notes: 'Lorem Ipsum...',
+  active: true
+});
+
+Factory.define('Email', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  address: 'example@example.com'
+});
+
+Factory.define('Employee', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  rate: 0,
+  active: true
+});
+
+Factory.define('Entry', {
+  id: {
+    sequence: 'id'
+  },
+  till: {
+    factory: 'Till'
+  },
+  title: 'Title',
+  description: 'Lorem Ipsum...',
+  time: new Date(),
+  amount: 0
+});
+
+Factory.define('Item', {
+  id: {
+    sequence: 'id'
+  },
+  properties: {
+    factories: 'Property'
+  },
+  title: 'Title',
+  description: 'Lorem Ipsum...',
+  sku: {
+    sequence: 'sku'
+  },
+  price: 1000,
+  taxable: true,
+  discountable: false,
+  locked: false,
+  active: true
+});
+
+Factory.define('Line', {
+  id: {
+    sequence: 'id'
+  },
+  properties: {
+    factories: 'Item'
+  },
+  quantity: 1,
+  price: 1000
+});
+
+Factory.define('Payment', {
+  id: {
+    sequence: 'id'
+  },
+  transaction: {
+    factory: 'Transaction'
+  },
+  form: 'cash',
+  amount: 0
+});
+
+Factory.define('Person', {
+  id: {
+    sequence: 'id'
+  },
+  phones: {
+    factories: 'Phone'
+  },
+  emails: {
+    factories: 'Email'
+  },
+  addresses: {
+    factories: 'Address'
+  },
+  first_name: 'Joe',
+  middle_name: 'Q',
+  last_name: 'Example',
+  date_of_birth: new Date()
+});
+
+Factory.define('Phone', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  title: 'Work',
+  number: '402-444-5555'
+});
+
+Factory.define('Property', {
+  id: {
+    sequence: 'id'
+  },
+  key: 'foo',
+  value: 'bar'
+});
+
 Factory.define('Till', {
   id: {
     sequence: 'id'
@@ -93,35 +1132,54 @@ Factory.define('Till', {
   title: 'Title'
 });
 
-var Till = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/tills/' + id,
-        accept: 'application/json',
-        success: function(results) {
-          callback(results.till);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x',
-        dataType: 'json'
-      });
-    }
+Factory.define('Timecard', {
+  id: {
+    sequence: 'id'
   },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
+  employee: {
+    factory: 'Employee'
   },
+  begin: new Date(),
+  end: new Date()
+});
 
-  valid: function() {
-    return true;
+Factory.define('Transaction', {
+  id: {
+    sequence: 'id'
+  },
+  till: {
+    factory: 'Till'
+  },
+  customer: {
+    factory: 'Customer'
+  },
+  lines: {
+    factories: 'Line'
+  },
+  payments: {
+    factories: 'Payment'
+  },
+  tax_rate: 0.07,
+  complete: false,
+  locked: false
+});
+
+Factory.define('User', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  login: 'login',
+  email: 'example@example.com',
+  pin: '1111',
+  active: true
+});
+var ViewController = new JS.Class({
+
+  initialize: function(view) {
+    this.view = $(view);
   }
 });
 
@@ -482,231 +1540,6 @@ var CustomerTableController = new JS.Class(TableController, {
       $('td.notes', new_row).html(customers[customer].notes);
       $('tbody', this.view).append(new_row);
     }
-  }
-});
-
-Factory.define('Customer', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  credit: 1000,
-  drivers_license_number: 'H12000000',
-  drivers_license_state: 'NE',
-  notes: 'Lorem Ipsum...',
-  active: true
-});
-var Person = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.first_name = params.first_name;
-    this.middle_name = params.middle_name;
-    this.last_name = params.last_name;
-    this.date_of_birth = params.date_of_birth;
-    this.addresses = [];
-    for(address in params.addresses) {
-      this.addresses.push(new Address(params.addresses[address]));
-    }
-    this.phones = [];
-    for(phone in params.phones) {
-      this.phones.push(new Phone(params.phones[phone]));
-    }
-    this.emails = [];
-    for(email in params.emails) {
-      this.emails.push(new Email(params.emails[email]));
-    }
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
-      return false;
-    }
-    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
-      return false;
-    }
-    for(address in this.addresses) {
-      if(!this.addresses[address].valid()) {
-        return false;
-      }
-    }
-    for(phone in this.phones) {
-      if(!this.phones[phone].valid()) {
-        return false;
-      }
-    }
-    for(email in this.emails) {
-      if(!this.emails[email].valid()) {
-        return false;
-      }
-    }
-    return true;
-  }
-});
-
-var Customer = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/customers/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        success: function(results) {
-          callback(results.customer);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    },
-
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
-      } else {
-        search = { person_last_name_starts_with: query };
-      }
-
-      $.ajax({
-        url: '/api/customers/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    if(params.person != undefined) {
-      this.person = new Person(params.person);
-    } else {
-      this.person = undefined;
-    }
-    this.credit = params.credit;
-    this.drivers_license_number = params.drivers_license_number;
-    this.drivers_license_state = params.drivers_license_state;
-    this.notes = params.notes;
-    this.active = params.active;
-  },
-
-  save: function(callback) {
-    if(this.valid()) {
-      customer = {
-        credit: this.credit,
-        drivers_license_number: this.drivers_license_number,
-        drivers_license_state: this.drivers_license_state,
-        notes: this.notes,
-        active: this.active
-      };
-
-      if(this.person != undefined) {
-        customer.person_attributes = {
-          first_name: this.person.first_name,
-          middle_name: this.person.middle_name,
-          last_name: this.person.last_name,
-          emails_attributes: [],
-          addresses_attributes: [],
-          phones_attributes: []
-        }
-        for(email in this.person.emails) {
-          customer.person_attributes.emails_attributes.push({
-            address: this.person.emails[email].address
-          });
-        }
-        for(address in this.person.addresses) {
-          customer.person_attributes.addresses_attributes.push({
-            first_line: this.person.addresses[address].first_line,
-            second_line: this.person.addresses[address].second_line,
-            city: this.person.addresses[address].city,
-            state: this.person.addresses[address].state,
-            country: this.person.addresses[address].country,
-            zip: this.person.addresses[address].zip
-          });
-        }
-        for(phone in this.person.phones) {
-          customer.person_attributes.phones_attributes.push({
-            title: this.person.phones[phone].title,
-            number: this.person.phones[phone].number
-          });
-        }
-      }
-
-      if(this.id == undefined || this.id == 0) {
-        url = '/api/customers';
-        type = 'POST';
-      } else {
-        url = '/api/customers/' + this.id;
-        type = 'PUT';
-      }
-
-      $.ajax({
-        url: url,
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({customer: customer}),
-        dataType: 'json',
-        processData: false,
-        type: type,
-        success: function(result) {
-          callback(result.customer);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  valid: function() {
-    if(this.credit == undefined || this.credit == null) {
-      return false;
-    }
-    if(this.person != undefined) {
-      if(!this.person.valid()) {
-        return false;
-      }
-    }
-    return true;
   }
 });
 
@@ -1081,214 +1914,6 @@ var CartLinesController = new JS.Class(ViewController, {
 
   hideCartNotice: function() {
     $('h2#cart_lines_notice', this.view).hide();
-  }
-});
-var Line = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.condition = 1;
-    this.discount = 0;
-    this.quantity = 0;
-    this.price = 0;
-    this.taxable = params.taxable;
-    this.sell = false;
-    if(params.transaction != undefined) {
-      this.transaction = new Transaction(params.transaction);
-    } else {
-      this.transaction = undefined;
-    }
-    if(params.item != undefined) {
-      this.item = new Item(params.item);
-    } else {
-      this.item = undefined;
-    }
-    this.setQuantity(params.quantity);
-    this.setCondition(params.condition);
-    if(params.sell) {
-      this.setSell();
-    } else {
-      this.setPurchase();
-    }
-  },
-
-  subtotal: function() {
-    return this.quantity * this.price;
-  },
-
-  valid: function() {
-    if(this.item != undefined) {
-      return this.quantity > 0 && this.price >= 0 && this.item.valid();
-    } else {
-      return false;
-    }
-  },
-
-  creditSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
-    } else {
-      return 0;
-    }
-  },
-
-  cashSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
-    } else {
-      return 0;
-    }
-  },
-
-  setQuantity: function(quantity) {
-    this.quantity = quantity;
-  },
-
-  setDiscount: function(discount) {
-    this.discount = discount;
-    this._calculatePrice();
-  },
-
-  setCondition: function(condition) {
-    this.condition = condition;
-    this._calculatePrice();
-  },
-
-  setPurchase: function() {
-    this.sell = false;
-    this._calculatePrice();
-  },
-
-  setSell: function() {
-    this.sell = true;
-    this._calculatePrice();
-  },
-
-  _calculatePrice: function() {
-    if(this.sell) {
-      this.price = parseInt(this.item.creditPrice() * this.condition * -1);
-    } else {
-      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
-    }
-  }
-});
-var Item = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/items/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        success: function(results) {
-          callback(results.item);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    },
-
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { title_or_description_or_sku_contains_all: query.split(" ") };
-      } else {
-        search = { title_starts_with: query };
-      }
-
-      $.ajax({
-        url: '/api/items/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.properties = [];
-    for(property in params.properties) {
-      this.properties.push(new Property(params.properties[property]));
-    }
-    this.title = params.title;
-    this.description = params.description;
-    this.sku = params.sku;
-    this.price = params.price;
-    this.taxable = params.taxable;
-    this.discountable = params.discountable;
-    this.locked = params.locked;
-    this.active = params.active;
-  },
-
-  basePrice: function() {
-    return this.price;
-  },
-
-  creditPrice: function() {
-    var credit_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
-        case 'credit_price':
-          credit_price = parseInt(this.properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return credit_price;
-  },
-
-  cashPrice: function() {
-    var cash_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
-        case 'cash_price':
-          cash_price = parseInt(this.properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return cash_price;
-  },
-
-  valid: function() {
-    return this.title != '' && this.price >= 0;
-  }
-});
-var Property = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.key = params.key;
-    this.value = params.value;
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -1767,303 +2392,6 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
     } else {
       $(this).val(null);
     }
-  }
-});
-var Receipt = new JS.Class({
-
-  initialize: function(params) {
-    this.quantity = params.quantity;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-var Payment = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.form = params.form;
-    this.amount = params.amount;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-
-var Transaction = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.user_id = params.user_id;
-    if(params.till != undefined) {
-      this.till = new Till(params.till);
-    } else {
-      this.till = undefined;
-    }
-    if(params.customer != undefined) {
-      this.customer = new Customer(params.customer);
-    } else {
-      this.customer = undefined;
-    }
-    if(params.receipt != undefined) {
-      this.receipt = new Receipt(params.receipt);
-    } else {
-      this.receipt = undefined;
-    }
-    this.lines = [];
-    for(line in params.lines) {
-      this.lines.push(new Line(params.lines[line].line));
-    }
-    this.payments = [
-      new Payment({form: 'store_credit', amount: 0}),
-      new Payment({form: 'gift_card', amount: 0}),
-      new Payment({form: 'credit_card', amount: 0}),
-      new Payment({form: 'check', amount: 0}),
-      new Payment({form: 'cash', amount: 0})
-    ];
-    this.tax_rate = params.tax_rate;
-    this.complete = params.complete;
-    this.locked = params.locked;
-  },
-
-  subtotal: function() {
-    subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].subtotal();
-    }
-    return parseInt(subtotal);
-  },
-
-  total: function() {
-    return parseInt(this.purchaseSubtotal() + this.tax());
-  },
-
-  tax: function() {
-    if(this.subtotal() > 0) {
-      purchase_subtotal = this.purchaseSubtotal();
-      taxable_subtotal = 0;
-      for(line in this.lines) {
-        if(this.lines[line].taxable) {
-          taxable_subtotal += this.lines[line].subtotal();
-        }
-      }
-      if(taxable_subtotal < purchase_subtotal) {
-        return parseInt(Math.round(taxable_subtotal * this.tax_rate));
-      } else {
-        return parseInt(Math.round(purchase_subtotal * this.tax_rate));
-      }
-    } else {
-      return 0;
-    }
-  },
-
-  ratio: function() {
-    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
-  },
-
-  purchaseSubtotal: function() {
-    subtotal = this.subtotal();
-    if(subtotal >= 0) {
-      store_credit_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'store_credit') {
-          store_credit_payment += parseInt(this.payments[payment].amount);
-        }
-      }
-      return subtotal - store_credit_payment;
-    } else {
-      return subtotal;
-    }
-  },
-
-  amountDue: function() {
-    if(this.subtotal() >= 0) {
-      payment_total = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form != 'store_credit') {
-          payment_total += parseInt(this.payments[payment].amount);
-        }
-      }
-      return this.total() - payment_total;
-    } else {
-      cash_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'cash') {
-          cash_payment += this.payments[payment].amount;
-        }
-      }
-      return cash_payment;
-    }
-  },
-
-  countItems: function() {
-    count = 0;
-    for(line in this.lines) {
-      count += this.lines[line].quantity;
-    }
-    return count;
-  },
-
-  creditSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].creditSubtotal();
-    }
-    return Math.abs(subtotal);
-  },
-
-  cashSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].cashSubtotal();
-    }
-    return Math.abs(subtotal);
-  },
-
-  setLines: function(lines) {
-    this.lines = lines;
-
-    subtotal = this.subtotal();
-    for(payment in this.payments) {
-      if(subtotal < 0 && this.payments[payment].amount > 0) {
-        this.payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && this.payments[payment].amount < 0) {
-        this.payments[payment].amount = 0;
-      }
-    }
-    if(subtotal < 0) {
-      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
-      this.updatePayment(new Payment({form: 'cash', amount: 0}));
-    }
-  },
-
-  updateCreditPayout: function(payment) {
-    subtotal = this.subtotal();
-    if(subtotal < 0) {
-      this.updatePayoutRatio(payment.amount / subtotal);
-    }
-  },
-
-  updateCashPayout: function(payment) {
-    subtotal = this.subtotal();
-    if(subtotal < 0) {
-      credit_cash_ratio = this.ratio();
-      cash_payout = parseInt(Math.round((credit_cash_ratio - (credit_cash_ratio * 0)) * subtotal));
-      this.updatePayoutRatio(1 - (payment.amount / cash_payout));
-    }
-  },
-
-  updatePayoutRatio: function(ratio) {
-    if(ratio < 0 || ratio > 1) {
-      ratio = 1;
-    }
-    credit_cash_ratio = this.ratio();
-    console.log(credit_cash_ratio);
-    subtotal = this.subtotal();
-    credit_payout = parseInt(subtotal * ratio);
-    cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
-    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
-    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
-  },
-
-  updatePayment: function(updated_payment) {
-    for(payment in this.payments) {
-      if(this.payments[payment].form == updated_payment.form) {
-        this.payments[payment] = updated_payment;
-      }
-    }
-  },
-
-  save: function(callback) {
-    if(this.valid()) {
-      transaction = {
-        till_id: this.till.id,
-        user_id: this.user_id,
-        tax_rate: this.tax_rate,
-        complete: this.complete,
-        locked: this.locked,
-        payments_attributes: [],
-        lines_attributes: []
-      };
-      for(payment in this.payments) {
-        transaction.payments_attributes.push({
-          form: this.payments[payment].form,
-          amount: this.payments[payment].amount
-        });
-      }
-      for(line in this.lines) {
-        if(this.lines[line].item.id != undefined) {
-          transaction.lines_attributes.push({
-            item_id: this.lines[line].item.id,
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable
-          });
-        } else {
-          transaction.lines_attributes.push({
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable,
-            item_attributes: {
-              title: this.lines[line].item.title,
-              description: this.lines[line].item.description,
-              price: this.lines[line].item.price,
-              taxable: this.lines[line].item.taxable,
-              discountable: this.lines[line].item.discountable,
-              locked: this.lines[line].item.locked,
-              active: this.lines[line].item.active,
-            }
-          });
-        }
-      }
-      if(this.customer != undefined) {
-        transaction.customer_id = this.customer.id;
-      }
-
-      $.ajax({
-        url: '/api/transactions',
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({transaction: transaction}),
-        dataType: 'json',
-        processData: false,
-        type: 'POST',
-        success: function(result) {
-          callback(result.transaction);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  valid: function() {
-    if(this.subtotal() > 0 && this.amountDue() <= 0) {
-      return true;
-    } else if(this.subtotal() < 0) {
-      if(this.customer != undefined) {
-        if(this.customer.valid()) {
-          return true;
-        }
-      }
-    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-      return true;
-    }
-    return false;
   }
 });
 
@@ -2615,72 +2943,6 @@ var TerminalController = new JS.Class({
   }
 });
 
-var transactions = {
-
-  run: function() {
-    new TerminalController();
-  }
-
-};
-
-var dashboard = {
-
-  run: function() {
-
-  }
-
-};
-
-var reports = {
-
-  run: function() {
-
-  }
-
-};
-
-var timeclock = {
-
-  run: function() {
-    new TimeclockController();
-  }
-
-};
-
-var users = {
-
-  run: function() {
-
-  }
-
-};
-
-var AlphabetController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    $('a', this.view).bind('click', {instance: this}, this.onSelect);
-  },
-
-  onSelect: function(event) {
-    event.data.instance.notifyObservers($(this).html());
-    event.preventDefault();
-  }
-});
-
-var AdminController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.reset();
-  },
-
-  reset: function() {
-  }
-});
-
 var ClockInOutController = new JS.Class(ViewController, {
   include: JS.Observable,
 
@@ -2831,6 +3093,18 @@ var OverviewController = new JS.Class(ViewController, {
   }
 });
 
+var AdminController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.reset();
+  },
+
+  reset: function() {
+  }
+});
+
 var TimeclockController = new JS.Class({
 
   initialize: function() {
@@ -2847,6 +3121,60 @@ var TimeclockController = new JS.Class({
     this.overview_controller.reset();
     this.admin_controller.reset();
     this.section_controller.reset();
+  }
+});
+
+var transactions = {
+
+  run: function() {
+    new TerminalController();
+  }
+
+};
+
+var dashboard = {
+
+  run: function() {
+
+  }
+
+};
+
+var reports = {
+
+  run: function() {
+
+  }
+
+};
+
+var timeclock = {
+
+  run: function() {
+    new TimeclockController();
+  }
+
+};
+
+var users = {
+
+  run: function() {
+
+  }
+
+};
+
+var AlphabetController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    $('a', this.view).bind('click', {instance: this}, this.onSelect);
+  },
+
+  onSelect: function(event) {
+    event.data.instance.notifyObservers($(this).html());
+    event.preventDefault();
   }
 });
 
@@ -2982,163 +3310,5 @@ var ReceiptController = new JS.Class(ViewController, {
   doPrint: function(event) {
     window.frames['receipt_window'].print();
     event.preventDefault();
-  }
-});
-
-Factory.define('Address', {
-  id: {
-    sequence: 'id'
-  },
-  first_line: '555 Street Way',
-  second_line: 'Suite 309',
-  city: 'Lincoln',
-  state: 'NE',
-  province: '',
-  country: 'US',
-  zip: '68508'
-});
-
-Factory.define('Email', {
-  id: {
-    sequence: 'id'
-  },
-  address: 'example@example.com'
-});
-
-Factory.define('Item', {
-  id: {
-    sequence: 'id'
-  },
-  properties: {
-    factories: 'Property'
-  },
-  title: 'Title',
-  description: 'Lorem Ipsum...',
-  sku: {
-    sequence: 'sku'
-  },
-  price: 1000,
-  taxable: true,
-  discountable: false,
-  locked: false,
-  active: true
-});
-
-Factory.define('Person', {
-  id: {
-    sequence: 'id'
-  },
-  phones: {
-    factories: 'Phone'
-  },
-  emails: {
-    factories: 'Email'
-  },
-  addresses: {
-    factories: 'Address'
-  },
-  first_name: 'Joe',
-  middle_name: 'T',
-  last_name: 'Customer',
-  date_of_birth: new Date()
-});
-
-Factory.define('Phone', {
-  id: {
-    sequence: 'id'
-  },
-  title: 'Work',
-  number: '402-444-5555'
-});
-
-Factory.define('Property', {
-  id: {
-    sequence: 'id'
-  },
-  key: 'foo',
-  value: 'bar'
-});
-var Address = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.first_line = params.first_line;
-    this.second_line = params.second_line;
-    this.city = params.city;
-    this.state = params.state;
-    this.country = params.country;
-    this.zip = params.zip;
-  },
-
-  valid: function() {
-    if(this.first_line == '' || this.first_line == undefined || this.first_line == null) {
-      return false;
-    }
-    if(this.city == '' || this.city == undefined || this.city == null) {
-      return false;
-    }
-    if(this.state == '' || this.state == undefined || this.state == null) {
-      return false;
-    }
-    if(this.zip == '' || this.zip == undefined || this.zip == null) {
-      return false;
-    }
-    return true;
-  }
-});
-var Email = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.address = params.address;
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.address == '' || this.address == undefined || this.address == null) {
-      return false;
-    }
-    return true;
-  }
-});
-var Entry = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.description = params.description;
-    if(params.time != undefined) {
-      this.time = new Date(params.time);
-    } else {
-      this.time = new Date();
-    }
-    this.amount = params.amount;
-    this.action = params.action;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-var Phone = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.number = params.number;
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.number == '' || this.number == undefined || this.number == null) {
-      return false;
-    }
-    return true;
   }
 });

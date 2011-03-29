@@ -1,10 +1,15 @@
 class Api::TimecardsController < ApplicationController
   
-  # GET /timecards
   # GET /timecards.xml
   # GET /timecards.json
+  # GET /employee/:employee_id/timecards.xml
+  # GET /employee/:employee_id/timecards.json
   def index
-    @timecards = Timecard.all
+    if params[:employee_id]
+      @timecards = Timecard.find_all_by_employee_id(params[:employee_id])
+    else
+      @timecards = Timecard.all
+    end
     
     respond_to do |format|
       format.json { render :json => @timecards.to_json(:except => [:created_at, :updated_at]) }
@@ -12,7 +17,6 @@ class Api::TimecardsController < ApplicationController
     end
   end
   
-  # GET /timecards/1
   # GET /timecards/1.xml
   # GET /timecards/1.json
   def show
@@ -24,7 +28,6 @@ class Api::TimecardsController < ApplicationController
     end
   end
   
-  # POST /timecards
   # POST /timecards.xml
   # POST /timecards.json
   def create
@@ -41,7 +44,6 @@ class Api::TimecardsController < ApplicationController
     end
   end
 
-  # PUT /timecards/1
   # PUT /timecards/1.xml
   # PUT /timecards/1.json
   def update
@@ -58,8 +60,8 @@ class Api::TimecardsController < ApplicationController
     end
   end
   
-  # DELETE /timecards/1
   # DELETE /timecards/1.xml
+  # DELETE /timecards/1.json
   def destroy
     @timecard = Timecard.find(params[:id])
     @timecard.destroy

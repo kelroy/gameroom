@@ -10,7 +10,14 @@ var Customer = new JS.Class({
         dataType: 'json',
         async: false,
         success: function(results) {
-          customer = results.customer;
+          customer = new Customer({
+            id: results.customer.id,
+            credit: results.customer.credit,
+            drivers_license_number: results.customer.drivers_license_number,
+            drivers_license_state: results.customer.drivers_license_state,
+            notes: results.customer.notes,
+            active: results.customer.active
+          });
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -65,6 +72,14 @@ var Customer = new JS.Class({
     this.drivers_license_state = params.drivers_license_state;
     this.notes = params.notes;
     this.active = params.active;
+  },
+  
+  person: function() {
+    if(this.person_id != undefined) {
+      return Person.find(this.person_id);
+    } else {
+      return undefined;
+    }
   },
 
   save: function(callback) {

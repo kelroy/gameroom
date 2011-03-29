@@ -2,12 +2,15 @@
 
 var Till = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      till = undefined;
       $.ajax({
         url: '/api/tills/' + id,
         accept: 'application/json',
+        dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.till);
+          till = results.till;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -16,9 +19,9 @@ var Till = new JS.Class({
           console.log(XMLHttpRequest);
         },
         username: 'x',
-        password: 'x',
-        dataType: 'json'
+        password: 'x'
       });
+      return till;
     }
   },
   

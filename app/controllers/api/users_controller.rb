@@ -1,6 +1,5 @@
 class Api::UsersController < ApplicationController
   
-  # GET /users
   # GET /users.json
   # GET /users.xml
   def index
@@ -12,7 +11,6 @@ class Api::UsersController < ApplicationController
     end
   end
   
-  # GET /users/1
   # GET /users/1.json
   # GET /users/1.xml
   def show
@@ -24,7 +22,6 @@ class Api::UsersController < ApplicationController
     end
   end
   
-  # POST /users
   # POST /users.xml
   # POST /users.json
   def create
@@ -33,7 +30,6 @@ class Api::UsersController < ApplicationController
     end
   end
 
-  # PUT /users/1
   # PUT /users/1.xml
   # PUT /users/1.json
   def update
@@ -42,7 +38,6 @@ class Api::UsersController < ApplicationController
     end
   end
   
-  # DELETE /users/1
   # DELETE /users/1.json
   # DELETE /users/1.xml
   def destroy

@@ -1,4 +1,27 @@
 var Line = new JS.Class({
+  extend: {
+    find: function(id) {
+      line = undefined;
+      $.ajax({
+        url: '/api/lines/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          line = results.line;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return line;
+    }
+  },
   
   initialize: function(params) {
     this.id = params.id;

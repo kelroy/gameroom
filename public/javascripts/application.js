@@ -1,6 +1,29 @@
 /* Gameroom */
 
 var User = new JS.Class({
+  extend: {
+    find: function(id) {
+      user = undefined;
+      $.ajax({
+        url: '/api/users/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          user = results.user;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return user;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -17,13 +40,22 @@ var User = new JS.Class({
 
 var Customer = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      customer = undefined;
       $.ajax({
         url: '/api/customers/' + id,
         accept: 'application/json',
         dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.customer);
+          customer = new Customer({
+            id: results.customer.id,
+            credit: results.customer.credit,
+            drivers_license_number: results.customer.drivers_license_number,
+            drivers_license_state: results.customer.drivers_license_state,
+            notes: results.customer.notes,
+            active: results.customer.active
+          });
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -34,6 +66,7 @@ var Customer = new JS.Class({
         username: 'x',
         password: 'x'
       });
+      return customer;
     },
 
     search: function(query, page, callback) {
@@ -169,8 +202,30 @@ var Customer = new JS.Class({
     return true;
   }
 });
-
 var Employee = new JS.Class({
+  extend: {
+    find: function(id) {
+      employee = undefined;
+      $.ajax({
+        url: '/api/employees/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          employee = results.employee;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return employee;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -189,18 +244,55 @@ var Employee = new JS.Class({
 });
 
 var Phone = new JS.Class({
+  extend: {
+    find: function(id) {
+      phone = undefined;
+      $.ajax({
+        url: '/api/phones/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          phone = new Phone({
+            id: results.phone.id,
+            person_id: results.phone.person_id,
+            title: results.phone.title,
+            number: results.phone.number
+          });
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return phone;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
-    if(params.person != undefined) {
-      if(this.person == undefined) {
-        this.person = new Person(params.person);
-      }
-    } else {
-      this.person = undefined;
-    }
+    this.person_id = params.person_id;
     this.title = params.title;
     this.number = params.number;
+
+    this._person = undefined;
+  },
+
+  person: function() {
+    if(this._person == undefined) {
+      if(this.person_id != undefined) {
+        this._person = Person.find(this.person_id);
+        return this._person;
+      } else {
+        return undefined;
+      }
+    } else {
+      return this._person;
+    }
   },
 
   save: function() {
@@ -216,11 +308,53 @@ var Phone = new JS.Class({
 });
 
 var Email = new JS.Class({
+  extend: {
+    find: function(id) {
+      email = undefined;
+      $.ajax({
+        url: '/api/emails/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          email = new Email({
+            id: results.email.id,
+            person_id: results.email.person_id,
+            address: results.email.address
+          });
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return email;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
     this.person_id = params.person_id;
     this.address = params.address;
+
+    this._person = undefined;
+  },
+
+  person: function() {
+    if(this._person == undefined) {
+      if(this.person_id != undefined) {
+        this._person = Person.find(this.person_id);
+        return this._person;
+      } else {
+        return undefined;
+      }
+    } else {
+      return this._person;
+    }
   },
 
   save: function() {
@@ -238,7 +372,7 @@ var Email = new JS.Class({
 var Person = new JS.Class({
   extend: {
     find: function(id) {
-      person = null;
+      person = undefined;
       $.ajax({
         url: '/api/people/' + id,
         accept: 'application/json',
@@ -302,6 +436,38 @@ var Person = new JS.Class({
 });
 
 var Address = new JS.Class({
+  extend: {
+    find: function(id) {
+      address = undefined;
+      $.ajax({
+        url: '/api/addresses/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          address = new Address({
+            id: results.address.id,
+            person_id: results.address.person_id,
+            first_line: results.address.first_line,
+            second_line: results.address.second_line,
+            city: results.address.city,
+            state: results.address.state,
+            country: results.address.country,
+            zip: results.address.zip
+          });
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return address;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -312,13 +478,20 @@ var Address = new JS.Class({
     this.state = params.state;
     this.country = params.country;
     this.zip = params.zip;
+
+    this._person = undefined;
   },
 
   person: function() {
-    if(this.person_id != undefined) {
-      return Person.find(this.person_id);
+    if(this._person == undefined) {
+      if(this.person_id != undefined) {
+        this._person = Person.find(this.person_id);
+        return this._person;
+      } else {
+        return undefined;
+      }
     } else {
-      return undefined;
+      return this._person;
     }
   },
 
@@ -345,12 +518,15 @@ var Address = new JS.Class({
 
 var Till = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      till = undefined;
       $.ajax({
         url: '/api/tills/' + id,
         accept: 'application/json',
+        dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.till);
+          till = results.till;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -359,9 +535,9 @@ var Till = new JS.Class({
           console.log(XMLHttpRequest);
         },
         username: 'x',
-        password: 'x',
-        dataType: 'json'
+        password: 'x'
       });
+      return till;
     }
   },
 
@@ -384,6 +560,29 @@ var Till = new JS.Class({
 });
 
 var Entry = new JS.Class({
+  extend: {
+    find: function(id) {
+      entry = undefined;
+      $.ajax({
+        url: '/api/entries/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          entry = results.entry;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return entry;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -401,6 +600,29 @@ var Entry = new JS.Class({
 });
 
 var Property = new JS.Class({
+  extend: {
+    find: function(id) {
+      property = undefined;
+      $.ajax({
+        url: '/api/properties/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          property = results.property;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return property;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -424,6 +646,29 @@ var Property = new JS.Class({
   }
 });
 var Line = new JS.Class({
+  extend: {
+    find: function(id) {
+      line = undefined;
+      $.ajax({
+        url: '/api/lines/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          line = results.line;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return line;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -507,13 +752,15 @@ var Line = new JS.Class({
 
 var Item = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      item = undefined;
       $.ajax({
         url: '/api/items/' + id,
         accept: 'application/json',
         dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.item);
+          item = results.item;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -524,6 +771,7 @@ var Item = new JS.Class({
         username: 'x',
         password: 'x'
       });
+      return item;
     },
 
     search: function(query, page, callback) {
@@ -610,6 +858,29 @@ var Item = new JS.Class({
 });
 
 var Transaction = new JS.Class({
+  extend: {
+    find: function(id) {
+      transaction = undefined;
+      $.ajax({
+        url: '/api/transactions/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          transaction = results.transaction;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return transaction;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -868,6 +1139,29 @@ var Transaction = new JS.Class({
 });
 
 var Payment = new JS.Class({
+  extend: {
+    find: function(id) {
+      payment = undefined;
+      $.ajax({
+        url: '/api/payments/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          payment = results.payment;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return payment;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;
@@ -882,6 +1176,29 @@ var Payment = new JS.Class({
 });
 
 var Timecard = new JS.Class({
+  extend: {
+    find: function(id) {
+      timecard = undefined;
+      $.ajax({
+        url: '/api/timecards/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          timecard = results.timecard;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return timecard;
+    }
+  },
 
   initialize: function(params) {
     this.id = params.id;

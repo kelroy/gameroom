@@ -8,7 +8,14 @@ var Employee = new JS.Class({
         dataType: 'json',
         async: false,
         success: function(results) {
-          employee = results.employee;
+          employee = new Employee({
+            id: results.employee.id,
+            credit: results.customer.credit,
+            drivers_license_number: results.customer.drivers_license_number,
+            drivers_license_state: results.customer.drivers_license_state,
+            notes: results.customer.notes,
+            active: results.customer.active
+          });
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);

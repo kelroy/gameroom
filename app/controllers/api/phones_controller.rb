@@ -1,10 +1,15 @@
 class Api::PhonesController < ApplicationController
   
-  # GET /phones
   # GET /phones.xml
   # GET /phones.json
+  # GET /people/:person_id/emails.xml
+  # GET /people/:person_id/emails.json
   def index
-    @phones = Phone.all
+    if params[:person_id]
+      @phones = Phone.find_all_by_person_id(params[:person_id])
+    else
+      @phones = Phone.all
+    end
     
     respond_to do |format|
       format.json { render :json => @phones.to_json(:except => [:created_at, :updated_at]) }
@@ -12,7 +17,6 @@ class Api::PhonesController < ApplicationController
     end
   end
   
-  # GET /phones/1
   # GET /phones/1.xml
   # GET /phones/1.json
   def show
@@ -24,7 +28,6 @@ class Api::PhonesController < ApplicationController
     end
   end
   
-  # POST /phones
   # POST /phones.xml
   # POST /phones.json
   def create
@@ -41,7 +44,6 @@ class Api::PhonesController < ApplicationController
     end
   end
 
-  # PUT /phones/1
   # PUT /phones/1.xml
   # PUT /phones/1.json
   def update
@@ -58,8 +60,8 @@ class Api::PhonesController < ApplicationController
     end
   end
   
-  # DELETE /phones/1
   # DELETE /phones/1.xml
+  # DELETE /phones/1.json
   def destroy
     @phone = Phone.find(params[:id])
     @phone.destroy

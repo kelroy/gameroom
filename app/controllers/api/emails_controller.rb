@@ -1,10 +1,15 @@
 class Api::EmailsController < ApplicationController
   
-  # GET /emails
   # GET /emails.xml
   # GET /emails.json
+  # GET /people/:person_id/emails.xml
+  # GET /people/:person_id/emails.json
   def index
-    @emails = Email.all
+    if params[:person_id]
+      @emails = Email.find_all_by_person_id(params[:person_id])
+    else
+      @emails = Email.all
+    end
     
     respond_to do |format|
       format.json { render :json => @emails.to_json(:except => [:created_at, :updated_at]) }

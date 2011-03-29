@@ -1,6 +1,38 @@
 //= require "person"
 
 var Address = new JS.Class({
+  extend: {
+    find: function(id) {
+      address = undefined;
+      $.ajax({
+        url: '/api/addresses/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          address = new Address({
+            id: results.address.id,
+            person_id: results.address.person_id,
+            first_line: results.address.first_line,
+            second_line: results.address.second_line,
+            city: results.address.city,
+            state: results.address.state,
+            country: results.address.country,
+            zip: results.address.zip
+          });
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return address;
+    }
+  },
   
   initialize: function(params) {
     this.id = params.id;

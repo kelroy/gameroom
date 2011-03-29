@@ -1,30 +1,27 @@
 class Api::TillsController < ApplicationController
   
-  # GET /tills
   # GET /tills.xml
   # GET /tills.json
   def index
     @tills = Till.all
     
     respond_to do |format|
-      format.json { render :json => @tills.to_json(:include => :entries, :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @tills.to_xml(:include => :entries, :except => [:created_at, :updated_at]) }
+      format.json { render :json => @tills.to_json }
+      format.xml  { render :xml => @tills.to_xml }
     end
   end
   
-  # GET /tills/1
   # GET /tills/1.xml
   # GET /tills/1.json
   def show
     @till = Till.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @till.to_json(:include => :entries, :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @till.to_xml(:include => :entries, :except => [:created_at, :updated_at]) }
+      format.json { render :json => @till.to_json }
+      format.xml  { render :xml => @till.to_xml }
     end
   end
   
-  # POST /tills
   # POST /tills.xml
   # POST /tills.json
   def create
@@ -32,8 +29,8 @@ class Api::TillsController < ApplicationController
 
     respond_to do |format|
       if @till.save
-        format.json  { render :json => @till.to_json(:include => :entries, :except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @till.to_xml(:include => :entries, :except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @till.to_json, :status => :created }
+        format.xml  { render :xml => @till.to_xml, :status => :created }
       else
         format.json  { render :json => @till.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @till.errors, :status => :unprocessable_entity }
@@ -41,7 +38,6 @@ class Api::TillsController < ApplicationController
     end
   end
 
-  # PUT /tills/1
   # PUT /tills/1.xml
   # PUT /tills/1.json
   def update
@@ -58,7 +54,6 @@ class Api::TillsController < ApplicationController
     end
   end
   
-  # DELETE /tills/1
   # DELETE /tills/1.json
   # DELETE /tills/1.xml
   def destroy

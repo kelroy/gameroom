@@ -1,10 +1,15 @@
 class Api::PropertiesController < ApplicationController
   
-  # GET /properties
   # GET /properties.xml
   # GET /properties.json
+  # GET /items/:item_id/properties.xml
+  # GET /items/:item_id/properties.json
   def index
-    @properties = Property.all
+    if params[:item_id]
+      @properties = Property.find_all_by_item_id(params[:item_id])
+    else
+      @properties = Property.all
+    end
     
     respond_to do |format|
       format.json { render :json => @properties.to_json(:except => [:created_at, :updated_at]) }
@@ -12,7 +17,6 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
-  # GET /properties/1
   # GET /properties/1.xml
   # GET /properties/1.json
   def show
@@ -24,7 +28,6 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
-  # POST /properties
   # POST /properties.xml
   # POST /properties.json
   def create
@@ -42,7 +45,6 @@ class Api::PropertiesController < ApplicationController
     end
   end
 
-  # PUT /properties/1
   # PUT /properties/1.xml
   # PUT /properties/1.json
   def update
@@ -59,8 +61,8 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
-  # DELETE /properties/1
   # DELETE /properties/1.xml
+  # DELETE /properties/1.json
   def destroy
     @property = Property.find(params[:id])
     @property.destroy

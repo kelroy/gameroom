@@ -1,30 +1,33 @@
 class Api::EntriesController < ApplicationController
   
-  # GET /entries
   # GET /entries.xml
   # GET /entries.json
+  # GET /till/:till_id/entries.xml
+  # GET /till/:till_id/entries.json
   def index
-    @entries = Entry.all
+    if params[:till_id]
+      @entries = Entry.find_all_by_till_id(params[:till_id])
+    else
+      @entries = Entry.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @entries.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @entries.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @entries.to_json }
+      format.xml  { render :xml => @entries.to_xml }
     end
   end
   
-  # GET /entries/1
   # GET /entries/1.xml
   # GET /entries/1.json
   def show
     @entry = Entry.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @entry.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @entry.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @entry.to_json }
+      format.xml  { render :xml => @entry.to_xml }
     end
   end
   
-  # POST /entries
   # POST /entries.xml
   # POST /entries.json
   def create
@@ -32,8 +35,8 @@ class Api::EntriesController < ApplicationController
 
     respond_to do |format|
       if @entry.save
-        format.json  { render :json => @entry.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @entry.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @entry.to_json, :status => :created }
+        format.xml  { render :xml => @entry.to_xml, :status => :created }
       else
         format.json  { render :json => @entry.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @entry.errors, :status => :unprocessable_entity }
@@ -41,7 +44,6 @@ class Api::EntriesController < ApplicationController
     end
   end
 
-  # PUT /entries/1
   # PUT /entries/1.xml
   # PUT /entries/1.json
   def update
@@ -58,8 +60,8 @@ class Api::EntriesController < ApplicationController
     end
   end
   
-  # DELETE /entries/1
   # DELETE /entries/1.xml
+  # DELETE /entries/1.json
   def destroy
     @entry = Entry.find(params[:id])
     @entry.destroy

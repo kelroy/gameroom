@@ -3,14 +3,14 @@
 var Entry = new JS.Class({
   extend: {
     find: function(id) {
-      employee = undefined;
+      entry = undefined;
       $.ajax({
-        url: '/api/entry/' + id,
+        url: '/api/entries/' + id,
         accept: 'application/json',
         dataType: 'json',
         async: false,
         success: function(results) {
-          employee = results.employee;
+          entry = results.entry;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -21,7 +21,7 @@ var Entry = new JS.Class({
         username: 'x',
         password: 'x'
       });
-      return employee;
+      return entry;
     }
   },
   

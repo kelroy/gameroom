@@ -3,13 +3,15 @@
 
 var Item = new JS.Class({
   extend: {
-    find: function(id, callback) {
+    find: function(id) {
+      item = undefined;
       $.ajax({
         url: '/api/items/' + id,
         accept: 'application/json',
         dataType: 'json',
+        async: false,
         success: function(results) {
-          callback(results.item);
+          item = results.item;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -20,6 +22,7 @@ var Item = new JS.Class({
         username: 'x',
         password: 'x'
       });
+      return item;
     },
     
     search: function(query, page, callback) {

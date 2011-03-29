@@ -1,6 +1,29 @@
 //= require "item"
 
 var Property = new JS.Class({
+  extend: {
+    find: function(id) {
+      property = undefined;
+      $.ajax({
+        url: '/api/properties/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          property = results.property;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return property;
+    }
+  },
   
   initialize: function(params) {
     this.id = params.id;

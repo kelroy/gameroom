@@ -1,30 +1,33 @@
 class Api::PaymentsController < ApplicationController
   
-  # GET /payments
   # GET /payments.xml
   # GET /payments.json
+  # GET /transactions/:transaction_id/payments.xml
+  # GET /transactions/:transaction_id/payments.json
   def index
-    @payments = Payment.all
+    if params[:transaction_id]
+      @payments = Payment.find_all_by_transaction_id(params[:transaction_id])
+    else
+      @payments = Payment.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @payments.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @payments.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @payments.to_json }
+      format.xml  { render :xml => @payments.to_xml }
     end
   end
   
-  # GET /payments/1
   # GET /payments/1.xml
   # GET /payments/1.json
   def show
     @payment = Payment.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @payment.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @payment.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @payment.to_json }
+      format.xml  { render :xml => @payment.to_xml }
     end
   end
   
-  # POST /payments
   # POST /payments.xml
   # POST /payments.json
   def create
@@ -32,8 +35,8 @@ class Api::PaymentsController < ApplicationController
 
     respond_to do |format|
       if @payment.save
-        format.json  { render :json => @payment.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @payment.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @payment.to_json, :status => :created }
+        format.xml  { render :xml => @payment.to_xml, :status => :created }
       else
         format.json  { render :json => @payment.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @payment.errors, :status => :unprocessable_entity }
@@ -41,7 +44,6 @@ class Api::PaymentsController < ApplicationController
     end
   end
 
-  # PUT /payments/1
   # PUT /payments/1.xml
   # PUT /payments/1.json
   def update
@@ -58,8 +60,8 @@ class Api::PaymentsController < ApplicationController
     end
   end
   
-  # DELETE /payments/1
   # DELETE /payments/1.xml
+  # DELETE /payments/1.json
   def destroy
     @payment = Payment.find(params[:id])
     @payment.destroy

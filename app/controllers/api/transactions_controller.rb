@@ -1,26 +1,32 @@
 class Api::TransactionsController < ApplicationController
-  
-  # GET /transactions
+
   # GET /transactions.xml
   # GET /transactions.json
+  # GET /[parent]/:parent_id/transactions.xml
+  # GET /[parent]/:parent_id/transactions.json
   def index
-    @transactions = Transaction.all
+    if params[:customer_id]
+      @transactions = Transaction.find_all_by_customer_id(params[:customer_id])
+    elsif params[:till_id]
+      @transactions = Transaction.find_all_by_till_id(params[:till_id])
+    else
+      @transactions = Transaction.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @transactions.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @transactions.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @transactions.to_json }
+      format.xml  { render :xml => @transactions.to_xml }
     end
   end
   
-  # GET /transactions/1
   # GET /transactions/1.xml
   # GET /transactions/1.json
   def show
     @transaction = Transaction.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @transaction.to_json }
+      format.xml  { render :xml => @transaction.to_xml }
     end
   end
   
@@ -35,7 +41,6 @@ class Api::TransactionsController < ApplicationController
     end
   end
   
-  # POST /transactions
   # POST /transactions.xml
   # POST /transactions.json
   def create
@@ -43,8 +48,8 @@ class Api::TransactionsController < ApplicationController
 
     respond_to do |format|
       if @transaction.save
-        format.json  { render :json => @transaction.to_json(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @transaction.to_xml(:include => [:lines, :payments], :except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @transaction.to_json, :status => :created }
+        format.xml  { render :xml => @transaction.to_xml, :status => :created }
       else
         format.json  { render :json => @transaction.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @transaction.errors, :status => :unprocessable_entity }
@@ -52,7 +57,6 @@ class Api::TransactionsController < ApplicationController
     end
   end
 
-  # PUT /transactions/1
   # PUT /transactions/1.xml
   # PUT /transactions/1.json
   def update
@@ -68,8 +72,7 @@ class Api::TransactionsController < ApplicationController
       end
     end
   end
-  
-  # DELETE /transactions/1
+
   # DELETE /transactions/1.json
   # DELETE /transactions/1.xml
   def destroy

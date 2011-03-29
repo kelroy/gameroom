@@ -5,6 +5,29 @@
 //= require "payment"
 
 var Transaction = new JS.Class({
+  extend: {
+    find: function(id) {
+      transaction = undefined;
+      $.ajax({
+        url: '/api/transactions/' + id,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          transaction = results.transaction;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return transaction;
+    }
+  },
   
   initialize: function(params) {
     this.id = params.id;

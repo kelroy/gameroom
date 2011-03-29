@@ -3,8 +3,16 @@ class Api::LinesController < ApplicationController
   # GET /lines
   # GET /lines.xml
   # GET /lines.json
+  # GET /[parent]/:parent_id/lines.xml
+  # GET /[parent]/:parent_id/lines.json
   def index
-    @lines = Line.all
+    if params[:item_id]
+      @lines = Line.find_all_by_item_id(params[:item_id])
+    elsif params[:transaction_id]
+      @lines = Line.find_all_by_transaction_id(params[:transaction_id])
+    else
+      @lines = Line.all
+    end
     
     respond_to do |format|
       format.json { render :json => @lines }

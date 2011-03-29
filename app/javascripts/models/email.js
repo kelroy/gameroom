@@ -10,7 +10,11 @@ var Email = new JS.Class({
         dataType: 'json',
         async: false,
         success: function(results) {
-          email = results.email;
+          email = new Email({
+            id: results.email.id,
+            person_id: results.email.person_id,
+            address: results.email.address
+          });
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -29,6 +33,14 @@ var Email = new JS.Class({
     this.id = params.id;
     this.person_id = params.person_id;
     this.address = params.address;
+  },
+  
+  person: function() {
+    if(this.person_id != undefined) {
+      return Person.find(this.person_id);
+    } else {
+      return undefined;
+    }
   },
 
   save: function() {

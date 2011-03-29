@@ -1,49 +1,43 @@
+//= require "../model"
 //= require "till"
 //= require "customer"
 //= require "item"
 //= require "line"
 //= require "payment"
 
-var Transaction = new JS.Class({
+var Transaction = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      transaction = undefined;
-      $.ajax({
-        url: '/api/transactions/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          transaction = results.transaction;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return transaction;
-    }
+    resource: 'transaction'
   },
   
   initialize: function(params) {
     this.id = params.id;
-    this.user_id = params.user_id;
-    this.till_id = params.till_id;
     this.customer_id = params.customer_id;
-    this.payments = [
-      new Payment({form: 'store_credit', amount: 0}),
-      new Payment({form: 'gift_card', amount: 0}),
-      new Payment({form: 'credit_card', amount: 0}),
-      new Payment({form: 'check', amount: 0}),
-      new Payment({form: 'cash', amount: 0})
-    ];
+    this.till_id = params.till_id;
+    this.user_id = params.user_id;
     this.tax_rate = params.tax_rate;
     this.complete = params.complete;
     this.locked = params.locked;
+  },
+  
+  customer: function() {
+    return this._find_parent('customer');
+  },
+  
+  lines: function() {
+    return this._find_children('line');
+  },
+  
+  payments: function() {
+    return this._find_children('payments');
+  },
+  
+  till: function() {
+    return this._find_parent('till');
+  },
+  
+  user: function() {
+    return this._find_parent('user');
   },
   
   subtotal: function() {

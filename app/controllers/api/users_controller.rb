@@ -6,8 +6,8 @@ class Api::UsersController < ApplicationController
     @users = User.all
     
     respond_to do |format|
-      format.json { render :json => @users }
-      format.xml  { render :xml => @users }
+      format.json { render :json => @users.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
+      format.xml  { render :xml => @users.to_xml(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
     end
   end
   
@@ -17,8 +17,8 @@ class Api::UsersController < ApplicationController
     @user = User.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @user }
-      format.xml  { render :xml => @user }
+      format.json { render :json => @user.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
+      format.xml  { render :xml => @user.to_xml(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
     end
   end
   

@@ -1,28 +1,8 @@
-//= require "person"
+//= require "../model"
 
-var User = new JS.Class({
+var User = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      user = undefined;
-      $.ajax({
-        url: '/api/users/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          user = results.user;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return user;
-    }
+    resource: 'user'
   },
   
   initialize: function(params) {
@@ -30,7 +10,18 @@ var User = new JS.Class({
     this.login = params.login;
     this.pin = params.pin;
     this.email = params.email;
+    this.administrator = params.administrator;
+    this.login_count = params.login_count;
+    this.failed_login_count = params.failed_login_count;
+    this.last_login_at = params.last_login_at;
+    this.last_request_at = params.last_request_at;
+    this.last_login_ip = params.last_login_ip;
+    this.current_login_ip = params.current_login_ip;
     this.active = params.active;
+  },
+  
+  person: function() {
+    return this._find_child('person');
   },
   
   valid: function() {

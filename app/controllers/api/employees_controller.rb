@@ -7,8 +7,8 @@ class Api::EmployeesController < ApplicationController
     @employees = Employee.all
     
     respond_to do |format|
-      format.json { render :json => @employees.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @employees.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
+      format.json { render :json => @employees.to_json}
+      format.xml  { render :xml => @employees.to_xml }
     end
   end
   
@@ -19,8 +19,8 @@ class Api::EmployeesController < ApplicationController
     @employee = Employee.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @employee.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @employee.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
+      format.json { render :json => @employee.to_json }
+      format.xml  { render :xml => @employee.to_xml }
     end
   end
   

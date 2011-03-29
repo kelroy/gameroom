@@ -12,8 +12,8 @@ class Api::TimecardsController < ApplicationController
     end
     
     respond_to do |format|
-      format.json { render :json => @timecards.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @timecards.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @timecards.to_json }
+      format.xml  { render :xml => @timecards.to_xml }
     end
   end
   
@@ -23,8 +23,8 @@ class Api::TimecardsController < ApplicationController
     @timecard = Timecard.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @timecard.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @timecard.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @timecard.to_json }
+      format.xml  { render :xml => @timecard.to_xml }
     end
   end
   
@@ -35,8 +35,8 @@ class Api::TimecardsController < ApplicationController
 
     respond_to do |format|
       if @timecard.save
-        format.json  { render :json => @timecard.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @timecard.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @timecard.to_json, :status => :created }
+        format.xml  { render :xml => @timecard.to_xml, :status => :created }
       else
         format.json  { render :json => @timecard.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @timecard.errors, :status => :unprocessable_entity }

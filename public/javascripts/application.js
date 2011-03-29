@@ -1,16 +1,18 @@
 /* Gameroom */
-
-var User = new JS.Class({
+var Model = new JS.Class({
   extend: {
+    resource: undefined,
+
     find: function(id) {
-      user = undefined;
+      resource = this.resource;
+      klass = undefined;
       $.ajax({
-        url: '/api/users/' + id,
+        url: '/api/' + resource.pluralize() + '/' + id,
         accept: 'application/json',
         dataType: 'json',
         async: false,
         success: function(results) {
-          user = results.user;
+          klass = new window[resource.capitalize()](results[resource]);
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -21,16 +23,171 @@ var User = new JS.Class({
         username: 'x',
         password: 'x'
       });
-      return user;
+      return klass;
+    },
+
+    all: function() {
+      resource = this.resource;
+      resources = [];
+      $.ajax({
+        url: '/api/' + resource.pluralize(),
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          for(result in results) {
+            resources.push(new window[resource.capitalize()](results[result][resource]));
+          }
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return resources;
+    },
+
+    where: function(pattern, query, page, per_page) {
+      resource = this.resource;
+      resources = [];
+      search = new Object();
+      search[pattern] = query.split(" ");
+
+      $.ajax({
+        url: '/api/'+ resource.pluralize() + '/search',
+        data: JSON.stringify({
+          search: search,
+          page: page,
+          per_page: per_page
+        }),
+        dataType: 'json',
+        accept: 'application/json',
+        contentType: 'application/json',
+        processData: false,
+        type: 'POST',
+        async: false,
+        success: function(results) {
+          for(result in results) {
+            resources.push(new window[resource.capitalize()](results[result][resource]));
+          }
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return resources;
     }
   },
 
-  initialize: function(params) {
-    this.id = params.id;
-    this.login = params.login;
-    this.pin = params.pin;
-    this.email = params.email;
-    this.active = params.active;
+  _find_child: function(child) {
+    resource = this.klass.resource;
+    klass = undefined;
+    $.ajax({
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child,
+      accept: 'application/json',
+      dataType: 'json',
+      async: false,
+      success: function(results) {
+        klass = new window[child.capitalize()](results[child]);
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        console.error('Error Status: ' + XMLHttpRequest.status);
+        console.error('Error Text: ' + textStatus);
+        console.error('Error Thrown: ' + errorThrown);
+        console.log(XMLHttpRequest);
+      },
+      username: 'x',
+      password: 'x'
+    });
+    return klass;
+  },
+
+  _find_children: function(child) {
+    resource = this.klass.resource;
+    resources = [];
+    klass = undefined;
+    $.ajax({
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child.pluralize(),
+      accept: 'application/json',
+      dataType: 'json',
+      async: false,
+      success: function(results) {
+        for(result in results) {
+          resources.push(new window[child.capitalize()](results[result][child]));
+        }
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        console.error('Error Status: ' + XMLHttpRequest.status);
+        console.error('Error Text: ' + textStatus);
+        console.error('Error Thrown: ' + errorThrown);
+        console.log(XMLHttpRequest);
+      },
+      username: 'x',
+      password: 'x'
+    });
+    return resources;
+  },
+
+  _find_parent: function(parent) {
+    if(this[parent + '_id'] != null && this[parent + '_id'] != undefined) {
+      return window[parent.capitalize()].find(this[parent + '_id']);
+    } else {
+      return undefined;
+    }
+  },
+
+  save: function() {
+    if(this.valid()) {
+      if(this.id == undefined || this.id == 0) {
+        url = '/api/' + resource.pluralize();
+        type = 'POST';
+      } else {
+        url = '/api/' + resource.pluralize() + '/' + this.id;
+        type = 'PUT';
+      }
+
+      resource = this.klass.resource;
+      data = new Object();
+      data[resource] = this;
+
+      $.ajax({
+        url: url,
+        accept: 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        dataType: 'json',
+        processData: false,
+        type: type,
+        async: false,
+        success: function(result) {
+          this.id = result[resource].id;
+          saved = true;
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+          saved = false;
+        },
+        username: 'x',
+        password: 'x'
+
+      });
+
+      return saved;
+    } else {
+      return false;
+    }
   },
 
   valid: function() {
@@ -38,69 +195,38 @@ var User = new JS.Class({
   }
 });
 
-var Customer = new JS.Class({
+var User = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      customer = undefined;
-      $.ajax({
-        url: '/api/customers/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          customer = new Customer({
-            id: results.customer.id,
-            credit: results.customer.credit,
-            drivers_license_number: results.customer.drivers_license_number,
-            drivers_license_state: results.customer.drivers_license_state,
-            notes: results.customer.notes,
-            active: results.customer.active
-          });
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return customer;
-    },
+    resource: 'user'
+  },
 
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
-      } else {
-        search = { person_last_name_starts_with: query };
-      }
+  initialize: function(params) {
+    this.id = params.id;
+    this.login = params.login;
+    this.pin = params.pin;
+    this.email = params.email;
+    this.administrator = params.administrator;
+    this.login_count = params.login_count;
+    this.failed_login_count = params.failed_login_count;
+    this.last_login_at = params.last_login_at;
+    this.last_request_at = params.last_request_at;
+    this.last_login_ip = params.last_login_ip;
+    this.current_login_ip = params.current_login_ip;
+    this.active = params.active;
+  },
 
-      $.ajax({
-        url: '/api/customers/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
+  person: function() {
+    return this._find_child('person');
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Customer = new JS.Class(Model, {
+  extend: {
+    resource: 'customer'
   },
 
   initialize: function(params) {
@@ -112,119 +238,25 @@ var Customer = new JS.Class({
     this.active = params.active;
   },
 
-  save: function(callback) {
-    if(this.valid()) {
-      customer = {
-        credit: this.credit,
-        drivers_license_number: this.drivers_license_number,
-        drivers_license_state: this.drivers_license_state,
-        notes: this.notes,
-        active: this.active
-      };
+  person: function() {
+    return this._find_child('person');
+  },
 
-      if(this.person != undefined) {
-        customer.person_attributes = {
-          first_name: this.person.first_name,
-          middle_name: this.person.middle_name,
-          last_name: this.person.last_name,
-          emails_attributes: [],
-          addresses_attributes: [],
-          phones_attributes: []
-        }
-        for(email in this.person.emails) {
-          customer.person_attributes.emails_attributes.push({
-            address: this.person.emails[email].address
-          });
-        }
-        for(address in this.person.addresses) {
-          customer.person_attributes.addresses_attributes.push({
-            first_line: this.person.addresses[address].first_line,
-            second_line: this.person.addresses[address].second_line,
-            city: this.person.addresses[address].city,
-            state: this.person.addresses[address].state,
-            country: this.person.addresses[address].country,
-            zip: this.person.addresses[address].zip
-          });
-        }
-        for(phone in this.person.phones) {
-          customer.person_attributes.phones_attributes.push({
-            title: this.person.phones[phone].title,
-            number: this.person.phones[phone].number
-          });
-        }
-      }
-
-      if(this.id == undefined || this.id == 0) {
-        url = '/api/customers';
-        type = 'POST';
-      } else {
-        url = '/api/customers/' + this.id;
-        type = 'PUT';
-      }
-
-      $.ajax({
-        url: url,
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({customer: customer}),
-        dataType: 'json',
-        processData: false,
-        type: type,
-        success: function(result) {
-          callback(result.customer);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
-    }
+  transactions: function() {
+    return this._find_children('transaction');
   },
 
   valid: function() {
     if(this.credit == undefined || this.credit == null) {
       return false;
     }
-    if(this.person != undefined) {
-      if(!this.person.valid()) {
-        return false;
-      }
-    }
     return true;
   }
 });
-var Employee = new JS.Class({
+
+var Employee = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      employee = undefined;
-      $.ajax({
-        url: '/api/employees/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          employee = results.employee;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return employee;
-    }
+    resource: 'employee'
   },
 
   initialize: function(params) {
@@ -234,8 +266,12 @@ var Employee = new JS.Class({
     this.active = params.active;
   },
 
-  save: function() {
+  person: function() {
+    return this._find_child('person');
+  },
 
+  timecards: function() {
+    return this._find_children('timecard');
   },
 
   valid: function() {
@@ -243,34 +279,9 @@ var Employee = new JS.Class({
   }
 });
 
-var Phone = new JS.Class({
+var Phone = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      phone = undefined;
-      $.ajax({
-        url: '/api/phones/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          phone = new Phone({
-            id: results.phone.id,
-            person_id: results.phone.person_id,
-            title: results.phone.title,
-            number: results.phone.number
-          });
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return phone;
-    }
+    resource: 'phone'
   },
 
   initialize: function(params) {
@@ -278,25 +289,10 @@ var Phone = new JS.Class({
     this.person_id = params.person_id;
     this.title = params.title;
     this.number = params.number;
-
-    this._person = undefined;
   },
 
   person: function() {
-    if(this._person == undefined) {
-      if(this.person_id != undefined) {
-        this._person = Person.find(this.person_id);
-        return this._person;
-      } else {
-        return undefined;
-      }
-    } else {
-      return this._person;
-    }
-  },
-
-  save: function() {
-
+    return this._find_parent('person');
   },
 
   valid: function() {
@@ -307,58 +303,19 @@ var Phone = new JS.Class({
   }
 });
 
-var Email = new JS.Class({
+var Email = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      email = undefined;
-      $.ajax({
-        url: '/api/emails/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          email = new Email({
-            id: results.email.id,
-            person_id: results.email.person_id,
-            address: results.email.address
-          });
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return email;
-    }
+    resource: 'email'
   },
 
   initialize: function(params) {
     this.id = params.id;
     this.person_id = params.person_id;
     this.address = params.address;
-
-    this._person = undefined;
   },
 
   person: function() {
-    if(this._person == undefined) {
-      if(this.person_id != undefined) {
-        this._person = Person.find(this.person_id);
-        return this._person;
-      } else {
-        return undefined;
-      }
-    } else {
-      return this._person;
-    }
-  },
-
-  save: function() {
-
+    return this._find_parent('person');
   },
 
   valid: function() {
@@ -369,29 +326,9 @@ var Email = new JS.Class({
   }
 });
 
-var Person = new JS.Class({
+var Person = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      person = undefined;
-      $.ajax({
-        url: '/api/people/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          person = results.person;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return person;
-    }
+    resource: 'person'
   },
 
   initialize: function(params) {
@@ -405,8 +342,28 @@ var Person = new JS.Class({
     this.date_of_birth = params.date_of_birth;
   },
 
-  save: function() {
+  addresses: function() {
+    return this._find_children('address');
+  },
 
+  customer: function() {
+    return this._find_parent('customer');
+  },
+
+  emails: function() {
+    return this._find_children('email');
+  },
+
+  employee: function() {
+    return this._find_parent('employee');
+  },
+
+  phones: function() {
+    return this._find_children('phone');
+  },
+
+  user: function() {
+    return this._find_parent('user');
   },
 
   valid: function() {
@@ -416,57 +373,13 @@ var Person = new JS.Class({
     if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
       return false;
     }
-    for(address in this.addresses) {
-      if(!this.addresses[address].valid()) {
-        return false;
-      }
-    }
-    for(phone in this.phones) {
-      if(!this.phones[phone].valid()) {
-        return false;
-      }
-    }
-    for(email in this.emails) {
-      if(!this.emails[email].valid()) {
-        return false;
-      }
-    }
     return true;
   }
 });
 
-var Address = new JS.Class({
+var Address = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      address = undefined;
-      $.ajax({
-        url: '/api/addresses/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          address = new Address({
-            id: results.address.id,
-            person_id: results.address.person_id,
-            first_line: results.address.first_line,
-            second_line: results.address.second_line,
-            city: results.address.city,
-            state: results.address.state,
-            country: results.address.country,
-            zip: results.address.zip
-          });
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return address;
-    }
+    resource: 'address'
   },
 
   initialize: function(params) {
@@ -478,25 +391,10 @@ var Address = new JS.Class({
     this.state = params.state;
     this.country = params.country;
     this.zip = params.zip;
-
-    this._person = undefined;
   },
 
   person: function() {
-    if(this._person == undefined) {
-      if(this.person_id != undefined) {
-        this._person = Person.find(this.person_id);
-        return this._person;
-      } else {
-        return undefined;
-      }
-    } else {
-      return this._person;
-    }
-  },
-
-  save: function() {
-
+    return this._find_parent('person');
   },
 
   valid: function() {
@@ -516,72 +414,9 @@ var Address = new JS.Class({
   }
 });
 
-var Till = new JS.Class({
+var Entry = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      till = undefined;
-      $.ajax({
-        url: '/api/tills/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          till = results.till;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return till;
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.entries = [];
-    for(entry in params.entries) {
-      this.entries.push(new Entry($.extend(params.entries[entry], {till: this})));
-    }
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-
-var Entry = new JS.Class({
-  extend: {
-    find: function(id) {
-      entry = undefined;
-      $.ajax({
-        url: '/api/entries/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          entry = results.entry;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return entry;
-    }
+    resource: 'entry'
   },
 
   initialize: function(params) {
@@ -591,7 +426,10 @@ var Entry = new JS.Class({
     this.description = params.description;
     this.time = params.time;
     this.amount = params.amount;
-    this.action = params.action;
+  },
+
+  till: function() {
+    return this._find_parent('till');
   },
 
   valid: function() {
@@ -599,94 +437,57 @@ var Entry = new JS.Class({
   }
 });
 
-var Property = new JS.Class({
+var Property = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      property = undefined;
-      $.ajax({
-        url: '/api/properties/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          property = results.property;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return property;
-    }
+    resource: 'property'
   },
 
   initialize: function(params) {
     this.id = params.id;
-    if(params.item != undefined) {
-      if(this.item == undefined) {
-        this.item = new Item(params.item);
-      }
-    } else {
-      this.item = undefined;
-    }
+    this.item_id = params.item_id;
     this.key = params.key;
     this.value = params.value;
   },
 
-  save: function() {
-
+  item: function() {
+    return this._find_parent('item');
   },
 
   valid: function() {
     return true;
   }
 });
-var Line = new JS.Class({
+
+var Line = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      line = undefined;
-      $.ajax({
-        url: '/api/lines/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          line = results.line;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return line;
-    }
+    resource: 'line'
   },
 
   initialize: function(params) {
     this.id = params.id;
     this.transaction_id = params.transaction_id;
     this.item_id = params.item_id;
-    this.condition = 1;
-    this.discount = 0;
-    this.quantity = 0;
-    this.price = 0;
+    this.quantity = params.quantity;
+    this.price = params.price;
     this.taxable = params.taxable;
-    this.sell = false;
+    this.discount = 0;
+
+    /*this.sell = false;
     this.setQuantity(params.quantity);
     this.setCondition(params.condition);
     if(params.sell) {
       this.setSell();
     } else {
       this.setPurchase();
-    }
+    }*/
+  },
+
+  item: function() {
+    return this._find_parent('item');
+  },
+
+  transaction: function() {
+    return this._find_parent('transaction');
   },
 
   subtotal: function() {
@@ -750,62 +551,9 @@ var Line = new JS.Class({
   }
 });
 
-var Item = new JS.Class({
+var Item = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      item = undefined;
-      $.ajax({
-        url: '/api/items/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          item = results.item;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return item;
-    },
-
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { title_or_description_or_sku_contains_all: query.split(" ") };
-      } else {
-        search = { title_starts_with: query };
-      }
-
-      $.ajax({
-        url: '/api/items/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
+    resource: 'item'
   },
 
   initialize: function(params) {
@@ -820,16 +568,21 @@ var Item = new JS.Class({
     this.active = params.active;
   },
 
+  properties: function() {
+    return this._find_children('property');
+  },
+
   basePrice: function() {
     return this.price;
   },
 
   creditPrice: function() {
-    var credit_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
+    credit_price = 0;
+    properties = this.properties();
+    for(property in properties) {
+      switch(properties[property].key) {
         case 'credit_price':
-          credit_price = parseInt(this.properties[property].value);
+          credit_price = parseInt(properties[property].value);
           break;
         case 'default':
           break;
@@ -839,11 +592,12 @@ var Item = new JS.Class({
   },
 
   cashPrice: function() {
-    var cash_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
+    cash_price = 0;
+    properties = this.properties();
+    for(property in properties) {
+      switch(properties[property].key) {
         case 'cash_price':
-          cash_price = parseInt(this.properties[property].value);
+          cash_price = parseInt(properties[property].value);
           break;
         case 'default':
           break;
@@ -857,46 +611,109 @@ var Item = new JS.Class({
   }
 });
 
-var Transaction = new JS.Class({
+var Payment = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      transaction = undefined;
-      $.ajax({
-        url: '/api/transactions/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          transaction = results.transaction;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return transaction;
-    }
+    resource: 'payment'
   },
 
   initialize: function(params) {
     this.id = params.id;
-    this.user_id = params.user_id;
-    this.till_id = params.till_id;
+    this.transaction_id = params.transaction_id;
+    this.form = params.form;
+    this.amount = params.amount;
+  },
+
+  transaction: function() {
+    return this._find_parent('transaction');
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Till = new JS.Class(Model, {
+  extend: {
+    resource: 'till'
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.description = params.description;
+    this.minimum_transfer = params.minimum_transfer;
+    this.minimum_balance = params.minimum_balance;
+    this.retainable = params.retainable;
+    this.active = params.active;
+  },
+
+  transactions: function() {
+    return this._find_children('transaction');
+  },
+
+  entries: function() {
+    return this._find_children('entry');
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Timecard = new JS.Class(Model, {
+  extend: {
+    resource: 'timecard'
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
+    this.employee_id = params.employee_id;
+    this.begin = params.begin;
+    this.end = params.end;
+  },
+
+  employee: function() {
+    return this._find_parent('employee');
+  },
+
+  valid: function() {
+    return true;
+  }
+});
+
+var Transaction = new JS.Class(Model, {
+  extend: {
+    resource: 'transaction'
+  },
+
+  initialize: function(params) {
+    this.id = params.id;
     this.customer_id = params.customer_id;
-    this.payments = [
-      new Payment({form: 'store_credit', amount: 0}),
-      new Payment({form: 'gift_card', amount: 0}),
-      new Payment({form: 'credit_card', amount: 0}),
-      new Payment({form: 'check', amount: 0}),
-      new Payment({form: 'cash', amount: 0})
-    ];
+    this.till_id = params.till_id;
+    this.user_id = params.user_id;
     this.tax_rate = params.tax_rate;
     this.complete = params.complete;
     this.locked = params.locked;
+  },
+
+  customer: function() {
+    return this._find_parent('customer');
+  },
+
+  lines: function() {
+    return this._find_children('line');
+  },
+
+  payments: function() {
+    return this._find_children('payments');
+  },
+
+  till: function() {
+    return this._find_parent('till');
+  },
+
+  user: function() {
+    return this._find_parent('user');
   },
 
   subtotal: function() {
@@ -1135,90 +952,6 @@ var Transaction = new JS.Class({
       return true;
     }
     return false;
-  }
-});
-
-var Payment = new JS.Class({
-  extend: {
-    find: function(id) {
-      payment = undefined;
-      $.ajax({
-        url: '/api/payments/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          payment = results.payment;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return payment;
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.transaction_id = params.transaction_id;
-    this.form = params.form;
-    this.amount = params.amount;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-
-var Timecard = new JS.Class({
-  extend: {
-    find: function(id) {
-      timecard = undefined;
-      $.ajax({
-        url: '/api/timecards/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          timecard = results.timecard;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return timecard;
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    if(params.employee != undefined) {
-      if(this.employee == undefined) {
-        this.employee = new Employee(params.employee);
-      }
-    } else {
-      this.employee = undefined;
-    }
-    this.begin = params.begin;
-    this.end = params.end;
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    return true;
   }
 });
 var Factory = new JS.Class({
@@ -2869,25 +2602,21 @@ var Currency = new JS.Class({
     }
   }
 });
-var String = new JS.Class({
-  extend: {
-    ucfirst: function(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    },
+String.prototype.ucfirst = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+}
 
-    capitalize: function(string) {
-      sentence = string.split(' ');
-      for(word in sentence) {
-        sentence[word] = String.ucfirst(sentence[word])
-      }
-      return sentence.join(' ');
-    },
-
-    truncate: function(string, length) {
-      return string.substr(0, length - 1) + (string.length > length? '...' : '');
-    }
+String.prototype.capitalize = function() {
+  sentence = this.split(' ');
+  for(word in sentence) {
+    sentence[word] = sentence[word].ucfirst();
   }
-});
+  return sentence.join(' ');
+}
+
+String.prototype.truncate = function(length) {
+  return this.substr(0, length - 1) + (this.length > length? '...' : '');
+}
 
 var ReviewController = new JS.Class(ViewController, {
   include: JS.Observable,

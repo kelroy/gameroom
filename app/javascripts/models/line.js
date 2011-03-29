@@ -1,45 +1,35 @@
-var Line = new JS.Class({
+//= require "../model"
+
+var Line = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      line = undefined;
-      $.ajax({
-        url: '/api/lines/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          line = results.line;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return line;
-    }
+    resource: 'line'
   },
   
   initialize: function(params) {
     this.id = params.id;
     this.transaction_id = params.transaction_id;
     this.item_id = params.item_id;
-    this.condition = 1;
-    this.discount = 0;
-    this.quantity = 0;
-    this.price = 0;
+    this.quantity = params.quantity;
+    this.price = params.price;
     this.taxable = params.taxable;
-    this.sell = false;
+    this.discount = 0;
+    
+    /*this.sell = false;
     this.setQuantity(params.quantity);
     this.setCondition(params.condition);
     if(params.sell) {
       this.setSell();
     } else {
       this.setPurchase();
-    }
+    }*/
+  },
+  
+  item: function() {
+    return this._find_parent('item');
+  },
+  
+  transaction: function() {
+    return this._find_parent('transaction');
   },
   
   subtotal: function() {

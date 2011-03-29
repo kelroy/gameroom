@@ -12,8 +12,8 @@ class Api::EmailsController < ApplicationController
     end
     
     respond_to do |format|
-      format.json { render :json => @emails.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @emails.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @emails.to_json }
+      format.xml  { render :xml => @emails.to_xml }
     end
   end
   
@@ -24,8 +24,8 @@ class Api::EmailsController < ApplicationController
     @email = Email.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @email.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @email.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @email.to_json }
+      format.xml  { render :xml => @email.to_xml }
     end
   end
   
@@ -37,8 +37,8 @@ class Api::EmailsController < ApplicationController
 
     respond_to do |format|
       if @email.save
-        format.json  { render :json => @email.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @email.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @email.to_json, :status => :created }
+        format.xml  { render :xml => @email.to_xml, :status => :created }
       else
         format.json  { render :json => @email.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @email.errors, :status => :unprocessable_entity }

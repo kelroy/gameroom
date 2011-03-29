@@ -1,3 +1,4 @@
+//= require "../model"
 //= require "user"
 //= require "customer"
 //= require "employee"
@@ -5,29 +6,9 @@
 //= require "phone"
 //= require "email"
 
-var Person = new JS.Class({
+var Person = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      person = undefined;
-      $.ajax({
-        url: '/api/people/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          person = results.person;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return person;
-    }
+    resource: 'person'
   },
   
   initialize: function(params) {
@@ -40,9 +21,29 @@ var Person = new JS.Class({
     this.last_name = params.last_name;
     this.date_of_birth = params.date_of_birth;
   },
-
-  save: function() {
-
+  
+  addresses: function() {
+    return this._find_children('address');
+  },
+  
+  customer: function() {
+    return this._find_parent('customer');
+  },
+  
+  emails: function() {
+    return this._find_children('email');
+  },
+  
+  employee: function() {
+    return this._find_parent('employee');
+  },
+  
+  phones: function() {
+    return this._find_children('phone');
+  },
+  
+  user: function() {
+    return this._find_parent('user');
   },
   
   valid: function() {
@@ -51,21 +52,6 @@ var Person = new JS.Class({
     }
     if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
       return false;
-    }
-    for(address in this.addresses) {
-      if(!this.addresses[address].valid()) {
-        return false;
-      }
-    }
-    for(phone in this.phones) {
-      if(!this.phones[phone].valid()) {
-        return false;
-      }
-    }
-    for(email in this.emails) {
-      if(!this.emails[email].valid()) {
-        return false;
-      }
     }
     return true;
   }

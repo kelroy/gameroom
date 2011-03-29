@@ -1,28 +1,8 @@
-//= require "till"
+//= require "../model"
 
-var Entry = new JS.Class({
+var Entry = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      entry = undefined;
-      $.ajax({
-        url: '/api/entries/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          entry = results.entry;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return entry;
-    }
+    resource: 'entry'
   },
   
   initialize: function(params) {
@@ -32,7 +12,10 @@ var Entry = new JS.Class({
     this.description = params.description;
     this.time = params.time;
     this.amount = params.amount;
-    this.action = params.action;
+  },
+  
+  till: function() {
+    return this._find_parent('till');
   },
   
   valid: function() {

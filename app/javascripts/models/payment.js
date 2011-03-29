@@ -1,28 +1,8 @@
-//= require "transaction"
+//= require "../model"
 
-var Payment = new JS.Class({
+var Payment = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      payment = undefined;
-      $.ajax({
-        url: '/api/payments/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          payment = results.payment;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return payment;
-    }
+    resource: 'payment'
   },
   
   initialize: function(params) {
@@ -30,6 +10,10 @@ var Payment = new JS.Class({
     this.transaction_id = params.transaction_id;
     this.form = params.form;
     this.amount = params.amount;
+  },
+  
+  transaction: function() {
+    return this._find_parent('transaction');
   },
   
   valid: function() {

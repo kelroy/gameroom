@@ -12,8 +12,8 @@ class Api::PhonesController < ApplicationController
     end
     
     respond_to do |format|
-      format.json { render :json => @phones.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @phones.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @phones.to_json }
+      format.xml  { render :xml => @phones.to_xml }
     end
   end
   
@@ -23,8 +23,8 @@ class Api::PhonesController < ApplicationController
     @phone = Phone.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @phone.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @phone.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @phone.to_json }
+      format.xml  { render :xml => @phone.to_xml }
     end
   end
   
@@ -35,8 +35,8 @@ class Api::PhonesController < ApplicationController
 
     respond_to do |format|
       if @phone.save
-        format.json  { render :json => @phone.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @phone.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @phone.to_json, :status => :created }
+        format.xml  { render :xml => @phone.to_xml, :status => :created }
       else
         format.json  { render :json => @phone.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @phone.errors, :status => :unprocessable_entity }

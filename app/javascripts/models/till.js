@@ -1,41 +1,27 @@
+//= require "../model"
 //= require "entry"
 
-var Till = new JS.Class({
+var Till = new JS.Class(Model, {
   extend: {
-    find: function(id) {
-      till = undefined;
-      $.ajax({
-        url: '/api/tills/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          till = results.till;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-      return till;
-    }
+    resource: 'till'
   },
   
   initialize: function(params) {
     this.id = params.id;
     this.title = params.title;
-    this.entries = [];
-    for(entry in params.entries) {
-      this.entries.push(new Entry($.extend(params.entries[entry], {till: this})));
-    }
+    this.description = params.description;
+    this.minimum_transfer = params.minimum_transfer;
+    this.minimum_balance = params.minimum_balance;
+    this.retainable = params.retainable;
+    this.active = params.active;
   },
   
-  save: function() {
-    
+  transactions: function() {
+    return this._find_children('transaction');
+  },
+  
+  entries: function() {
+    return this._find_children('entry');
   },
   
   valid: function() {

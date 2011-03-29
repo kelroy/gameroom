@@ -12,8 +12,8 @@ class Api::PropertiesController < ApplicationController
     end
     
     respond_to do |format|
-      format.json { render :json => @properties.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @properties.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @properties.to_json }
+      format.xml  { render :xml => @properties.to_xml }
     end
   end
   
@@ -23,8 +23,8 @@ class Api::PropertiesController < ApplicationController
     @property = Property.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @property.to_json(:except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @property.to_xml(:except => [:created_at, :updated_at]) }
+      format.json { render :json => @property.to_json }
+      format.xml  { render :xml => @property.to_xml }
     end
   end
   
@@ -35,8 +35,8 @@ class Api::PropertiesController < ApplicationController
 
     respond_to do |format|
       if @property.save
-        format.json  { render :json => @property.to_json(:except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @property.to_xml(:except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @property.to_json, :status => :created }
+        format.xml  { render :xml => @property.to_xml, :status => :created }
       else
         format.html { render :action => "new" }
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }

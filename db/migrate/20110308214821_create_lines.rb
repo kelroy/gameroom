@@ -3,8 +3,14 @@ class CreateLines < ActiveRecord::Migration
     create_table :lines do |t|
       t.integer :transaction_id
       t.integer :item_id
-      t.integer :quantity,                      :null => false
-      t.integer :price,                         :null => false
+      t.string  :title,                         :null => false
+      t.integer :quantity,                      :null => false, :default => 0
+      t.decimal :condition,                     :null => false, :default => 1
+      t.decimal :discount,                      :null => false, :default => 1
+      t.integer :price,                         :null => false, :default => 0
+      t.integer :credit,                        :null => false, :default => 0
+      t.integer :cash,                          :null => false, :default => 0
+      t.boolean :purchase,                      :null => false, :default => true
       t.boolean :taxable,                       :null => false, :default => true
 
       t.timestamps

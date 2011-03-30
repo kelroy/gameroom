@@ -1,5 +1,4 @@
 class Line < ActiveRecord::Base
-  validates_presence_of   :quantity, :price
   
   belongs_to                    :transaction
   belongs_to                    :item
@@ -7,7 +6,16 @@ class Line < ActiveRecord::Base
   
   # Calculate subtotal in pennies
   def subtotal
-    self.quantity * self.price
+    if self.purchase?
+      (self.quantity * self.discount * self.condition * self.price).round.to_i
+    else
+      (self.quantity * self.discount * self.condition * self.credit * -1).round.to_i
+    end
+  end
+  
+  # Is line purchase?
+  def purchase?
+    self.purchase
   end
   
   # Is line taxable?

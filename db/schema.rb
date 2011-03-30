@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "customers", :force => true do |t|
+    t.integer  "person_id",                                :null => false
     t.integer  "credit",                 :default => 0,    :null => false
     t.string   "drivers_license_number"
     t.string   "drivers_license_state"
@@ -42,6 +43,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "employees", :force => true do |t|
+    t.integer  "person_id",                    :null => false
     t.string   "title"
     t.integer  "rate",       :default => 0,    :null => false
     t.boolean  "active",     :default => true, :null => false
@@ -53,20 +55,23 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
     t.integer  "till_id",                                        :null => false
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-27 07:04:05', :null => false
+    t.datetime "time",        :default => '2011-03-30 01:27:44', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "items", :force => true do |t|
-    t.string   "title",                          :null => false
+    t.string   "title",                           :null => false
     t.string   "description"
     t.string   "sku"
-    t.integer  "price",       :default => 0,     :null => false
-    t.boolean  "taxable",     :default => true,  :null => false
-    t.boolean  "locked",      :default => false, :null => false
-    t.boolean  "active",      :default => false, :null => false
+    t.integer  "price",        :default => 0,     :null => false
+    t.integer  "credit",       :default => 0,     :null => false
+    t.integer  "cash",         :default => 0,     :null => false
+    t.boolean  "taxable",      :default => true,  :null => false
+    t.boolean  "discountable", :default => true,  :null => false
+    t.boolean  "locked",       :default => false, :null => false
+    t.boolean  "active",       :default => false, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -74,8 +79,14 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   create_table "lines", :force => true do |t|
     t.integer  "transaction_id"
     t.integer  "item_id"
-    t.integer  "quantity",                         :null => false
-    t.integer  "price",                            :null => false
+    t.string   "title",                            :null => false
+    t.integer  "quantity",       :default => 0,    :null => false
+    t.decimal  "condition",      :default => 1.0,  :null => false
+    t.decimal  "discount",       :default => 1.0,  :null => false
+    t.integer  "price",          :default => 0,    :null => false
+    t.integer  "credit",         :default => 0,    :null => false
+    t.integer  "cash",           :default => 0,    :null => false
+    t.boolean  "purchase",       :default => true, :null => false
     t.boolean  "taxable",        :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -90,9 +101,6 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "people", :force => true do |t|
-    t.integer  "user_id"
-    t.integer  "customer_id"
-    t.integer  "employee_id"
     t.string   "first_name"
     t.string   "middle_name"
     t.string   "last_name"
@@ -135,7 +143,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "employee_id",                                    :null => false
-    t.datetime "begin",       :default => '2011-03-28 05:33:39', :null => false
+    t.datetime "begin",       :default => '2011-03-30 01:27:44', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -153,8 +161,10 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "users", :force => true do |t|
+    t.integer  "person_id",                             :null => false
     t.string   "login",                                 :null => false
     t.string   "email",                                 :null => false
+    t.string   "pin",                                   :null => false
     t.string   "password_hash",                         :null => false
     t.string   "password_salt",                         :null => false
     t.string   "persistence_token",                     :null => false
@@ -170,7 +180,6 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
     t.boolean  "active",             :default => true,  :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "pin"
   end
 
 end

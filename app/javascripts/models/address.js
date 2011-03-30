@@ -3,22 +3,8 @@
 
 var Address = new JS.Class(Model, {
   extend: {
-    resource: 'address'
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.first_line = params.first_line;
-    this.second_line = params.second_line;
-    this.city = params.city;
-    this.state = params.state;
-    this.country = params.country;
-    this.zip = params.zip;
-  },
-  
-  person: function() {
-    return this._find_parent('person');
+    resource: 'address',
+    belongs_to: ['person']
   },
   
   valid: function() {

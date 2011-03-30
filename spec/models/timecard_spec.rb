@@ -9,7 +9,8 @@ describe Timecard do
     it "should be valid" do
       valid_data = {
         :employee_id => 1,
-        :begin => Time.now
+        :begin => Time.now,
+        :end => Time.now
       }
       Timecard.new(valid_data).should be_valid
     end

@@ -13,18 +13,8 @@ class Api::PeopleController < ApplicationController
   
   # GET /people/1.xml
   # GET /people/1.json
-  # GET /[parent]/:parent_id/person/1.xml
-  # GET /[parent]/:parent_id/person/1.json
   def show
-    if params[:customer_id]
-      @person = Person.find_by_customer_id(params[:customer_id])
-    elsif params[:employee_id]
-      @person = Person.find_by_employee_id(params[:employee_id])
-    elsif params[:user_id]
-      @person = Person.find_by_user_id(params[:user_id])
-    else
-      @person = Person.find(params[:id])
-    end
+    @person = Person.find(params[:id])
     
     respond_to do |format|
       format.json { render :json => @person.to_json }

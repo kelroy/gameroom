@@ -2,8 +2,8 @@ class Api::EntriesController < ApplicationController
   
   # GET /entries.xml
   # GET /entries.json
-  # GET /till/:till_id/entries.xml
-  # GET /till/:till_id/entries.json
+  # GET /tills/:till_id/entries.xml
+  # GET /tills/:till_id/entries.json
   def index
     if params[:till_id]
       @entries = Entry.find_all_by_till_id(params[:till_id])

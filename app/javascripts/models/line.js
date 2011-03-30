@@ -2,93 +2,35 @@
 
 var Line = new JS.Class(Model, {
   extend: {
-    resource: 'line'
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.transaction_id = params.transaction_id;
-    this.item_id = params.item_id;
-    this.quantity = params.quantity;
-    this.price = params.price;
-    this.taxable = params.taxable;
-    this.discount = 0;
-    
-    /*this.sell = false;
-    this.setQuantity(params.quantity);
-    this.setCondition(params.condition);
-    if(params.sell) {
-      this.setSell();
-    } else {
-      this.setPurchase();
-    }*/
-  },
-  
-  item: function() {
-    return this._find_parent('item');
-  },
-  
-  transaction: function() {
-    return this._find_parent('transaction');
+    resource: 'line',
+    belongs_to: ['item', 'transaction']
   },
   
   subtotal: function() {
-    return this.quantity * this.price;
-  },
-  
-  valid: function() {
-    if(this.item != undefined) {
-      return this.quantity > 0 && this.price >= 0 && this.item.valid();
+    if(this.purchase) {
+      return Math.round(this.quantity * this.discount * this.condition * this.price);
     } else {
-      return false;
+      return Math.round(this.quantity * this.discount * this.condition * this.credit * -1);
     }
   },
   
+  valid: function() {
+    return this.quantity >= 0 && this.condition >= 0 && this.discount >= 0 && this.price >= 0 && this.cash >= 0 && this.credit >= 0;
+  },
+  
   creditSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.credit * this.discount * this.condition * -1));
     } else {
       return 0;
     }
   },
   
   cashSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.cash * this.discount * this.condition * -1));
     } else {
       return 0;
-    }
-  },
-  
-  setQuantity: function(quantity) {
-    this.quantity = quantity;
-  },
-  
-  setDiscount: function(discount) {
-    this.discount = discount;
-    this._calculatePrice();
-  },
-  
-  setCondition: function(condition) {
-    this.condition = condition;
-    this._calculatePrice();
-  },
-  
-  setPurchase: function() {
-    this.sell = false;
-    this._calculatePrice();
-  },
-  
-  setSell: function() {
-    this.sell = true;
-    this._calculatePrice();
-  },
-  
-  _calculatePrice: function() {
-    if(this.sell) {
-      this.price = parseInt(this.item.creditPrice() * this.condition * -1);
-    } else {
-      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
     }
   }
 });

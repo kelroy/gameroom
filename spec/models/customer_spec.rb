@@ -8,6 +8,7 @@ describe Customer do
   context "when given valid customer data" do
     it "should be valid" do
       valid_data = {
+        :person_id => 1,
         :credit => 0,
         :drivers_license_number => 'H1000000',
         :drivers_license_state => 'NE',

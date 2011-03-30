@@ -13,8 +13,14 @@ class Api::UsersController < ApplicationController
   
   # GET /users/1.json
   # GET /users/1.xml
+  # GET /people/:person_id/users.xml
+  # GET /people/:person_id/users.json
   def show
-    @user = User.find(params[:id])
+    if params[:person_id]
+      @user = User.find_by_person_id(params[:person_id])
+    else
+      @user = User.find(params[:id])
+    end
     
     respond_to do |format|
       format.json { render :json => @user.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }

@@ -1,5 +1,5 @@
 class Employee < ActiveRecord::Base
   
-  has_one     :person
+  belongs_to  :person
   has_many    :timecards
 end

@@ -13,8 +13,14 @@ class Api::CustomersController < ApplicationController
   
   # GET /customers/1.xml
   # GET /customers/1.json
+  # GET /people/:person_id/customer.xml
+  # GET /people/:person_id/customer.json
   def show
-    @customer = Customer.find(params[:id])
+    if params[:person_id]
+      @customer = Customer.find_by_person_id(params[:person_id])
+    else
+      @customer = Customer.find(params[:id])
+    end
     
     respond_to do |format|
       format.json { render :json => @customer.to_json }

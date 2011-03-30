@@ -1,6 +1,5 @@
 class Api::EmployeesController < ApplicationController
   
-  # GET /employees
   # GET /employees.json
   # GET /employees.xml
   def index
@@ -12,11 +11,16 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # GET /employees/1
   # GET /employees/1.json
   # GET /employees/1.xml
+  # GET /people/:person_id/employees.xml
+  # GET /people/:person_id/employees.json
   def show
-    @employee = Employee.find(params[:id])
+    if params[:person_id]
+      @employee = Employee.find_by_person_id(params[:person_id])
+    else
+      @employee = Employee.find(params[:id])
+    end
     
     respond_to do |format|
       format.json { render :json => @employee.to_json }
@@ -24,7 +28,6 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # POST /employees
   # POST /employees.json
   # POST /employees.xml
   def create
@@ -33,7 +36,6 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # PUT /employees/1
   # PUT /employees/1.json
   # PUT /employees/1.xml
   def update
@@ -42,7 +44,6 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # DELETE /employees/1
   # DELETE /employees/1.json
   # DELETE /employees/1.xml
   def destroy

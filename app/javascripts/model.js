@@ -1,6 +1,19 @@
 var Model = new JS.Class({
   extend: {
     resource: undefined,
+    belongs_to: [],
+    has_one: [],
+    has_many: [],
+    
+    build: function(params) {
+      return new window[this.resource.capitalize()](params);
+    },
+    
+    create: function(params) {
+      klass = new window[this.resource.capitalize()](params);
+      klass.save();
+      return klass;
+    },
     
     find: function(id) {
       resource = this.resource;
@@ -87,16 +100,31 @@ var Model = new JS.Class({
     }
   },
   
-  _find_child: function(child) {
+  initialize: function(params) {
+    for(param in params) {
+      this[param] = params[param];
+    }
+    for(association in this.klass.belongs_to) {
+      this[this.klass.belongs_to[association]] = new Function('return this._find_parent("' + this.klass.belongs_to[association] + '");');
+    }
+    for(association in this.klass.has_one) {
+      this[this.klass.has_one[association]] = new Function('return this._find_one("' + this.klass.has_one[association] + '");');
+    }
+    for(association in this.klass.has_many) {
+      this[this.klass.has_many[association]] = new Function('return this._find_many("' + this.klass.has_many[association] + '");');
+    }
+  },
+  
+  _find_one: function(association) {
     resource = this.klass.resource;
     klass = undefined;
     $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child,
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
       accept: 'application/json',
       dataType: 'json',
       async: false,
       success: function(results) {
-        klass = new window[child.capitalize()](results[child]);
+        klass = new window[association.capitalize()](results[association]);
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         console.error('Error Status: ' + XMLHttpRequest.status);
@@ -110,18 +138,18 @@ var Model = new JS.Class({
     return klass;
   },
   
-  _find_children: function(child) {
+  _find_many: function(association) {
     resource = this.klass.resource;
     resources = [];
     klass = undefined;
     $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child.pluralize(),
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
       accept: 'application/json',
       dataType: 'json',
       async: false,
       success: function(results) {
         for(result in results) {
-          resources.push(new window[child.capitalize()](results[result][child]));
+          resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
         }
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -146,6 +174,8 @@ var Model = new JS.Class({
   
   save: function() {
     if(this.valid()) {
+      resource = this.klass.resource;
+      
       if(this.id == undefined || this.id == 0) {
         url = '/api/' + resource.pluralize();
         type = 'POST';
@@ -154,7 +184,6 @@ var Model = new JS.Class({
         type = 'PUT';
       }
       
-      resource = this.klass.resource;
       data = new Object();
       data[resource] = this;
       

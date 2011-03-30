@@ -10,8 +10,14 @@ describe Line do
       valid_data = {
         :transaction_id => 1,
         :item_id => 1,
+        :title => "Title",
         :quantity => 0,
+        :condition => 1,
+        :discount => 1,
         :price => 0,
+        :credit => 0,
+        :cash => 0,
+        :purchase => true,
         :taxable => true
       }
       Line.new(valid_data).should be_valid

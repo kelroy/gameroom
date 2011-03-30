@@ -3,18 +3,8 @@
 
 var Phone = new JS.Class(Model, {
   extend: {
-    resource: 'phone'
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.title = params.title;
-    this.number = params.number;
-  },
-  
-  person: function() {
-    return this._find_parent('person');
+    resource: 'phone',
+    belongs_to: ['person']
   },
   
   valid: function() {

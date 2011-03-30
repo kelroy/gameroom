@@ -2,6 +2,19 @@
 var Model = new JS.Class({
   extend: {
     resource: undefined,
+    belongs_to: [],
+    has_one: [],
+    has_many: [],
+
+    build: function(params) {
+      return new window[this.resource.capitalize()](params);
+    },
+
+    create: function(params) {
+      klass = new window[this.resource.capitalize()](params);
+      klass.save();
+      return klass;
+    },
 
     find: function(id) {
       resource = this.resource;
@@ -88,16 +101,31 @@ var Model = new JS.Class({
     }
   },
 
-  _find_child: function(child) {
+  initialize: function(params) {
+    for(param in params) {
+      this[param] = params[param];
+    }
+    for(association in this.klass.belongs_to) {
+      this[this.klass.belongs_to[association]] = new Function('return this._find_parent("' + this.klass.belongs_to[association] + '");');
+    }
+    for(association in this.klass.has_one) {
+      this[this.klass.has_one[association]] = new Function('return this._find_one("' + this.klass.has_one[association] + '");');
+    }
+    for(association in this.klass.has_many) {
+      this[this.klass.has_many[association]] = new Function('return this._find_many("' + this.klass.has_many[association] + '");');
+    }
+  },
+
+  _find_one: function(association) {
     resource = this.klass.resource;
     klass = undefined;
     $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child,
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
       accept: 'application/json',
       dataType: 'json',
       async: false,
       success: function(results) {
-        klass = new window[child.capitalize()](results[child]);
+        klass = new window[association.capitalize()](results[association]);
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         console.error('Error Status: ' + XMLHttpRequest.status);
@@ -111,18 +139,18 @@ var Model = new JS.Class({
     return klass;
   },
 
-  _find_children: function(child) {
+  _find_many: function(association) {
     resource = this.klass.resource;
     resources = [];
     klass = undefined;
     $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + child.pluralize(),
+      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
       accept: 'application/json',
       dataType: 'json',
       async: false,
       success: function(results) {
         for(result in results) {
-          resources.push(new window[child.capitalize()](results[result][child]));
+          resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
         }
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -147,6 +175,8 @@ var Model = new JS.Class({
 
   save: function() {
     if(this.valid()) {
+      resource = this.klass.resource;
+
       if(this.id == undefined || this.id == 0) {
         url = '/api/' + resource.pluralize();
         type = 'POST';
@@ -155,7 +185,6 @@ var Model = new JS.Class({
         type = 'PUT';
       }
 
-      resource = this.klass.resource;
       data = new Object();
       data[resource] = this;
 
@@ -197,26 +226,8 @@ var Model = new JS.Class({
 
 var User = new JS.Class(Model, {
   extend: {
-    resource: 'user'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.login = params.login;
-    this.pin = params.pin;
-    this.email = params.email;
-    this.administrator = params.administrator;
-    this.login_count = params.login_count;
-    this.failed_login_count = params.failed_login_count;
-    this.last_login_at = params.last_login_at;
-    this.last_request_at = params.last_request_at;
-    this.last_login_ip = params.last_login_ip;
-    this.current_login_ip = params.current_login_ip;
-    this.active = params.active;
-  },
-
-  person: function() {
-    return this._find_child('person');
+    resource: 'user',
+    belongs_to: ['person']
   },
 
   valid: function() {
@@ -226,24 +237,9 @@ var User = new JS.Class(Model, {
 
 var Customer = new JS.Class(Model, {
   extend: {
-    resource: 'customer'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.credit = params.credit;
-    this.drivers_license_number = params.drivers_license_number;
-    this.drivers_license_state = params.drivers_license_state;
-    this.notes = params.notes;
-    this.active = params.active;
-  },
-
-  person: function() {
-    return this._find_child('person');
-  },
-
-  transactions: function() {
-    return this._find_children('transaction');
+    resource: 'customer',
+    belongs_to: ['person'],
+    has_many: ['transactions']
   },
 
   valid: function() {
@@ -256,22 +252,9 @@ var Customer = new JS.Class(Model, {
 
 var Employee = new JS.Class(Model, {
   extend: {
-    resource: 'employee'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.rate = params.rate;
-    this.active = params.active;
-  },
-
-  person: function() {
-    return this._find_child('person');
-  },
-
-  timecards: function() {
-    return this._find_children('timecard');
+    resource: 'employee',
+    belongs_to: ['person'],
+    has_many: ['timecards']
   },
 
   valid: function() {
@@ -281,18 +264,8 @@ var Employee = new JS.Class(Model, {
 
 var Phone = new JS.Class(Model, {
   extend: {
-    resource: 'phone'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.title = params.title;
-    this.number = params.number;
-  },
-
-  person: function() {
-    return this._find_parent('person');
+    resource: 'phone',
+    belongs_to: ['person']
   },
 
   valid: function() {
@@ -305,21 +278,15 @@ var Phone = new JS.Class(Model, {
 
 var Email = new JS.Class(Model, {
   extend: {
-    resource: 'email'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.address = params.address;
-  },
-
-  person: function() {
-    return this._find_parent('person');
+    resource: 'email',
+    belongs_to: ['person']
   },
 
   valid: function() {
     if(this.address == '' || this.address == undefined || this.address == null) {
+      return false;
+    }
+    if(this.person_id == '' || this.person_id == undefined || this.person_id == null) {
       return false;
     }
     return true;
@@ -328,42 +295,9 @@ var Email = new JS.Class(Model, {
 
 var Person = new JS.Class(Model, {
   extend: {
-    resource: 'person'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.user_id = params.user_id;
-    this.customer_id = params.customer_id;
-    this.employee_id = params.employee_id;
-    this.first_name = params.first_name;
-    this.middle_name = params.middle_name;
-    this.last_name = params.last_name;
-    this.date_of_birth = params.date_of_birth;
-  },
-
-  addresses: function() {
-    return this._find_children('address');
-  },
-
-  customer: function() {
-    return this._find_parent('customer');
-  },
-
-  emails: function() {
-    return this._find_children('email');
-  },
-
-  employee: function() {
-    return this._find_parent('employee');
-  },
-
-  phones: function() {
-    return this._find_children('phone');
-  },
-
-  user: function() {
-    return this._find_parent('user');
+    resource: 'person',
+    has_one: ['customer', 'employee', 'user'],
+    has_many: ['addresses', 'emails', 'phones']
   },
 
   valid: function() {
@@ -379,22 +313,8 @@ var Person = new JS.Class(Model, {
 
 var Address = new JS.Class(Model, {
   extend: {
-    resource: 'address'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.first_line = params.first_line;
-    this.second_line = params.second_line;
-    this.city = params.city;
-    this.state = params.state;
-    this.country = params.country;
-    this.zip = params.zip;
-  },
-
-  person: function() {
-    return this._find_parent('person');
+    resource: 'address',
+    belongs_to: ['person']
   },
 
   valid: function() {
@@ -416,20 +336,8 @@ var Address = new JS.Class(Model, {
 
 var Entry = new JS.Class(Model, {
   extend: {
-    resource: 'entry'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.till_id = params.till_id;
-    this.title = params.title;
-    this.description = params.description;
-    this.time = params.time;
-    this.amount = params.amount;
-  },
-
-  till: function() {
-    return this._find_parent('till');
+    resource: 'entry',
+    belongs_to: ['till']
   },
 
   valid: function() {
@@ -439,18 +347,8 @@ var Entry = new JS.Class(Model, {
 
 var Property = new JS.Class(Model, {
   extend: {
-    resource: 'property'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.item_id = params.item_id;
-    this.key = params.key;
-    this.value = params.value;
-  },
-
-  item: function() {
-    return this._find_parent('item');
+    resource: 'property',
+    belongs_to: ['item']
   },
 
   valid: function() {
@@ -460,171 +358,54 @@ var Property = new JS.Class(Model, {
 
 var Line = new JS.Class(Model, {
   extend: {
-    resource: 'line'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.transaction_id = params.transaction_id;
-    this.item_id = params.item_id;
-    this.quantity = params.quantity;
-    this.price = params.price;
-    this.taxable = params.taxable;
-    this.discount = 0;
-
-    /*this.sell = false;
-    this.setQuantity(params.quantity);
-    this.setCondition(params.condition);
-    if(params.sell) {
-      this.setSell();
-    } else {
-      this.setPurchase();
-    }*/
-  },
-
-  item: function() {
-    return this._find_parent('item');
-  },
-
-  transaction: function() {
-    return this._find_parent('transaction');
+    resource: 'line',
+    belongs_to: ['item', 'transaction']
   },
 
   subtotal: function() {
-    return this.quantity * this.price;
-  },
-
-  valid: function() {
-    if(this.item != undefined) {
-      return this.quantity > 0 && this.price >= 0 && this.item.valid();
+    if(this.purchase) {
+      return Math.round(this.quantity * this.discount * this.condition * this.price);
     } else {
-      return false;
+      return Math.round(this.quantity * this.discount * this.condition * this.credit * -1);
     }
   },
 
+  valid: function() {
+    return this.quantity >= 0 && this.condition >= 0 && this.discount >= 0 && this.price >= 0 && this.cash >= 0 && this.credit >= 0;
+  },
+
   creditSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.credit * this.discount * this.condition * -1));
     } else {
       return 0;
     }
   },
 
   cashSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.cash * this.discount * this.condition * -1));
     } else {
       return 0;
-    }
-  },
-
-  setQuantity: function(quantity) {
-    this.quantity = quantity;
-  },
-
-  setDiscount: function(discount) {
-    this.discount = discount;
-    this._calculatePrice();
-  },
-
-  setCondition: function(condition) {
-    this.condition = condition;
-    this._calculatePrice();
-  },
-
-  setPurchase: function() {
-    this.sell = false;
-    this._calculatePrice();
-  },
-
-  setSell: function() {
-    this.sell = true;
-    this._calculatePrice();
-  },
-
-  _calculatePrice: function() {
-    if(this.sell) {
-      this.price = parseInt(this.item.creditPrice() * this.condition * -1);
-    } else {
-      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
     }
   }
 });
 
 var Item = new JS.Class(Model, {
   extend: {
-    resource: 'item'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.description = params.description;
-    this.sku = params.sku;
-    this.price = params.price;
-    this.taxable = params.taxable;
-    this.discountable = params.discountable;
-    this.locked = params.locked;
-    this.active = params.active;
-  },
-
-  properties: function() {
-    return this._find_children('property');
-  },
-
-  basePrice: function() {
-    return this.price;
-  },
-
-  creditPrice: function() {
-    credit_price = 0;
-    properties = this.properties();
-    for(property in properties) {
-      switch(properties[property].key) {
-        case 'credit_price':
-          credit_price = parseInt(properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return credit_price;
-  },
-
-  cashPrice: function() {
-    cash_price = 0;
-    properties = this.properties();
-    for(property in properties) {
-      switch(properties[property].key) {
-        case 'cash_price':
-          cash_price = parseInt(properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return cash_price;
+    resource: 'item',
+    has_many: ['properties']
   },
 
   valid: function() {
-    return this.title != '' && this.price >= 0;
+    return this.title != '' && this.price >= 0 && this.credit >= 0 && this.cash >= 0;
   }
 });
 
 var Payment = new JS.Class(Model, {
   extend: {
-    resource: 'payment'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.transaction_id = params.transaction_id;
-    this.form = params.form;
-    this.amount = params.amount;
-  },
-
-  transaction: function() {
-    return this._find_parent('transaction');
+    resource: 'payment',
+    belongs_to: ['transaction']
   },
 
   valid: function() {
@@ -634,25 +415,8 @@ var Payment = new JS.Class(Model, {
 
 var Till = new JS.Class(Model, {
   extend: {
-    resource: 'till'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.description = params.description;
-    this.minimum_transfer = params.minimum_transfer;
-    this.minimum_balance = params.minimum_balance;
-    this.retainable = params.retainable;
-    this.active = params.active;
-  },
-
-  transactions: function() {
-    return this._find_children('transaction');
-  },
-
-  entries: function() {
-    return this._find_children('entry');
+    resource: 'till',
+    has_many: ['entries', 'transactions']
   },
 
   valid: function() {
@@ -662,18 +426,8 @@ var Till = new JS.Class(Model, {
 
 var Timecard = new JS.Class(Model, {
   extend: {
-    resource: 'timecard'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.employee_id = params.employee_id;
-    this.begin = params.begin;
-    this.end = params.end;
-  },
-
-  employee: function() {
-    return this._find_parent('employee');
+    resource: 'timecard',
+    belongs_to: ['employee']
   },
 
   valid: function() {
@@ -683,43 +437,16 @@ var Timecard = new JS.Class(Model, {
 
 var Transaction = new JS.Class(Model, {
   extend: {
-    resource: 'transaction'
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.customer_id = params.customer_id;
-    this.till_id = params.till_id;
-    this.user_id = params.user_id;
-    this.tax_rate = params.tax_rate;
-    this.complete = params.complete;
-    this.locked = params.locked;
-  },
-
-  customer: function() {
-    return this._find_parent('customer');
-  },
-
-  lines: function() {
-    return this._find_children('line');
-  },
-
-  payments: function() {
-    return this._find_children('payments');
-  },
-
-  till: function() {
-    return this._find_parent('till');
-  },
-
-  user: function() {
-    return this._find_parent('user');
+    resource: 'transaction',
+    belongs_to: ['customer', 'till', 'user'],
+    has_many: ['lines', 'payments']
   },
 
   subtotal: function() {
+    lines = this.lines();
     subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].subtotal();
+    for(line in lines) {
+      subtotal += lines[line].subtotal();
     }
     return parseInt(subtotal);
   },
@@ -729,12 +456,13 @@ var Transaction = new JS.Class(Model, {
   },
 
   tax: function() {
+    lines = this.lines();
     if(this.subtotal() > 0) {
       purchase_subtotal = this.purchaseSubtotal();
       taxable_subtotal = 0;
-      for(line in this.lines) {
-        if(this.lines[line].taxable) {
-          taxable_subtotal += this.lines[line].subtotal();
+      for(line in lines) {
+        if(lines[line].taxable) {
+          taxable_subtotal += lines[line].subtotal();
         }
       }
       if(taxable_subtotal < purchase_subtotal) {
@@ -748,16 +476,22 @@ var Transaction = new JS.Class(Model, {
   },
 
   ratio: function() {
-    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+    ratio = 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+    if(isNaN(ratio)) {
+      return 0;
+    } else {
+      return ratio;
+    }
   },
 
   purchaseSubtotal: function() {
+    payments = this.payments();
     subtotal = this.subtotal();
     if(subtotal >= 0) {
       store_credit_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'store_credit') {
-          store_credit_payment += parseInt(this.payments[payment].amount);
+      for(payment in payments) {
+        if(payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(payments[payment].amount);
         }
       }
       return subtotal - store_credit_payment;
@@ -767,19 +501,21 @@ var Transaction = new JS.Class(Model, {
   },
 
   amountDue: function() {
+    payments = this.payments();
+
     if(this.subtotal() >= 0) {
       payment_total = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form != 'store_credit') {
-          payment_total += parseInt(this.payments[payment].amount);
+      for(payment in payments) {
+        if(payments[payment].form != 'store_credit') {
+          payment_total += parseInt(payments[payment].amount);
         }
       }
       return this.total() - payment_total;
     } else {
       cash_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'cash') {
-          cash_payment += this.payments[payment].amount;
+      for(payment in payments) {
+        if(payments[payment].form == 'cash') {
+          cash_payment += payments[payment].amount;
         }
       }
       return cash_payment;
@@ -787,25 +523,28 @@ var Transaction = new JS.Class(Model, {
   },
 
   countItems: function() {
+    lines = this.lines();
     count = 0;
-    for(line in this.lines) {
-      count += this.lines[line].quantity;
+    for(line in lines) {
+      count += lines[line].quantity;
     }
     return count;
   },
 
   creditSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].creditSubtotal();
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].creditSubtotal();
     }
     return Math.abs(subtotal);
   },
 
   cashSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].cashSubtotal();
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].cashSubtotal();
     }
     return Math.abs(subtotal);
   },
@@ -813,13 +552,14 @@ var Transaction = new JS.Class(Model, {
   setLines: function(lines) {
     this.lines = lines;
 
+    payments = this.payments();
     subtotal = this.subtotal();
-    for(payment in this.payments) {
-      if(subtotal < 0 && this.payments[payment].amount > 0) {
-        this.payments[payment].amount = 0;
+    for(payment in payments) {
+      if(subtotal < 0 && payments[payment].amount > 0) {
+        payments[payment].amount = 0;
       }
-      if(subtotal >= 0 && this.payments[payment].amount < 0) {
-        this.payments[payment].amount = 0;
+      if(subtotal >= 0 && payments[payment].amount < 0) {
+        payments[payment].amount = 0;
       }
     }
     if(subtotal < 0) {
@@ -858,9 +598,11 @@ var Transaction = new JS.Class(Model, {
   },
 
   updatePayment: function(updated_payment) {
-    for(payment in this.payments) {
-      if(this.payments[payment].form == updated_payment.form) {
-        this.payments[payment] = updated_payment;
+    payments = this.payments();
+
+    for(payment in payments) {
+      if(payments[payment].form == updated_payment.form) {
+        payments[payment] = updated_payment;
       }
     }
   },

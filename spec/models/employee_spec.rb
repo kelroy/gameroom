@@ -8,7 +8,10 @@ describe Employee do
   context "when given valid employee data" do
     it "should be valid" do
       valid_data = {
-        :rate => 0
+        :person_id => 1,
+        :title => "Title",
+        :rate => 0,
+        :active => true
       }
       Employee.new(valid_data).should be_valid
     end

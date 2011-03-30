@@ -2,22 +2,9 @@
 
 var Employee = new JS.Class(Model, {
   extend: {
-    resource: 'employee'
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.rate = params.rate;
-    this.active = params.active;
-  },
-  
-  person: function() {
-    return this._find_child('person');
-  },
-  
-  timecards: function() {
-    return this._find_children('timecard');
+    resource: 'employee',
+    belongs_to: ['person'],
+    has_many: ['timecards']
   },
   
   valid: function() {

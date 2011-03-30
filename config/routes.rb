@@ -10,30 +10,29 @@ Gameroom::Application.routes.draw do
       collection do
         match 'search' => 'customers#search', :via => [:get, :post]
       end
-      resource :person, :only => [:show]
       resources :transactions, :only => [:index]
     end
     resources :emails
     resources :employees do
-      resource :person, :only => [:show]
       resources :timecards, :only => [:index]
     end
-    resources :entries do
-      resource :till, :only => [:show]
-    end
+    resources :entries
     resources :items do
       collection do
         match 'search' => 'items#search', :via => [:get, :post]
       end
-      resources :lines, :only => [:index]
-      resources :properties, :only => [:index]
+      resources :lines,       :only => [:index]
+      resources :properties,  :only => [:index]
     end
     resources :lines
     resources :payments
     resources :people do
+      resource  :customer,  :only => [:show]
+      resource  :employee,  :only => [:show]
+      resource  :user,      :only => [:show]
       resources :addresses, :only => [:index]
-      resources :emails, :only => [:index]
-      resources :phones, :only => [:index]
+      resources :emails,    :only => [:index]
+      resources :phones,    :only => [:index]
     end
     resources :phones
     resources :properties
@@ -42,16 +41,14 @@ Gameroom::Application.routes.draw do
       member do
         match 'receipt' => 'transactions#receipt', :via => [:get]
       end
-      resources :payments, :only => [:index]
-      resources :lines, :only => [:index]
+      resources :payments,  :only => [:index]
+      resources :lines,     :only => [:index]
     end
     resources :tills do
-      resources :entries, :only => [:index]
-      resources :transactions, :only => [:index]
+      resources :entries,       :only => [:index]
+      resources :transactions,  :only => [:index]
     end
-    resources :users do
-      resource :person, :only => [:show]
-    end
+    resources :users
   end
   
   namespace 'transactions' do

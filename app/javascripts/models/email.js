@@ -3,21 +3,15 @@
 
 var Email = new JS.Class(Model, {
   extend: {
-    resource: 'email'
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.person_id = params.person_id;
-    this.address = params.address;
-  },
-  
-  person: function() {
-    return this._find_parent('person');
+    resource: 'email',
+    belongs_to: ['person']
   },
   
   valid: function() {
     if(this.address == '' || this.address == undefined || this.address == null) {
+      return false;
+    }
+    if(this.person_id == '' || this.person_id == undefined || this.person_id == null) {
       return false;
     }
     return true;

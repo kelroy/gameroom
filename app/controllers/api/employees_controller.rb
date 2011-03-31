@@ -28,22 +28,38 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # POST /employees.json
   # POST /employees.xml
+  # POST /employees.json
   def create
+    @employee = Employee.create(params[:employee])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @employee.save
+        format.json  { render :json => @employee.to_json, :status => :created }
+        format.xml  { render :xml => @employee.to_xml, :status => :created }
+      else
+        format.json  { render :json => @employee.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @employee.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
-  # PUT /employees/1.json
+
   # PUT /employees/1.xml
+  # PUT /employees/1.json
   def update
+    @employee = Employee.find(params[:id])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @employee.update_attributes(params[:employee])
+        format.json  { render :json => @employee.to_json, :status => :ok }
+        format.xml  { render :xml => @employee.to_xml, :status => :ok }
+      else
+        format.json  { render :json => @employee.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @employee.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
+
   # DELETE /employees/1.json
   # DELETE /employees/1.xml
   def destroy

@@ -51,8 +51,8 @@ class Api::PhonesController < ApplicationController
 
     respond_to do |format|
       if @phone.update_attributes(params[:phone])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @phone.to_json, :status => :ok }
+        format.xml  { render :xml => @phone.to_xml, :status => :ok }
       else
         format.json  { render :json => @phone.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @phone.errors, :status => :unprocessable_entity }

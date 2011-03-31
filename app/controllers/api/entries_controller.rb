@@ -51,8 +51,8 @@ class Api::EntriesController < ApplicationController
 
     respond_to do |format|
       if @entry.update_attributes(params[:entry])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @entry.to_json, :status => :ok }
+        format.xml  { render :xml => @entry.to_xml, :status => :ok }
       else
         format.json  { render :json => @entry.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @entry.errors, :status => :unprocessable_entity }

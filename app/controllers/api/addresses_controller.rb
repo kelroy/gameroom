@@ -51,8 +51,8 @@ class Api::AddressesController < ApplicationController
 
     respond_to do |format|
       if @address.update_attributes(params[:address])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @address.to_json, :status => :ok }
+        format.xml  { render :xml => @address.to_xml, :status => :ok }
       else
         format.json  { render :json => @address.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @address.errors, :status => :unprocessable_entity }

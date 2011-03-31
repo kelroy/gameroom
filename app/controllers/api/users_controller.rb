@@ -31,19 +31,35 @@ class Api::UsersController < ApplicationController
   # POST /users.xml
   # POST /users.json
   def create
+    @user = User.create(params[:user])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @user.save
+        format.json  { render :json => @user.to_json, :status => :created }
+        format.xml  { render :xml => @user.to_xml, :status => :created }
+      else
+        format.json  { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+      end
     end
   end
 
   # PUT /users/1.xml
   # PUT /users/1.json
   def update
+    @user = User.find(params[:id])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @user.update_attributes(params[:user])
+        format.json  { render :json => @user.to_json, :status => :ok }
+        format.xml  { render :xml => @user.to_xml, :status => :ok }
+      else
+        format.json  { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
+
   # DELETE /users/1.json
   # DELETE /users/1.xml
   def destroy

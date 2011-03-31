@@ -51,8 +51,8 @@ class Api::PaymentsController < ApplicationController
 
     respond_to do |format|
       if @payment.update_attributes(params[:payment])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @payment.to_json, :status => :ok }
+        format.xml  { render :xml => @payment.to_xml, :status => :ok }
       else
         format.json  { render :json => @payment.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @payment.errors, :status => :unprocessable_entity }

@@ -63,7 +63,7 @@ class Api::CustomersController < ApplicationController
     respond_to do |format|
       if @customer.update_attributes(params[:customer])
         format.json  { render :json => @customer.to_json, :status => :ok }
-        format.xml  { head :ok }
+        format.xml  { render :xml => @customer.to_xml, :status => :ok }
       else
         format.json  { render :json => @customer.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }

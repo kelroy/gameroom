@@ -52,8 +52,8 @@ class Api::PropertiesController < ApplicationController
 
     respond_to do |format|
       if @property.update_attributes(params[:property])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @property.to_json, :status => :ok }
+        format.xml  { render :xml => @property.to_xml, :status => :ok }
       else
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @property.errors, :status => :unprocessable_entity }

@@ -51,8 +51,8 @@ class Api::TimecardsController < ApplicationController
 
     respond_to do |format|
       if @timecard.update_attributes(params[:timecard])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @timecard.to_json, :status => :ok }
+        format.xml  { render :xml => @timecard.to_xml, :status => :ok }
       else
         format.json  { render :json => @timecard.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @timecard.errors, :status => :unprocessable_entity }

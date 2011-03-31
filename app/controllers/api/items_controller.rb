@@ -56,8 +56,8 @@ class Api::ItemsController < ApplicationController
 
     respond_to do |format|
       if @item.update_attributes(params[:item])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @item.to_json, :status => :ok }
+        format.xml  { render :xml => @item.to_xml, :status => :ok }
       else
         format.json  { render :json => @item.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @item.errors, :status => :unprocessable_entity }

@@ -45,8 +45,8 @@ class Api::PeopleController < ApplicationController
 
     respond_to do |format|
       if @person.update_attributes(params[:person])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @person.to_json, :status => :ok }
+        format.xml  { render :xml => @person.to_xml, :status => :ok }
       else
         format.json  { render :json => @person.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @person.errors, :status => :unprocessable_entity }

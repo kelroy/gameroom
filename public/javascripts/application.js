@@ -6,6 +6,10 @@ var Model = new JS.Class({
     has_one: [],
     has_many: [],
 
+    _new: function(attributes) {
+      return this.build(attributes);
+    },
+
     build: function(attributes) {
       return new window[this.resource.capitalize()](attributes);
     },
@@ -19,22 +23,9 @@ var Model = new JS.Class({
     find: function(id) {
       resource = this.resource;
       klass = undefined;
-      $.ajax({
-        url: '/api/' + resource.pluralize() + '/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          klass = new window[resource.capitalize()](results[resource]);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
+      url = '/api/' + resource.pluralize() + '/' + id;
+      this._ajax(url, 'GET', null, function(result) {
+        klass = new window[resource.capitalize()](result[resource]);
       });
       return klass;
     },
@@ -42,24 +33,11 @@ var Model = new JS.Class({
     all: function() {
       resource = this.resource;
       resources = [];
-      $.ajax({
-        url: '/api/' + resource.pluralize(),
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          for(result in results) {
-            resources.push(new window[resource.capitalize()](results[result][resource]));
-          }
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
+      url = '/api/' + resource.pluralize();
+      this._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
       });
       return resources;
     },
@@ -69,24 +47,33 @@ var Model = new JS.Class({
       resources = [];
       search = new Object();
       search[pattern] = query.split(" ");
+      url = '/api/'+ resource.pluralize() + '/search';
+      data = {
+        search: search,
+        page: page,
+        per_page: per_page
+      };
+      this._ajax(url, 'POST', data, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
 
+    _ajax: function(url, type, data, callback) {
+      data = JSON.stringify(data);
       $.ajax({
-        url: '/api/'+ resource.pluralize() + '/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: per_page
-        }),
-        dataType: 'json',
+        url: url,
+        data: data,
+        type: type,
         accept: 'application/json',
         contentType: 'application/json',
+        dataType: 'json',
         processData: false,
-        type: 'POST',
         async: false,
-        success: function(results) {
-          for(result in results) {
-            resources.push(new window[resource.capitalize()](results[result][resource]));
-          }
+        success: function(result) {
+          callback(result);
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -97,7 +84,6 @@ var Model = new JS.Class({
         username: 'x',
         password: 'x'
       });
-      return resources;
     }
   },
 
@@ -123,6 +109,41 @@ var Model = new JS.Class({
       this['_' + this.klass.has_many[association]] = [];
       this[this.klass.has_many[association]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[association] + '", force_reload);');
     }
+  },
+
+  save: function() {
+    if(this.valid()) {
+      klass = this;
+      resource = this.klass.resource;
+
+      if(this.id == undefined || this.id == 0) {
+        url = '/api/' + resource.pluralize();
+        type = 'POST';
+      } else {
+        url = '/api/' + resource.pluralize() + '/' + this.id;
+        type = 'PUT';
+      }
+
+      data = {};
+      data[resource] = {};
+      for(column in this.klass.columns) {
+        data[resource][this.klass.columns[column]] = this[this.klass.columns[column]];
+      }
+
+      saved = false;
+      this.klass._ajax(url, type, data, function(result) {
+        klass.id = result[resource].id;
+        saved = true;
+      });
+
+      return saved;
+    } else {
+      return false;
+    }
+  },
+
+  valid: function() {
+    return true;
   },
 
   _set_association: function(associate, object) {
@@ -164,22 +185,9 @@ var Model = new JS.Class({
     if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
       resource = this.klass.resource;
       klass = undefined;
-      $.ajax({
-        url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
-        accept: 'application/json',
-        dataType: 'json',
-        async: false,
-        success: function(results) {
-          klass = new window[associate.capitalize()](results[associate]);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
+      this.klass._ajax(url, 'GET', null, function(result) {
+        klass = new window[associate.capitalize()](result[associate]);
       });
       return klass;
     } else {
@@ -194,80 +202,13 @@ var Model = new JS.Class({
     resource = this.klass.resource;
     resources = [];
     klass = undefined;
-    $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
-      accept: 'application/json',
-      dataType: 'json',
-      async: false,
-      success: function(results) {
-        for(result in results) {
-          resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
-        }
-      },
-      error: function(XMLHttpRequest, textStatus, errorThrown) {
-        console.error('Error Status: ' + XMLHttpRequest.status);
-        console.error('Error Text: ' + textStatus);
-        console.error('Error Thrown: ' + errorThrown);
-        console.log(XMLHttpRequest);
-      },
-      username: 'x',
-      password: 'x'
+    url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
+    this.klass._ajax(url, 'GET', null, function(results) {
+      for(result in results) {
+        resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
+      }
     });
     return resources;
-  },
-
-  save: function() {
-    if(this.valid()) {
-      klass = this;
-      resource = this.klass.resource;
-
-      if(this.id == undefined || this.id == 0) {
-        url = '/api/' + resource.pluralize();
-        type = 'POST';
-      } else {
-        url = '/api/' + resource.pluralize() + '/' + this.id;
-        type = 'PUT';
-      }
-
-      data = {};
-      data[resource] = {};
-      for(column in this.klass.columns) {
-        data[resource][this.klass.columns[column]] = this[this.klass.columns[column]];
-      }
-
-      $.ajax({
-        url: url,
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify(data),
-        dataType: 'json',
-        processData: false,
-        type: type,
-        async: false,
-        success: function(result) {
-          klass.id = result[resource].id;
-          saved = true;
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-          saved = false;
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return saved;
-    } else {
-      return false;
-    }
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -323,14 +264,12 @@ var Phone = new JS.Class(Model, {
 var Email = new JS.Class(Model, {
   extend: {
     resource: 'email',
+    columns: ['id', 'person_id', 'address'],
     belongs_to: ['person']
   },
 
   valid: function() {
     if(this.address == '' || this.address == undefined || this.address == null) {
-      return false;
-    }
-    if(this.person_id == '' || this.person_id == undefined || this.person_id == null) {
       return false;
     }
     return true;

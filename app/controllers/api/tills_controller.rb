@@ -45,8 +45,8 @@ class Api::TillsController < ApplicationController
 
     respond_to do |format|
       if @till.update_attributes(params[:till])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @till.to_json, :status => :ok }
+        format.xml  { render :xml => @till.to_xml, :status => :ok }
       else
         format.json  { render :json => @till.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @till.errors, :status => :unprocessable_entity }

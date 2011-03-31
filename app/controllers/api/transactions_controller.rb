@@ -64,8 +64,8 @@ class Api::TransactionsController < ApplicationController
 
     respond_to do |format|
       if @transaction.update_attributes(params[:transaction])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @transaction.to_json, :status => :ok }
+        format.xml  { render :xml => @transaction.to_xml, :status => :ok }
       else
         format.json  { render :json => @transaction.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @transaction.errors, :status => :unprocessable_entity }

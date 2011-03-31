@@ -49,16 +49,22 @@ class Api::LinesController < ApplicationController
     end
   end
   
-  # PUT /lines/1
-  # PUT /lines/1.json
   # PUT /lines/1.xml
+  # PUT /lines/1.json
   def update
+    @line = Line.find(params[:id])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @line.update_attributes(params[:line])
+        format.json  { render :json => @line.to_json, :status => :ok }
+        format.xml  { render :xml => @line.to_xml, :status => :ok }
+      else
+        format.json  { render :json => @line.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @line.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
-  # DELETE /lines/1
+
   # DELETE /lines/1.json
   # DELETE /lines/1.xml
   def destroy

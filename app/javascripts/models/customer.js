@@ -9,9 +9,6 @@ var Customer = new JS.Class(Model, {
   },
   
   valid: function() {
-    if(this.credit == undefined || this.credit == null) {
-      return false;
-    }
     return true;
   }
 });

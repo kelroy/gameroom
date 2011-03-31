@@ -6,12 +6,12 @@ var Model = new JS.Class({
     has_one: [],
     has_many: [],
 
-    build: function(params) {
-      return new window[this.resource.capitalize()](params);
+    build: function(attributes) {
+      return new window[this.resource.capitalize()](attributes);
     },
 
-    create: function(params) {
-      klass = new window[this.resource.capitalize()](params);
+    create: function(attributes) {
+      klass = new window[this.resource.capitalize()](attributes);
       klass.save();
       return klass;
     },
@@ -101,45 +101,96 @@ var Model = new JS.Class({
     }
   },
 
-  initialize: function(params) {
-    for(param in params) {
-      this[param] = params[param];
+  initialize: function(attributes) {
+    for(attribute in attributes) {
+      this[attribute] = attributes[attribute];
     }
     for(association in this.klass.belongs_to) {
-      this[this.klass.belongs_to[association]] = new Function('return this._find_parent("' + this.klass.belongs_to[association] + '");');
+      this['_' + this.klass.belongs_to[association]] = undefined;
+      this['set' + this.klass.belongs_to[association].capitalize()] = new Function(this.klass.belongs_to[association], 'return this._set_association("' + this.klass.belongs_to[association] + '", ' + this.klass.belongs_to[association] + ');');
+      this['build' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this['create' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this[this.klass.belongs_to[association]] = new Function('force_reload', 'return this._find_belongs_to("' + this.klass.belongs_to[association] + '", force_reload);');
     }
     for(association in this.klass.has_one) {
-      this[this.klass.has_one[association]] = new Function('return this._find_one("' + this.klass.has_one[association] + '");');
+      this['_' + this.klass.has_one[association]] = undefined;
+      this['set' + this.klass.has_one[association].capitalize()] = new Function(this.klass.has_one[association], 'return this._set_association("' + this.klass.has_one[association] + '", ' + this.klass.has_one[association] + ');');
+      this['build' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.has_one[association] + '", attributes);');
+      this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
+      this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
     }
     for(association in this.klass.has_many) {
-      this[this.klass.has_many[association]] = new Function('return this._find_many("' + this.klass.has_many[association] + '");');
+      this['_' + this.klass.has_many[association]] = [];
+      this[this.klass.has_many[association]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[association] + '", force_reload);');
     }
   },
 
-  _find_one: function(association) {
-    resource = this.klass.resource;
-    klass = undefined;
-    $.ajax({
-      url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
-      accept: 'application/json',
-      dataType: 'json',
-      async: false,
-      success: function(results) {
-        klass = new window[association.capitalize()](results[association]);
-      },
-      error: function(XMLHttpRequest, textStatus, errorThrown) {
-        console.error('Error Status: ' + XMLHttpRequest.status);
-        console.error('Error Text: ' + textStatus);
-        console.error('Error Thrown: ' + errorThrown);
-        console.log(XMLHttpRequest);
-      },
-      username: 'x',
-      password: 'x'
-    });
-    return klass;
+  _set_association: function(associate, object) {
+    return this['_' + associate] = object;
   },
 
-  _find_many: function(association) {
+  _build_association: function(associate, attributes) {
+    return this._set_association(associate, new window[associate.capitalize()](attributes));
+  },
+
+  _create_association: function(associate, attributes) {
+    association = this._build_association(associate, attributes);
+    association.save();
+    this._set_association(associate, association);
+    for(belongs in this.klass.belongs_to) {
+      if(this.klass.belongs_to[belongs] == associate) {
+        this[associate + '_id'] = association.id;
+      }
+    }
+    return association;
+  },
+
+  _find_belongs_to: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
+      if(this[associate + '_id'] != null && this[associate + '_id'] != undefined) {
+        this['_' + associate] = window[associate.capitalize()].find(this[associate + '_id']);
+      }
+    }
+    return this['_' + associate];
+  },
+
+  _find_has_one: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
+      resource = this.klass.resource;
+      klass = undefined;
+      $.ajax({
+        url: '/api/' + resource.pluralize() + '/' + this.id + '/' + association,
+        accept: 'application/json',
+        dataType: 'json',
+        async: false,
+        success: function(results) {
+          klass = new window[associate.capitalize()](results[associate]);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+      return klass;
+    } else {
+      return this['_' + associate];
+    }
+  },
+
+  _find_has_many: function(association, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
     resource = this.klass.resource;
     resources = [];
     klass = undefined;
@@ -165,16 +216,9 @@ var Model = new JS.Class({
     return resources;
   },
 
-  _find_parent: function(parent) {
-    if(this[parent + '_id'] != null && this[parent + '_id'] != undefined) {
-      return window[parent.capitalize()].find(this[parent + '_id']);
-    } else {
-      return undefined;
-    }
-  },
-
   save: function() {
     if(this.valid()) {
+      klass = this;
       resource = this.klass.resource;
 
       if(this.id == undefined || this.id == 0) {
@@ -185,8 +229,11 @@ var Model = new JS.Class({
         type = 'PUT';
       }
 
-      data = new Object();
-      data[resource] = this;
+      data = {};
+      data[resource] = {};
+      for(column in this.klass.columns) {
+        data[resource][this.klass.columns[column]] = this[this.klass.columns[column]];
+      }
 
       $.ajax({
         url: url,
@@ -198,7 +245,7 @@ var Model = new JS.Class({
         type: type,
         async: false,
         success: function(result) {
-          this.id = result[resource].id;
+          klass.id = result[resource].id;
           saved = true;
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -243,9 +290,6 @@ var Customer = new JS.Class(Model, {
   },
 
   valid: function() {
-    if(this.credit == undefined || this.credit == null) {
-      return false;
-    }
     return true;
   }
 });
@@ -296,17 +340,12 @@ var Email = new JS.Class(Model, {
 var Person = new JS.Class(Model, {
   extend: {
     resource: 'person',
+    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
     has_one: ['customer', 'employee', 'user'],
     has_many: ['addresses', 'emails', 'phones']
   },
 
   valid: function() {
-    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
-      return false;
-    }
-    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
-      return false;
-    }
     return true;
   }
 });
@@ -314,6 +353,7 @@ var Person = new JS.Class(Model, {
 var Address = new JS.Class(Model, {
   extend: {
     resource: 'address',
+    columns: ['id', 'person_id', 'first_line', 'second_line', 'city', 'state', 'country', 'zip'],
     belongs_to: ['person']
   },
 

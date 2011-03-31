@@ -1,8 +1,8 @@
 class CreateEmails < ActiveRecord::Migration
   def self.up
     create_table :emails do |t|
-      t.integer :person_id, :null => false
-      t.string :address,    :null => false
+      t.integer :person_id
+      t.string  :address,    :null => false
 
       t.timestamps
     end

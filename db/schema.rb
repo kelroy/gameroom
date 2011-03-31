@@ -13,7 +13,7 @@
 ActiveRecord::Schema.define(:version => 20110328052849) do
 
   create_table "addresses", :force => true do |t|
-    t.integer  "person_id",   :null => false
+    t.integer  "person_id"
     t.string   "first_line",  :null => false
     t.string   "second_line"
     t.string   "city",        :null => false
@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "customers", :force => true do |t|
-    t.integer  "person_id",                                :null => false
+    t.integer  "person_id"
     t.integer  "credit",                 :default => 0,    :null => false
     t.string   "drivers_license_number"
     t.string   "drivers_license_state"
@@ -36,14 +36,14 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "emails", :force => true do |t|
-    t.integer  "person_id",  :null => false
+    t.integer  "person_id"
     t.string   "address",    :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "employees", :force => true do |t|
-    t.integer  "person_id",                    :null => false
+    t.integer  "person_id"
     t.string   "title"
     t.integer  "rate",       :default => 0,    :null => false
     t.boolean  "active",     :default => true, :null => false
@@ -52,10 +52,10 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "entries", :force => true do |t|
-    t.integer  "till_id",                                        :null => false
+    t.integer  "till_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-30 01:27:44', :null => false
+    t.datetime "time",        :default => '2011-03-30 22:43:01', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -93,7 +93,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "payments", :force => true do |t|
-    t.integer  "transaction_id",                :null => false
+    t.integer  "transaction_id"
     t.string   "form",                          :null => false
     t.integer  "amount",         :default => 0, :null => false
     t.datetime "created_at"
@@ -110,7 +110,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "phones", :force => true do |t|
-    t.integer  "person_id",  :null => false
+    t.integer  "person_id"
     t.string   "title"
     t.string   "number",     :null => false
     t.datetime "created_at"
@@ -118,7 +118,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "properties", :force => true do |t|
-    t.integer  "item_id",    :null => false
+    t.integer  "item_id"
     t.string   "key",        :null => false
     t.string   "value",      :null => false
     t.datetime "created_at"
@@ -142,8 +142,8 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "timecards", :force => true do |t|
-    t.integer  "employee_id",                                    :null => false
-    t.datetime "begin",       :default => '2011-03-30 01:27:44', :null => false
+    t.integer  "employee_id"
+    t.datetime "begin",       :default => '2011-03-30 22:43:01', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -161,7 +161,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "users", :force => true do |t|
-    t.integer  "person_id",                             :null => false
+    t.integer  "person_id"
     t.string   "login",                                 :null => false
     t.string   "email",                                 :null => false
     t.string   "pin",                                   :null => false

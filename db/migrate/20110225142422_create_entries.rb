@@ -1,7 +1,7 @@
 class CreateEntries < ActiveRecord::Migration
   def self.up
     create_table :entries do |t|
-      t.integer   :till_id,     :null => false
+      t.integer   :till_id
       t.string    :title
       t.string    :description
       t.datetime  :time,        :null => false, :default => Time.now

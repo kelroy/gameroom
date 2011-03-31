@@ -1,7 +1,7 @@
 class CreateTimecards < ActiveRecord::Migration
   def self.up
     create_table :timecards do |t|
-      t.integer   :employee_id,     :null => false
+      t.integer   :employee_id
       t.datetime  :begin,           :null => false, :default => Time.now
       t.datetime  :end
 

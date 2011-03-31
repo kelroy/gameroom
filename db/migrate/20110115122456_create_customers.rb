@@ -1,7 +1,7 @@
 class CreateCustomers < ActiveRecord::Migration
   def self.up
     create_table :customers do |t|
-      t.integer :person_id,               :null => false
+      t.integer :person_id
       t.integer :credit,                  :null => false, :default => 0
       t.string  :drivers_license_number
       t.string  :drivers_license_state

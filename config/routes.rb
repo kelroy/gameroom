@@ -47,8 +47,11 @@ Gameroom::Application.routes.draw do
     resources :tills do
       resources :entries,       :only => [:index]
       resources :transactions,  :only => [:index]
+      resources :users,         :only => [:index]
     end
-    resources :users
+    resources :users do
+      resources :tills,         :only => [:index]
+    end
   end
   
   namespace 'transactions' do

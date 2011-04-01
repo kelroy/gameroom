@@ -67,8 +67,8 @@ class Api::PaymentsController < ApplicationController
     @payment.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @payment.to_json, :status => :ok }
+      format.xml  { render :xml => @payment.to_xml, :status => :ok }
     end
   end
 end

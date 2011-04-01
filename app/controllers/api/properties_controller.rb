@@ -6,7 +6,7 @@ class Api::PropertiesController < ApplicationController
   # GET /items/:item_id/properties.json
   def index
     if params[:item_id]
-      @properties = Property.find_all_by_item_id(params[:item_id])
+      @properties = Property.all(:include => :items, :conditions => ["items.id = ?", params[:item_id]])
     else
       @properties = Property.all
     end
@@ -68,8 +68,8 @@ class Api::PropertiesController < ApplicationController
     @property.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @property.to_json, :status => :ok }
+      format.xml  { render :xml => @property.to_xml, :status => :ok }
     end
   end
 end

@@ -2,8 +2,14 @@ class Api::TillsController < ApplicationController
   
   # GET /tills.xml
   # GET /tills.json
+  # GET /users/:user_id/tills.xml
+  # GET /users/:user_id/tills.json
   def index
-    @tills = Till.all
+    if params[:user_id]
+      @tills = Till.all(:include => :users, :conditions => ["users.id = ?", params[:user_id]])
+    else
+      @tills = Till.all
+    end
     
     respond_to do |format|
       format.json { render :json => @tills.to_json }
@@ -54,11 +60,15 @@ class Api::TillsController < ApplicationController
     end
   end
   
-  # DELETE /tills/1.json
   # DELETE /tills/1.xml
+  # DELETE /tills/1.json
   def destroy
+    @till = Till.find(params[:id])
+    @till.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @till.to_json, :status => :ok }
+      format.xml  { render :xml => @till.to_xml, :status => :ok }
     end
   end
 end

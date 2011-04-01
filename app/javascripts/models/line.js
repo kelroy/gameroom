@@ -3,6 +3,7 @@
 var Line = new JS.Class(Model, {
   extend: {
     resource: 'line',
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable'],
     belongs_to: ['item', 'transaction']
   },
   

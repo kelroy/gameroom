@@ -67,8 +67,8 @@ class Api::EntriesController < ApplicationController
     @entry.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @entry.to_json, :status => :ok }
+      format.xml  { render :xml => @entry.to_xml, :status => :ok }
     end
   end
 end

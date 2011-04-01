@@ -6,10 +6,6 @@ var Model = new JS.Class({
     has_one: [],
     has_many: [],
 
-    _new: function(attributes) {
-      return this.build(attributes);
-    },
-
     build: function(attributes) {
       return new window[this.resource.capitalize()](attributes);
     },
@@ -17,6 +13,17 @@ var Model = new JS.Class({
     create: function(attributes) {
       klass = new window[this.resource.capitalize()](attributes);
       klass.save();
+      return klass;
+    },
+
+    destroy: function(id) {
+      resource = this.resource;
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + id;
+      this._ajax(url, 'DELETE', null, function(result) {
+        klass = new window[resource.capitalize()](result[resource]);
+        klass.id = null;
+      });
       return klass;
     },
 
@@ -62,7 +69,11 @@ var Model = new JS.Class({
     },
 
     _ajax: function(url, type, data, callback) {
-      data = JSON.stringify(data);
+      if(data != null && data != undefined) {
+        data = JSON.stringify(data);
+      } else {
+        data = undefined;
+      }
       $.ajax({
         url: url,
         data: data,
@@ -105,9 +116,16 @@ var Model = new JS.Class({
       this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
       this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
     }
-    for(association in this.klass.has_many) {
-      this['_' + this.klass.has_many[association]] = [];
-      this[this.klass.has_many[association]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[association] + '", force_reload);');
+    for(collection in this.klass.has_many) {
+      this['_' + this.klass.has_many[collection]] = [];
+      this['add' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._add_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['set' + this.klass.has_many[collection].capitalize()] = new Function(this.klass.has_many[collection], 'return this._set_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['delete' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._delete_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['clear' + this.klass.has_many[collection].capitalize()] = new Function('return this._clear_collection("' + this.klass.has_many[collection] + '");');
+      this['count' + this.klass.has_many[collection].capitalize()] = new Function('return this._count_collection("' + this.klass.has_many[collection] + '");');
+      this['build' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._build_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this['create' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._create_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this[this.klass.has_many[collection]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[collection] + '", force_reload);');
     }
   },
 
@@ -142,11 +160,18 @@ var Model = new JS.Class({
     }
   },
 
+  destroy: function() {
+    return this.klass.destroy(this.id);
+  },
+
   valid: function() {
     return true;
   },
 
   _set_association: function(associate, object) {
+    if(this[associate + '_id'] in object) {
+      this[associate + '_id'] = object.id;
+    }
     return this['_' + associate] = object;
   },
 
@@ -164,6 +189,55 @@ var Model = new JS.Class({
       }
     }
     return association;
+  },
+
+  _add_collection: function(collection, objects) {
+    for(object in objects) {
+      if(this.id != undefined && this.id != null) {
+        if(collection + '_id' in objects[object]) {
+          objects[object][collection + '_id'] = this.id;
+        }
+      }
+      this['_' + collection].push(objects[object]);
+    }
+    return this['_' + collection];
+  },
+
+  _set_collection: function(collection, objects) {
+    this._clear_collection(collection);
+    this['_' + collection] = objects;
+    return this['_' + collection];
+  },
+
+  _delete_collection: function(collection, objects) {
+    for(object in objects) {
+    }
+  },
+
+  _clear_collection: function(collection) {
+    for(record in this['_' + collection]) {
+      if(this['_' + collection][record].id != null && this['_' + collection][record].id != undefined) {
+        this['_' + collection][record]['_' + collection.singularize()] = undefined;
+        if(collection.singularize() + '_id' in this['_' + collection][record]) {
+          this['_' + collection][record][collection.singularize() + '_id'] = undefined;
+        } else {
+        }
+        this['_' + collection][record].save();
+      }
+    }
+    this['_' + collection] = [];
+  },
+
+  _count_collection: function(collection) {
+    return this._find_has_many(collection).length;
+  },
+
+  _build_collection: function(collection, attributes) {
+    return this._add_collection(collection, [new window[collection.capitalize()](attributes)]);
+  },
+
+  _create_collection: function(collection, attributes) {
+
   },
 
   _find_belongs_to: function(associate, force_reload) {
@@ -187,35 +261,37 @@ var Model = new JS.Class({
       klass = undefined;
       url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
       this.klass._ajax(url, 'GET', null, function(result) {
-        klass = new window[associate.capitalize()](result[associate]);
+        this['_' + associate] = new window[associate.capitalize()](result[associate]);
       });
-      return klass;
-    } else {
-      return this['_' + associate];
     }
+    return this['_' + associate];
   },
 
-  _find_has_many: function(association, force_reload) {
+  _find_has_many: function(collection, force_reload) {
     if(force_reload == undefined) {
       force_reload = false;
     }
-    resource = this.klass.resource;
-    resources = [];
-    klass = undefined;
-    url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
-    this.klass._ajax(url, 'GET', null, function(results) {
-      for(result in results) {
-        resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
-      }
-    });
-    return resources;
+    if(force_reload || this['_' + collection].length == 0) {
+      resource = this.klass.resource;
+      resources = [];
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
+      this.klass._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
+        }
+      });
+      this['_' + collection] = resources;
+    }
+    return this['_' + collection];
   }
 });
 
 var User = new JS.Class(Model, {
   extend: {
     resource: 'user',
-    belongs_to: ['person']
+    belongs_to: ['person'],
+    has_many: ['tills']
   },
 
   valid: function() {
@@ -226,6 +302,7 @@ var User = new JS.Class(Model, {
 var Customer = new JS.Class(Model, {
   extend: {
     resource: 'customer',
+    columns: ['id', 'person_id', 'credit', 'drivers_license_number', 'drivers_license_state', 'notes', 'active'],
     belongs_to: ['person'],
     has_many: ['transactions']
   },
@@ -238,6 +315,7 @@ var Customer = new JS.Class(Model, {
 var Employee = new JS.Class(Model, {
   extend: {
     resource: 'employee',
+    columns: ['id', 'person_id', 'title', 'rate', 'active'],
     belongs_to: ['person'],
     has_many: ['timecards']
   },
@@ -250,6 +328,7 @@ var Employee = new JS.Class(Model, {
 var Phone = new JS.Class(Model, {
   extend: {
     resource: 'phone',
+    columns: ['id', 'person_id', 'title', 'number'],
     belongs_to: ['person']
   },
 
@@ -316,6 +395,7 @@ var Address = new JS.Class(Model, {
 var Entry = new JS.Class(Model, {
   extend: {
     resource: 'entry',
+    columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
     belongs_to: ['till']
   },
 
@@ -327,7 +407,7 @@ var Entry = new JS.Class(Model, {
 var Property = new JS.Class(Model, {
   extend: {
     resource: 'property',
-    belongs_to: ['item']
+    columns: ['id', 'key', 'value'],
   },
 
   valid: function() {
@@ -338,6 +418,7 @@ var Property = new JS.Class(Model, {
 var Line = new JS.Class(Model, {
   extend: {
     resource: 'line',
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable'],
     belongs_to: ['item', 'transaction']
   },
 
@@ -373,6 +454,7 @@ var Line = new JS.Class(Model, {
 var Item = new JS.Class(Model, {
   extend: {
     resource: 'item',
+    columns: ['id', 'title', 'description', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
     has_many: ['properties']
   },
 
@@ -384,6 +466,7 @@ var Item = new JS.Class(Model, {
 var Payment = new JS.Class(Model, {
   extend: {
     resource: 'payment',
+    columns: ['id', 'transaction_id', 'form', 'amount'],
     belongs_to: ['transaction']
   },
 
@@ -395,7 +478,8 @@ var Payment = new JS.Class(Model, {
 var Till = new JS.Class(Model, {
   extend: {
     resource: 'till',
-    has_many: ['entries', 'transactions']
+    columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
+    has_many: ['entries', 'transactions', 'users']
   },
 
   valid: function() {
@@ -406,6 +490,7 @@ var Till = new JS.Class(Model, {
 var Timecard = new JS.Class(Model, {
   extend: {
     resource: 'timecard',
+    columns: ['id', 'employee_id', 'begin', 'end'],
     belongs_to: ['employee']
   },
 
@@ -417,6 +502,7 @@ var Timecard = new JS.Class(Model, {
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
     belongs_to: ['customer', 'till', 'user'],
     has_many: ['lines', 'payments']
   },

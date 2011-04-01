@@ -67,8 +67,8 @@ class Api::TimecardsController < ApplicationController
     @timecard.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @timecard.to_json, :status => :ok }
+      format.xml  { render :xml => @timecard.to_xml, :status => :ok }
     end
   end
 end

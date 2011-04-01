@@ -15,6 +15,17 @@ var Model = new JS.Class({
       return klass;
     },
     
+    destroy: function(id) {
+      resource = this.resource;
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + id;
+      this._ajax(url, 'DELETE', null, function(result) {
+        klass = new window[resource.capitalize()](result[resource]);
+        klass.id = null;
+      });
+      return klass;
+    },
+    
     find: function(id) {
       resource = this.resource;
       klass = undefined;
@@ -57,7 +68,11 @@ var Model = new JS.Class({
     },
     
     _ajax: function(url, type, data, callback) {
-      data = JSON.stringify(data);
+      if(data != null && data != undefined) {
+        data = JSON.stringify(data);
+      } else {
+        data = undefined;
+      }
       $.ajax({
         url: url,
         data: data,
@@ -100,9 +115,16 @@ var Model = new JS.Class({
       this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
       this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
     }
-    for(association in this.klass.has_many) {
-      this['_' + this.klass.has_many[association]] = [];
-      this[this.klass.has_many[association]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[association] + '", force_reload);');
+    for(collection in this.klass.has_many) {
+      this['_' + this.klass.has_many[collection]] = [];
+      this['add' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._add_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['set' + this.klass.has_many[collection].capitalize()] = new Function(this.klass.has_many[collection], 'return this._set_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['delete' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._delete_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['clear' + this.klass.has_many[collection].capitalize()] = new Function('return this._clear_collection("' + this.klass.has_many[collection] + '");');
+      this['count' + this.klass.has_many[collection].capitalize()] = new Function('return this._count_collection("' + this.klass.has_many[collection] + '");');
+      this['build' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._build_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this['create' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._create_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this[this.klass.has_many[collection]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[collection] + '", force_reload);');
     }
   },
   
@@ -137,11 +159,18 @@ var Model = new JS.Class({
     }
   },
   
+  destroy: function() {
+    return this.klass.destroy(this.id);
+  },
+  
   valid: function() {
     return true;
   },
   
   _set_association: function(associate, object) {
+    if(this[associate + '_id'] in object) {
+      this[associate + '_id'] = object.id;
+    }
     return this['_' + associate] = object;
   },
   
@@ -159,6 +188,58 @@ var Model = new JS.Class({
       }
     }
     return association;
+  },
+  
+  _add_collection: function(collection, objects) {
+    for(object in objects) {
+      if(this.id != undefined && this.id != null) {
+        if(collection + '_id' in objects[object]) {
+          objects[object][collection + '_id'] = this.id;
+        }
+      }
+      this['_' + collection].push(objects[object]);
+      //Save new record if this has id
+    }
+    return this['_' + collection];
+  },
+  
+  _set_collection: function(collection, objects) {
+    this._clear_collection(collection);
+    this['_' + collection] = objects;
+    return this['_' + collection];
+    // Save new records if this has id
+  },
+  
+  _delete_collection: function(collection, objects) {
+    for(object in objects) {
+    }
+  },
+  
+  _clear_collection: function(collection) {
+    for(record in this['_' + collection]) {
+      if(this['_' + collection][record].id != null && this['_' + collection][record].id != undefined) {
+        this['_' + collection][record]['_' + collection.singularize()] = undefined;
+        if(collection.singularize() + '_id' in this['_' + collection][record]) {
+          this['_' + collection][record][collection.singularize() + '_id'] = undefined;
+        } else {
+          // Has and belongs to many
+        }
+        this['_' + collection][record].save();
+      }
+    }
+    this['_' + collection] = [];
+  },
+  
+  _count_collection: function(collection) {
+    return this._find_has_many(collection).length;
+  },
+  
+  _build_collection: function(collection, attributes) {
+    return this._add_collection(collection, [new window[collection.capitalize()](attributes)]);
+  },
+  
+  _create_collection: function(collection, attributes) {
+    
   },
   
   _find_belongs_to: function(associate, force_reload) {
@@ -182,27 +263,29 @@ var Model = new JS.Class({
       klass = undefined;
       url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
       this.klass._ajax(url, 'GET', null, function(result) {
-        klass = new window[associate.capitalize()](result[associate]);
+        this['_' + associate] = new window[associate.capitalize()](result[associate]);
       });
-      return klass;
-    } else {
-      return this['_' + associate];
     }
+    return this['_' + associate];
   },
   
-  _find_has_many: function(association, force_reload) {
+  _find_has_many: function(collection, force_reload) {
     if(force_reload == undefined) {
       force_reload = false;
     }
-    resource = this.klass.resource;
-    resources = [];
-    klass = undefined;
-    url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
-    this.klass._ajax(url, 'GET', null, function(results) {
-      for(result in results) {
-        resources.push(new window[association.singularize().capitalize()](results[result][association.singularize()]));
-      }
-    });
-    return resources;
+    if(force_reload || this['_' + collection].length == 0) {
+      resource = this.klass.resource;
+      resources = [];
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
+      this.klass._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          // Merge with existing collection
+          resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
+        }
+      });
+      this['_' + collection] = resources;
+    }
+    return this['_' + collection];
   }
 });

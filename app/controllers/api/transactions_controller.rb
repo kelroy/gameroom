@@ -5,8 +5,8 @@ class Api::TransactionsController < ApplicationController
   # GET /[parent]/:parent_id/transactions.xml
   # GET /[parent]/:parent_id/transactions.json
   def index
-    if params[:customer_id]
-      @transactions = Transaction.find_all_by_customer_id(params[:customer_id])
+    if params[:transaction_id]
+      @transactions = Transaction.find_all_by_transaction_id(params[:transaction_id])
     elsif params[:till_id]
       @transactions = Transaction.find_all_by_till_id(params[:till_id])
     else
@@ -73,11 +73,15 @@ class Api::TransactionsController < ApplicationController
     end
   end
 
-  # DELETE /transactions/1.json
   # DELETE /transactions/1.xml
+  # DELETE /transactions/1.json
   def destroy
+    @transaction = Transaction.find(params[:id])
+    @transaction.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @transaction.to_json, :status => :ok }
+      format.xml  { render :xml => @transaction.to_xml, :status => :ok }
     end
   end
 end

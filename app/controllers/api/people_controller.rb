@@ -38,8 +38,8 @@ class Api::PeopleController < ApplicationController
     end
   end
 
-  # PUT /persons/1.xml
-  # PUT /persons/1.json
+  # PUT /people/1.xml
+  # PUT /people/1.json
   def update
     @person = Person.find(params[:id])
 
@@ -54,11 +54,15 @@ class Api::PeopleController < ApplicationController
     end
   end
   
-  # DELETE /persons/1.json
-  # DELETE /persons/1.xml
+  # DELETE /people/1.xml
+  # DELETE /people/1.json
   def destroy
+    @person = Person.find(params[:id])
+    @person.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @person.to_json, :status => :ok }
+      format.xml  { render :xml => @person.to_xml, :status => :ok }
     end
   end
 end

@@ -67,8 +67,8 @@ class Api::AddressesController < ApplicationController
     @address.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @address.to_json, :status => :ok }
+      format.xml  { render :xml => @address.to_xml, :status => :ok }
     end
   end
 end

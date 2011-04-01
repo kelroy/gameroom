@@ -60,11 +60,15 @@ class Api::EmployeesController < ApplicationController
     end
   end
 
-  # DELETE /employees/1.json
   # DELETE /employees/1.xml
+  # DELETE /employees/1.json
   def destroy
+    @employee = Employee.find(params[:id])
+    @employee.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @employee.to_json, :status => :ok }
+      format.xml  { render :xml => @employee.to_xml, :status => :ok }
     end
   end
 end

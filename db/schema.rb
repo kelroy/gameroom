@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110328052849) do
+ActiveRecord::Schema.define(:version => 20110401003649) do
 
   create_table "addresses", :force => true do |t|
     t.integer  "person_id"
@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
     t.integer  "till_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-03-30 22:43:01', :null => false
+    t.datetime "time",        :default => '2011-04-01 00:43:36', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -74,6 +74,11 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
     t.boolean  "active",       :default => false, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "items_properties", :id => false, :force => true do |t|
+    t.integer "item_id"
+    t.integer "property_id"
   end
 
   create_table "lines", :force => true do |t|
@@ -118,7 +123,6 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
   end
 
   create_table "properties", :force => true do |t|
-    t.integer  "item_id"
     t.string   "key",        :null => false
     t.string   "value",      :null => false
     t.datetime "created_at"
@@ -143,7 +147,7 @@ ActiveRecord::Schema.define(:version => 20110328052849) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "employee_id"
-    t.datetime "begin",       :default => '2011-03-30 22:43:01', :null => false
+    t.datetime "begin",       :default => '2011-04-01 00:43:36', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"

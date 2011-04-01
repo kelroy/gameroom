@@ -67,8 +67,8 @@ class Api::PhonesController < ApplicationController
     @phone.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @phone.to_json, :status => :ok }
+      format.xml  { render :xml => @phone.to_xml, :status => :ok }
     end
   end
 end

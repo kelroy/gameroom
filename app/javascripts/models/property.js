@@ -4,7 +4,7 @@
 var Property = new JS.Class(Model, {
   extend: {
     resource: 'property',
-    belongs_to: ['item']
+    columns: ['id', 'key', 'value'],
   },
   
   valid: function() {

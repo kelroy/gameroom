@@ -2,8 +2,14 @@ class Api::UsersController < ApplicationController
   
   # GET /users.json
   # GET /users.xml
+  # GET /tills/:till_id/users.xml
+  # GET /tills/:till_id/users.json
   def index
-    @users = User.all
+    if params[:till_id]
+      @users = User.all(:include => :tills, :conditions => ["tills.id = ?", params[:till_id]])
+    else
+      @users = User.all
+    end
     
     respond_to do |format|
       format.json { render :json => @users.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
@@ -60,11 +66,15 @@ class Api::UsersController < ApplicationController
     end
   end
 
-  # DELETE /users/1.json
   # DELETE /users/1.xml
+  # DELETE /users/1.json
   def destroy
+    @user = User.find(params[:id])
+    @user.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @user.to_json, :status => :ok }
+      format.xml  { render :xml => @user.to_xml, :status => :ok }
     end
   end
 end

@@ -65,11 +65,15 @@ class Api::LinesController < ApplicationController
     end
   end
 
-  # DELETE /lines/1.json
   # DELETE /lines/1.xml
+  # DELETE /lines/1.json
   def destroy
+    @line = Line.find(params[:id])
+    @line.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @line.to_json, :status => :ok }
+      format.xml  { render :xml => @line.to_xml, :status => :ok }
     end
   end
 end

@@ -60,15 +60,15 @@ class Api::EmailsController < ApplicationController
     end
   end
   
-  # DELETE /emails/1
   # DELETE /emails/1.xml
+  # DELETE /emails/1.json
   def destroy
     @email = Email.find(params[:id])
     @email.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @email.to_json, :status => :ok }
+      format.xml  { render :xml => @email.to_xml, :status => :ok }
     end
   end
 end

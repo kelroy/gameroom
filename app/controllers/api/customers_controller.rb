@@ -71,11 +71,15 @@ class Api::CustomersController < ApplicationController
     end
   end
   
-  # DELETE /customers/1.json
   # DELETE /customers/1.xml
+  # DELETE /customers/1.json
   def destroy
+    @customer = Customer.find(params[:id])
+    @customer.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @customer.to_json, :status => :ok }
+      format.xml  { render :xml => @customer.to_xml, :status => :ok }
     end
   end
 end

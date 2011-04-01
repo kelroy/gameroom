@@ -65,11 +65,15 @@ class Api::ItemsController < ApplicationController
     end
   end
   
-  # DELETE /items/1.json
   # DELETE /items/1.xml
+  # DELETE /items/1.json
   def destroy
+    @item = Item.find(params[:id])
+    @item.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @item.to_json, :status => :ok }
+      format.xml  { render :xml => @item.to_xml, :status => :ok }
     end
   end
 end

@@ -54,7 +54,7 @@ unless Rails.env.production?
     credit_price = (price * 0.8).round
     cash_price = (credit_price / 2).round
     item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(100).even?, :locked => true, :active => true)
-    item.properties << Factory.create(:property, :item => item, :key => 'Foo', :value => 'Bar')
+    item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
     items.push(item)
   end
   

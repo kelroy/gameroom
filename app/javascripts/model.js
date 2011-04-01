@@ -1,6 +1,7 @@
 var Model = new JS.Class({
   extend: {
     resource: undefined,
+    columns: [],
     belongs_to: [],
     has_one: [],
     has_many: [],
@@ -128,6 +129,7 @@ var Model = new JS.Class({
     }
   },
   
+  // TODO: Create or update relations during save
   save: function() {
     if(this.valid()) {
       klass = this;
@@ -163,13 +165,17 @@ var Model = new JS.Class({
     return this.klass.destroy(this.id);
   },
   
+  // TODO: Move validation to module
   valid: function() {
     return true;
   },
   
   _set_association: function(associate, object) {
-    if(this[associate + '_id'] in object) {
+    if(associate + '_id' in this) {
       this[associate + '_id'] = object.id;
+    } else {
+      // Remove old asssociation
+      object[this.klass.resource + '_id'] = this.id;
     }
     return this['_' + associate] = object;
   },
@@ -181,26 +187,24 @@ var Model = new JS.Class({
   _create_association: function(associate, attributes) {
     association = this._build_association(associate, attributes);
     association.save();
-    this._set_association(associate, association);
-    for(belongs in this.klass.belongs_to) {
-      if(this.klass.belongs_to[belongs] == associate) {
-        this[associate + '_id'] = association.id;
-      }
-    }
     return association;
   },
   
-  _add_collection: function(collection, objects) {
-    for(object in objects) {
-      if(this.id != undefined && this.id != null) {
-        if(collection + '_id' in objects[object]) {
-          objects[object][collection + '_id'] = this.id;
-        }
+  _remove_association: function(associate, id) {
+    association = window[associate.capitalize].find(id);
+    association[associate + '_id'] = undefined;
+    return association.save();
+  },
+  
+  _add_collection: function(collection, object) {
+    if(this.id != undefined && this.id != null) {
+      if(collection + '_id' in object) {
+        object[collection + '_id'] = this.id;
       }
-      this['_' + collection].push(objects[object]);
-      //Save new record if this has id
     }
-    return this['_' + collection];
+    this['_' + collection].push(object);
+    //Save new record if this has id 
+    return object;
   },
   
   _set_collection: function(collection, objects) {
@@ -210,8 +214,23 @@ var Model = new JS.Class({
     // Save new records if this has id
   },
   
-  _delete_collection: function(collection, objects) {
-    for(object in objects) {
+  _merge_collection: function(collection, objects) {
+    
+  },
+  
+  _delete_collection: function(collection, object) {
+    for(collective in this['_' + collection]) {
+      if(this['_' + collection][collective].equals(object)) {
+        this['_' + collection].splice(collection, 1);
+      }
+    }
+    if(collection.singularize() + '_id' in object) {
+      object[collection.singularize() + '_id'] = undefined;
+      if(object.id != undefined && object.id != null) {
+        object.save();
+      }
+    } else {
+      // Has and belongs to many
     }
   },
   
@@ -235,11 +254,13 @@ var Model = new JS.Class({
   },
   
   _build_collection: function(collection, attributes) {
-    return this._add_collection(collection, [new window[collection.capitalize()](attributes)]);
+    return this._add_collection(collection, new window[collection.capitalize()](attributes));
   },
   
   _create_collection: function(collection, attributes) {
-    
+    collective = this._build_collection(collection, attributes);
+    collective.save();
+    return collective;
   },
   
   _find_belongs_to: function(associate, force_reload) {
@@ -260,10 +281,10 @@ var Model = new JS.Class({
     }
     if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
       resource = this.klass.resource;
-      klass = undefined;
-      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + association;
+      klass = this;
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + associate;
       this.klass._ajax(url, 'GET', null, function(result) {
-        this['_' + associate] = new window[associate.capitalize()](result[associate]);
+        klass['_' + associate] = new window[associate.capitalize()](result[associate]);
       });
     }
     return this['_' + associate];
@@ -276,16 +297,17 @@ var Model = new JS.Class({
     if(force_reload || this['_' + collection].length == 0) {
       resource = this.klass.resource;
       resources = [];
-      klass = undefined;
       url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
       this.klass._ajax(url, 'GET', null, function(results) {
         for(result in results) {
-          // Merge with existing collection
           resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
         }
       });
-      this['_' + collection] = resources;
+      if(this['_' + collection].length == 0) {
+        return this._set_collection(collection, resources);
+      } else {
+        return this._merge_collection(collection, resources);
+      }
     }
-    return this['_' + collection];
   }
 });

@@ -53,7 +53,7 @@ unless Rails.env.production?
     price = (rand(9999) + 1)
     credit_price = (price * 0.8).round
     cash_price = (credit_price / 2).round
-    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(100).even?, :locked => true, :active => true)
+    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(100).even?, :discountable => rand(100).even?, :locked => true, :active => true)
     item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
     items.push(item)
   end
@@ -61,7 +61,7 @@ unless Rails.env.production?
   transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
   (1...5).each do |n|
     item = items[n]
-    transaction.lines << Factory.create(:line, :title => item.title, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :item => item, :transaction => transaction)
+    transaction.lines << Factory.create(:line, :title => item.title, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
   end
   transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
 

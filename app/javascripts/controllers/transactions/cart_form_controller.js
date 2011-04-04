@@ -47,26 +47,16 @@ var CartFormController = new JS.Class(FormController, {
     }
     
     line = new Line({
-      sell: false,
-      condition: 1,
+      title: $('input#item_title', item).val(),
       quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      condition: 1,
+      discount: 1,
+      price: base_price,
+      credit: credit_price,
+      cash: cash_price,
+      purchase: true,
       taxable: $('input#item_taxable', item).attr('checked'),
-      item: {
-        title: $('input#item_title', item).val(),
-        description: $('input#item_description', item).val(),
-        price: parseInt(Currency.toPennies($('input#item_price', item).val())),
-        taxable: $('input#item_taxable', item).attr('checked'),
-        properties: [
-          {
-            key: 'credit_price',
-            value: credit_price
-          },
-          {
-            key: 'cash_price',
-            value: cash_price
-          }
-        ]
-      }
+      discountable: $('input#item_discountable', item).attr('checked')
     });
     
     if(line.valid()) {
@@ -88,6 +78,7 @@ var CartFormController = new JS.Class(FormController, {
     this.callSuper();
     $('input#item_quantity', this.view).val(1);
     $('input#item_taxable', this.view).attr('checked', true);
+    $('input#item_discountable', this.view).attr('checked', true);
   },
   
   onPrice: function(event) {

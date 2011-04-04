@@ -22,4 +22,9 @@ class Line < ActiveRecord::Base
   def taxable?
     self.taxable
   end
+  
+  # Is line discountable?
+  def discountable?
+    self.discountable
+  end
 end

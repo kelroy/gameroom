@@ -21,28 +21,26 @@ var CartLineController = new JS.Class(ViewController, {
   
   set: function(line) {
     
-    if(line.item.description == null || line.item.description == undefined) {
-      line.item.description = '';
-    }
-    
     $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3', this.view).html(line.item.title);
-    $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);
+    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(line.item.creditPrice() * line.condition));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(line.item.cashPrice() * line.condition));
+    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
     $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq((line.condition * 5) - 1).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq((line.discount * 100) / 5).addClass('selected');
-    if(line.sell) {
+    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    if(line.purchase) {
+      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      if(line.discountable) {
+        this.showPurchaseControls();
+      }
+      this.hideSellControls();
+    } else {
       $('ul.cart_line_action li a.sell', this.view).addClass('selected');
       this.showSellControls();
       this.hidePurchaseControls();
-    } else {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
-      this.showPurchaseControls();
-      this.hideSellControls();
     }
     if(this.isOpen()) {
       $('div.cart_info', this.view).css('display', 'block');
@@ -64,25 +62,25 @@ var CartLineController = new JS.Class(ViewController, {
   },
   
   setPurchase: function() {
-    this.line.setPurchase();
+    this.line.purchase = true;
     this.notifyObservers(this.line_index, this.line);
   },
   
   setSell: function() {
-    this.line.setSell();
+    this.line.purchase = false;
     this.notifyObservers(this.line_index, this.line);
   },
   
   onDiscount: function(event) {
     index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.setDiscount($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100);
+    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
   
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.setCondition($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -95,7 +93,7 @@ var CartLineController = new JS.Class(ViewController, {
   
   onPlus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
-    event.data.instance.line.setQuantity(parseInt(quantity) + 1);
+    event.data.instance.line.quantity = parseInt(quantity) + 1;
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -103,7 +101,7 @@ var CartLineController = new JS.Class(ViewController, {
   onMinus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity > 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity) - 1);
+      event.data.instance.line.quantity = parseInt(quantity) - 1;
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();
@@ -112,7 +110,7 @@ var CartLineController = new JS.Class(ViewController, {
   onSubmit: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity >= 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity));
+      event.data.instance.line.quantity = parseInt(quantity);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     } else {
       $('input.quantity', event.data.instance.view).val(1);

@@ -1,6 +1,5 @@
 class Transaction < ActiveRecord::Base
   after_create            :finish
-  attr_readonly           :till_id
   
   belongs_to  :till
   belongs_to  :customer

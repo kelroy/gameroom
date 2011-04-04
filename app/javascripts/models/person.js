@@ -12,9 +12,5 @@ var Person = new JS.Class(Model, {
     columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
     has_one: ['customer', 'employee', 'user'],
     has_many: ['addresses', 'emails', 'phones']
-  },
-  
-  valid: function() {
-    return true;
   }
 });

@@ -6,9 +6,5 @@ var Employee = new JS.Class(Model, {
     columns: ['id', 'person_id', 'title', 'rate', 'active'],
     belongs_to: ['person'],
     has_many: ['timecards']
-  },
-  
-  valid: function() {
-    return true;
   }
 });

@@ -1,18 +1,275 @@
 /* Gameroom */
-var Model = new JS.Class({
+var Association = new JS.Module({
   extend: {
-    resource: undefined,
-    columns: [],
     belongs_to: [],
     has_one: [],
     has_many: [],
+  },
+
+  _initialize_associations: function() {
+    for(association in this.klass.belongs_to) {
+      this['_' + this.klass.belongs_to[association]] = undefined;
+      this['_' + this.klass.belongs_to[association] + '_loaded'] = false;
+      this['set' + this.klass.belongs_to[association].capitalize()] = new Function(this.klass.belongs_to[association], 'return this._set_association("' + this.klass.belongs_to[association] + '", ' + this.klass.belongs_to[association] + ');');
+      this['build' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this['create' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this[this.klass.belongs_to[association]] = new Function('force_reload', 'return this._find_belongs_to("' + this.klass.belongs_to[association] + '", force_reload);');
+    }
+    for(association in this.klass.has_one) {
+      this['_' + this.klass.has_one[association]] = undefined;
+      this['_' + this.klass.has_one[association] + '_loaded'] = false;
+      this['set' + this.klass.has_one[association].capitalize()] = new Function(this.klass.has_one[association], 'return this._set_association("' + this.klass.has_one[association] + '", ' + this.klass.has_one[association] + ');');
+      this['build' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.has_one[association] + '", attributes);');
+      this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
+      this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
+    }
+    for(collection in this.klass.has_many) {
+      this['_' + this.klass.has_many[collection]] = [];
+      this['_' + this.klass.has_many[collection] + '_loaded'] = false;
+      this['add' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._add_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection].singularize() + ');');
+      this['set' + this.klass.has_many[collection].capitalize()] = new Function(this.klass.has_many[collection], 'return this._set_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['delete' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._delete_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection].singularize() + ');');
+      this['clear' + this.klass.has_many[collection].capitalize()] = new Function('return this._clear_collection("' + this.klass.has_many[collection] + '");');
+      this['count' + this.klass.has_many[collection].capitalize()] = new Function('return this._count_collection("' + this.klass.has_many[collection] + '");');
+      this['build' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._build_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this['create' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._create_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this[this.klass.has_many[collection]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[collection] + '", force_reload);');
+    }
+  },
+
+  _set_association: function(associate, object) {
+    if(associate + '_id' in this) {
+      if(object._has_id()) {
+        this[associate + '_id'] = object.id;
+      }
+    } else {
+      if(this['_' + associate]._has_id()) {
+        this['_' + associate][this.klass.resource + '_id'] = undefined;
+        this['_' + associate].save();
+      }
+      if(this._has_id()) {
+        object[this.klass.resource + '_id'] = this.id;
+        object.save();
+      }
+    }
+    return this['_' + associate] = object;
+  },
+
+  _build_association: function(associate, attributes) {
+    return this._set_association(associate, new window[associate.capitalize()](attributes));
+  },
+
+  _create_association: function(associate, attributes) {
+    association = this._build_association(associate, attributes);
+    association.save();
+    return association;
+  },
+
+  _remove_association: function(associate, id) {
+    association = window[associate.capitalize].find(id);
+    association[associate + '_id'] = undefined;
+    return association.save();
+  },
+
+  _add_collection: function(collection, object) {
+    if(this._has_id()) {
+      if(this.klass.resource + '_id' in object) {
+        object[this.klass.resource + '_id'] = this.id;
+      }
+    }
+    return this._merge_collection(collection, [object]);
+  },
+
+  _set_collection: function(collection, objects) {
+    this._clear_collection(collection);
+    this['_' + collection] = objects;
+    return this['_' + collection];
+  },
+
+  _merge_collection: function(collection, objects) {
+    for(object in objects) {
+      if(objects[object]._has_id()) {
+        found = false;
+        for(record in this['_' + collection]) {
+          if(this['_' + collection][record]._has_id() && this['_' + collection][record].id == objects[object].id) {
+            this['_' + collection][record] = objects[object];
+            found = true;
+          }
+        }
+        if(!found) {
+          this['_' + collection].push(objects[object]);
+        }
+      } else {
+        this['_' + collection].push(objects[object]);
+      }
+    }
+    return this['_' + collection];
+  },
+
+  _delete_collection: function(collection, object) {
+    this._find_has_many(collection);
+    for(collective in this['_' + collection]) {
+      if(this['_' + collection][collective].equals(object)) {
+        this['_' + collection].splice(collective, 1);
+      }
+    }
+    if(this.klass.resource + '_id' in object) {
+      object[this.klass.resource + '_id'] = null;
+      if(object.id != undefined && object.id != null) {
+        object.save();
+      }
+    } else {
+    }
+  },
+
+  _clear_collection: function(collection) {
+    for(record in this['_' + collection]) {
+      if(this['_' + collection][record]._has_id()) {
+        this['_' + collection][record]['_' + collection.singularize()] = undefined;
+        if(collection.singularize() + '_id' in this['_' + collection][record]) {
+          this['_' + collection][record][collection.singularize() + '_id'] = undefined;
+        } else {
+        }
+        this['_' + collection][record].save();
+      }
+    }
+    this['_' + collection] = [];
+  },
+
+  _count_collection: function(collection) {
+    return this._find_has_many(collection).length;
+  },
+
+  _build_collection: function(collection, attributes) {
+    return this._add_collection(collection, new window[collection.singularize().capitalize()](attributes));
+  },
+
+  _create_collection: function(collection, attributes) {
+    collective = this._build_collection(collection, attributes);
+    collective.save();
+    return collective;
+  },
+
+  _find_belongs_to: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + associate + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      if(this[associate + '_id'] != null && this[associate + '_id'] != undefined) {
+        this['_' + associate] = window[associate.capitalize()].find(this[associate + '_id']);
+        if(!this['_' + associate + '_loaded']) {
+          this['_' + associate + '_loaded'] = true;
+        }
+      }
+    }
+    return this['_' + associate];
+  },
+
+  _find_has_one: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + associate + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      resource = this.klass.resource;
+      klass = this;
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + associate;
+      this.klass._ajax(url, 'GET', null, function(result) {
+        klass['_' + associate] = new window[associate.capitalize()](result[associate]);
+      });
+      if(!this['_' + associate + '_loaded']) {
+        this['_' + associate + '_loaded'] = true;
+      }
+    }
+    return this['_' + associate];
+  },
+
+  _find_has_many: function(collection, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + collection + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      resource = this.klass.resource;
+      resources = [];
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
+      this.klass._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
+        }
+      });
+      if(!this['_' + collection + '_loaded']) {
+        this['_' + collection + '_loaded'] = true;
+      }
+      return this._merge_collection(collection, resources);
+    } else {
+      if(this['_' + collection].length == 0) {
+        return [];
+      } else {
+        return this['_' + collection];
+      }
+    }
+  }
+});
+var Validation = new JS.Module({
+  _errors: [],
+
+  valid: function() {
+    this._errors = [];
+    if(this.klass.validations != undefined) {
+      for(column in this.klass.validations) {
+        for(validation in this.klass.validations[column]) {
+          if(this['_' + validation] != undefined) {
+            this['_' + validation](column, this.klass.validations[column]);
+          }
+        }
+      }
+    }
+    if(this._errors.length == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  errors: function() {
+    return this._errors;
+  },
+
+  _presence_of: function(column, options) {
+    if(this[column] != null && this[column] != undefined && this[column] != '') {
+      return true;
+    } else {
+      this._errors.push({
+        column: column,
+        type: 'presence_of',
+        message: column + ' must not be empty.'
+      });
+      return false;
+    }
+  }
+});
+
+var Model = new JS.Class({
+  include: [Association, Validation],
+
+  extend: {
+    resource: undefined,
+    columns: [],
 
     build: function(attributes) {
       return new window[this.resource.capitalize()](attributes);
     },
 
     create: function(attributes) {
-      klass = new window[this.resource.capitalize()](attributes);
+      klass = this.build(attributes);
       klass.save();
       return klass;
     },
@@ -100,47 +357,26 @@ var Model = new JS.Class({
   },
 
   initialize: function(attributes) {
+    for(column in this.klass.columns) {
+      this[this.klass.columns[column]] = undefined;
+    }
     for(attribute in attributes) {
       this[attribute] = attributes[attribute];
     }
-    for(association in this.klass.belongs_to) {
-      this['_' + this.klass.belongs_to[association]] = undefined;
-      this['set' + this.klass.belongs_to[association].capitalize()] = new Function(this.klass.belongs_to[association], 'return this._set_association("' + this.klass.belongs_to[association] + '", ' + this.klass.belongs_to[association] + ');');
-      this['build' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.belongs_to[association] + '", attributes);');
-      this['create' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.belongs_to[association] + '", attributes);');
-      this[this.klass.belongs_to[association]] = new Function('force_reload', 'return this._find_belongs_to("' + this.klass.belongs_to[association] + '", force_reload);');
-    }
-    for(association in this.klass.has_one) {
-      this['_' + this.klass.has_one[association]] = undefined;
-      this['set' + this.klass.has_one[association].capitalize()] = new Function(this.klass.has_one[association], 'return this._set_association("' + this.klass.has_one[association] + '", ' + this.klass.has_one[association] + ');');
-      this['build' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.has_one[association] + '", attributes);');
-      this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
-      this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
-    }
-    for(collection in this.klass.has_many) {
-      this['_' + this.klass.has_many[collection]] = [];
-      this['add' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._add_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
-      this['set' + this.klass.has_many[collection].capitalize()] = new Function(this.klass.has_many[collection], 'return this._set_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
-      this['delete' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._delete_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
-      this['clear' + this.klass.has_many[collection].capitalize()] = new Function('return this._clear_collection("' + this.klass.has_many[collection] + '");');
-      this['count' + this.klass.has_many[collection].capitalize()] = new Function('return this._count_collection("' + this.klass.has_many[collection] + '");');
-      this['build' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._build_collection("' + this.klass.has_many[collection] + '", attributes);');
-      this['create' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._create_collection("' + this.klass.has_many[collection] + '", attributes);');
-      this[this.klass.has_many[collection]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[collection] + '", force_reload);');
-    }
+    this._initialize_associations();
   },
 
   save: function() {
     if(this.valid()) {
-      klass = this;
+      instance = this;
       resource = this.klass.resource;
 
-      if(this.id == undefined || this.id == 0) {
-        url = '/api/' + resource.pluralize();
-        type = 'POST';
-      } else {
+      if(this._has_id()) {
         url = '/api/' + resource.pluralize() + '/' + this.id;
         type = 'PUT';
+      } else {
+        url = '/api/' + resource.pluralize();
+        type = 'POST';
       }
 
       data = {};
@@ -151,7 +387,7 @@ var Model = new JS.Class({
 
       saved = false;
       this.klass._ajax(url, type, data, function(result) {
-        klass.id = result[resource].id;
+        instance.id = result[resource].id;
         saved = true;
       });
 
@@ -165,144 +401,26 @@ var Model = new JS.Class({
     return this.klass.destroy(this.id);
   },
 
-  valid: function() {
-    return true;
-  },
-
-  _set_association: function(associate, object) {
-    if(associate + '_id' in this) {
-      this[associate + '_id'] = object.id;
+  equals: function(object) {
+    if(this.callSuper()) {
+      return true;
     } else {
-      object[this.klass.resource + '_id'] = this.id;
-    }
-    return this['_' + associate] = object;
-  },
-
-  _build_association: function(associate, attributes) {
-    return this._set_association(associate, new window[associate.capitalize()](attributes));
-  },
-
-  _create_association: function(associate, attributes) {
-    association = this._build_association(associate, attributes);
-    association.save();
-    return association;
-  },
-
-  _remove_association: function(associate, id) {
-    klass = window[associate.capitalize].find(id);
-    klass[associate + '_id'] = undefined;
-    return klass.save();
-  },
-
-  _add_collection: function(collection, object) {
-    if(this.id != undefined && this.id != null) {
-      if(collection + '_id' in object) {
-        object[collection + '_id'] = this.id;
-      }
-    }
-    this['_' + collection].push(object);
-    return object;
-  },
-
-  _set_collection: function(collection, objects) {
-    this._clear_collection(collection);
-    this['_' + collection] = objects;
-    return this['_' + collection];
-  },
-
-  _merge_collection: function(collection, objects) {
-
-  },
-
-  _delete_collection: function(collection, object) {
-    for(collective in this['_' + collection]) {
-      if(this['_' + collection][collective].equals(object)) {
-        this['_' + collection].splice(collection, 1);
-      }
-    }
-    if(collection.singularize() + '_id' in object) {
-      object[collection.singularize() + '_id'] = undefined;
-      if(object.id != undefined && object.id != null) {
-        object.save();
-      }
-    } else {
-    }
-  },
-
-  _clear_collection: function(collection) {
-    for(record in this['_' + collection]) {
-      if(this['_' + collection][record].id != null && this['_' + collection][record].id != undefined) {
-        this['_' + collection][record]['_' + collection.singularize()] = undefined;
-        if(collection.singularize() + '_id' in this['_' + collection][record]) {
-          this['_' + collection][record][collection.singularize() + '_id'] = undefined;
-        } else {
-        }
-        this['_' + collection][record].save();
-      }
-    }
-    this['_' + collection] = [];
-  },
-
-  _count_collection: function(collection) {
-    return this._find_has_many(collection).length;
-  },
-
-  _build_collection: function(collection, attributes) {
-    return this._add_collection(collection, new window[collection.capitalize()](attributes));
-  },
-
-  _create_collection: function(collection, attributes) {
-    collective = this._build_collection(collection, attributes);
-    collective.save();
-    return collective;
-  },
-
-  _find_belongs_to: function(associate, force_reload) {
-    if(force_reload == undefined) {
-      force_reload = false;
-    }
-    if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
-      if(this[associate + '_id'] != null && this[associate + '_id'] != undefined) {
-        this['_' + associate] = window[associate.capitalize()].find(this[associate + '_id']);
-      }
-    }
-    return this['_' + associate];
-  },
-
-  _find_has_one: function(associate, force_reload) {
-    if(force_reload == undefined) {
-      force_reload = false;
-    }
-    if(force_reload || this['_' + associate] == null || this['_' + associate] == undefined) {
-      resource = this.klass.resource;
-      klass = this;
-      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + associate;
-      this.klass._ajax(url, 'GET', null, function(result) {
-        klass['_' + associate] = new window[associate.capitalize()](result[associate]);
-      });
-    }
-    return this['_' + associate];
-  },
-
-  _find_has_many: function(collection, force_reload) {
-    if(force_reload == undefined) {
-      force_reload = false;
-    }
-    if(force_reload || this['_' + collection].length == 0) {
-      resource = this.klass.resource;
-      resources = [];
-      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
-      this.klass._ajax(url, 'GET', null, function(results) {
-        for(result in results) {
-          resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
-        }
-      });
-      if(this['_' + collection].length == 0) {
-        return this._set_collection(collection, resources);
+      if(this._has_id() && this.id == object.id) {
+        return true;
       } else {
-        return this._merge_collection(collection, resources);
+        for(column in this.klass.columns) {
+          if(this[this.klass.columns[column]] != object[this.klass.columns[column]]) {
+            return false;
+          }
+        }
+        return true;
       }
     }
+    return false;
+  },
+
+  _has_id: function() {
+    return this.id != undefined && this.id != null;
   }
 });
 
@@ -311,10 +429,6 @@ var User = new JS.Class(Model, {
     resource: 'user',
     belongs_to: ['person'],
     has_many: ['tills']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -324,10 +438,6 @@ var Customer = new JS.Class(Model, {
     columns: ['id', 'person_id', 'credit', 'drivers_license_number', 'drivers_license_state', 'notes', 'active'],
     belongs_to: ['person'],
     has_many: ['transactions']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -337,10 +447,6 @@ var Employee = new JS.Class(Model, {
     columns: ['id', 'person_id', 'title', 'rate', 'active'],
     belongs_to: ['person'],
     has_many: ['timecards']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -348,14 +454,10 @@ var Phone = new JS.Class(Model, {
   extend: {
     resource: 'phone',
     columns: ['id', 'person_id', 'title', 'number'],
-    belongs_to: ['person']
-  },
-
-  valid: function() {
-    if(this.number == '' || this.number == undefined || this.number == null) {
-      return false;
+    belongs_to: ['person'],
+    'number': {
+      'presence_of': {}
     }
-    return true;
   }
 });
 
@@ -363,14 +465,12 @@ var Email = new JS.Class(Model, {
   extend: {
     resource: 'email',
     columns: ['id', 'person_id', 'address'],
-    belongs_to: ['person']
-  },
-
-  valid: function() {
-    if(this.address == '' || this.address == undefined || this.address == null) {
-      return false;
-    }
-    return true;
+    belongs_to: ['person'],
+    validations: {
+      'address': {
+        'presence_of': {}
+      }
+    },
   }
 });
 
@@ -380,10 +480,6 @@ var Person = new JS.Class(Model, {
     columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
     has_one: ['customer', 'employee', 'user'],
     has_many: ['addresses', 'emails', 'phones']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -391,23 +487,21 @@ var Address = new JS.Class(Model, {
   extend: {
     resource: 'address',
     columns: ['id', 'person_id', 'first_line', 'second_line', 'city', 'state', 'country', 'zip'],
-    belongs_to: ['person']
-  },
-
-  valid: function() {
-    if(this.first_line == '' || this.first_line == undefined || this.first_line == null) {
-      return false;
+    belongs_to: ['person'],
+    validations: {
+      'first_line': {
+        'presence_of': {}
+      },
+      'city': {
+        'presence_of': {}
+      },
+      'state': {
+        'presence_of': {}
+      },
+      'zip': {
+        'presence_of': {}
+      }
     }
-    if(this.city == '' || this.city == undefined || this.city == null) {
-      return false;
-    }
-    if(this.state == '' || this.state == undefined || this.state == null) {
-      return false;
-    }
-    if(this.zip == '' || this.zip == undefined || this.zip == null) {
-      return false;
-    }
-    return true;
   }
 });
 
@@ -416,10 +510,6 @@ var Entry = new JS.Class(Model, {
     resource: 'entry',
     columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
     belongs_to: ['till']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -427,35 +517,30 @@ var Property = new JS.Class(Model, {
   extend: {
     resource: 'property',
     columns: ['id', 'key', 'value'],
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
 var Line = new JS.Class(Model, {
   extend: {
     resource: 'line',
-    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable'],
-    belongs_to: ['item', 'transaction']
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable', 'discountable'],
+    belongs_to: ['item', 'transaction'],
+    'title': {
+      'presence_of': {}
+    }
   },
 
   subtotal: function() {
     if(this.purchase) {
-      return Math.round(this.quantity * this.discount * this.condition * this.price);
+      return Math.round(this.quantity * this.discount * this.price);
     } else {
-      return Math.round(this.quantity * this.discount * this.condition * this.credit * -1);
+      return Math.round(this.quantity * this.condition * this.credit * -1);
     }
-  },
-
-  valid: function() {
-    return this.quantity >= 0 && this.condition >= 0 && this.discount >= 0 && this.price >= 0 && this.cash >= 0 && this.credit >= 0;
   },
 
   creditSubtotal: function() {
     if(!this.purchase) {
-      return parseInt(Math.round(this.quantity * this.credit * this.discount * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.credit * this.condition * -1));
     } else {
       return 0;
     }
@@ -463,7 +548,7 @@ var Line = new JS.Class(Model, {
 
   cashSubtotal: function() {
     if(!this.purchase) {
-      return parseInt(Math.round(this.quantity * this.cash * this.discount * this.condition * -1));
+      return parseInt(Math.round(this.quantity * this.cash * this.condition * -1));
     } else {
       return 0;
     }
@@ -474,11 +559,15 @@ var Item = new JS.Class(Model, {
   extend: {
     resource: 'item',
     columns: ['id', 'title', 'description', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
-    has_many: ['properties']
-  },
-
-  valid: function() {
-    return this.title != '' && this.price >= 0 && this.credit >= 0 && this.cash >= 0;
+    has_many: ['properties'],
+    validations: {
+      'title': {
+        'presence_of': {}
+      },
+      'sku': {
+        'presence_of': {}
+      }
+    },
   }
 });
 
@@ -487,10 +576,6 @@ var Payment = new JS.Class(Model, {
     resource: 'payment',
     columns: ['id', 'transaction_id', 'form', 'amount'],
     belongs_to: ['transaction']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -499,10 +584,6 @@ var Till = new JS.Class(Model, {
     resource: 'till',
     columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
     has_many: ['entries', 'transactions', 'users']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -511,10 +592,6 @@ var Timecard = new JS.Class(Model, {
     resource: 'timecard',
     columns: ['id', 'employee_id', 'begin', 'end'],
     belongs_to: ['employee']
-  },
-
-  valid: function() {
-    return true;
   }
 });
 
@@ -763,21 +840,6 @@ var Transaction = new JS.Class(Model, {
     } else {
       return false;
     }
-  },
-
-  valid: function() {
-    if(this.subtotal() > 0 && this.amountDue() <= 0) {
-      return true;
-    } else if(this.subtotal() < 0) {
-      if(this.customer != undefined) {
-        if(this.customer.valid()) {
-          return true;
-        }
-      }
-    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-      return true;
-    }
-    return false;
   }
 });
 var Factory = new JS.Class({
@@ -1068,11 +1130,7 @@ var TillController = new JS.Class(ViewController, {
   },
 
   doSelect: function(event) {
-    Till.find($('div#till select#till_id').val(), function(till) {
-      if(till != null) {
-        event.data.instance.notifyObservers(new Till(till));
-      }
-    });
+    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
     event.preventDefault();
   }
 });
@@ -1363,12 +1421,12 @@ var Boolean = new JS.Class({
 
 var CustomerTableController = new JS.Class(TableController, {
 
-  update: function(customers) {
+  update: function(people) {
     this.reset();
 
-    for(customer in customers){
+    for(person in people){
       new_row = $(this.table_row).clone();
-      new_row.attr('data-object-id', customers[customer].id);
+      new_row.attr('data-object-id', people[person].id);
 
       if(customers[customer].person != undefined) {
         $('td.name', new_row).html([
@@ -1425,7 +1483,7 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.customer_table_controller = new CustomerTableController($('table', this.view));
-    this.customer_table_controller.addObserver(this.onCustomer, this);
+    this.customer_table_controller.addObserver(this.onPerson, this);
   },
 
   reset: function() {
@@ -1436,23 +1494,16 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Customer.search(query, page, function(customers) {
-      customers_results = [];
-      for(customer in customers) {
-        customers_results.push(new Customer(customers[customer].customer));
-      }
-      controller.customer_table_controller.update(customers_results);
-    });
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
   },
 
-  onCustomer: function(id) {
-    controller = this;
-    Customer.find(id, function(customer) {
-      if(customer != null) {
-        controller.notifyObservers(new Customer(customer));
-      }
-    });
+  onPerson: function(id) {
+    this.notifyObservers(Person.find(id).customer());
   }
 });
 
@@ -1530,28 +1581,26 @@ var CartLineController = new JS.Class(ViewController, {
 
   set: function(line) {
 
-    if(line.item.description == null || line.item.description == undefined) {
-      line.item.description = '';
-    }
-
     $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3', this.view).html(line.item.title);
-    $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);
+    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(line.item.creditPrice() * line.condition));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(line.item.cashPrice() * line.condition));
+    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
     $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq((line.condition * 5) - 1).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq((line.discount * 100) / 5).addClass('selected');
-    if(line.sell) {
+    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    if(line.purchase) {
+      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      if(line.discountable) {
+        this.showPurchaseControls();
+      }
+      this.hideSellControls();
+    } else {
       $('ul.cart_line_action li a.sell', this.view).addClass('selected');
       this.showSellControls();
       this.hidePurchaseControls();
-    } else {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
-      this.showPurchaseControls();
-      this.hideSellControls();
     }
     if(this.isOpen()) {
       $('div.cart_info', this.view).css('display', 'block');
@@ -1573,25 +1622,25 @@ var CartLineController = new JS.Class(ViewController, {
   },
 
   setPurchase: function() {
-    this.line.setPurchase();
+    this.line.purchase = true;
     this.notifyObservers(this.line_index, this.line);
   },
 
   setSell: function() {
-    this.line.setSell();
+    this.line.purchase = false;
     this.notifyObservers(this.line_index, this.line);
   },
 
   onDiscount: function(event) {
     index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.setDiscount($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100);
+    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.setCondition($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -1604,7 +1653,7 @@ var CartLineController = new JS.Class(ViewController, {
 
   onPlus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
-    event.data.instance.line.setQuantity(parseInt(quantity) + 1);
+    event.data.instance.line.quantity = parseInt(quantity) + 1;
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -1612,7 +1661,7 @@ var CartLineController = new JS.Class(ViewController, {
   onMinus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity > 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity) - 1);
+      event.data.instance.line.quantity = parseInt(quantity) - 1;
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();
@@ -1621,7 +1670,7 @@ var CartLineController = new JS.Class(ViewController, {
   onSubmit: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity >= 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity));
+      event.data.instance.line.quantity = parseInt(quantity);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     } else {
       $('input.quantity', event.data.instance.view).val(1);
@@ -1837,26 +1886,16 @@ var CartFormController = new JS.Class(FormController, {
     }
 
     line = new Line({
-      sell: false,
-      condition: 1,
+      title: $('input#item_title', item).val(),
       quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      condition: 1,
+      discount: 1,
+      price: base_price,
+      credit: credit_price,
+      cash: cash_price,
+      purchase: true,
       taxable: $('input#item_taxable', item).attr('checked'),
-      item: {
-        title: $('input#item_title', item).val(),
-        description: $('input#item_description', item).val(),
-        price: parseInt(Currency.toPennies($('input#item_price', item).val())),
-        taxable: $('input#item_taxable', item).attr('checked'),
-        properties: [
-          {
-            key: 'credit_price',
-            value: credit_price
-          },
-          {
-            key: 'cash_price',
-            value: cash_price
-          }
-        ]
-      }
+      discountable: $('input#item_discountable', item).attr('checked')
     });
 
     if(line.valid()) {
@@ -1878,6 +1917,7 @@ var CartFormController = new JS.Class(FormController, {
     this.callSuper();
     $('input#item_quantity', this.view).val(1);
     $('input#item_taxable', this.view).attr('checked', true);
+    $('input#item_discountable', this.view).attr('checked', true);
   },
 
   onPrice: function(event) {
@@ -1939,12 +1979,17 @@ var CartTableController = new JS.Class(TableController, {
       }
 
       $('td.title', new_row).html(items[item].title);
-      $('td.description', new_row).html(String.truncate(items[item].description, 50)).attr('title', items[item].description);
+      $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
       $('td.sku', new_row).html(items[item].sku);
       $('td.price', new_row).html(Currency.pretty(items[item].price));
+      $('td.credit', new_row).html(Currency.pretty(items[item].credit));
+      $('td.cash', new_row).html(Currency.pretty(items[item].cash));
       $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
-      for(property in items[item].properties) {
-        processed = this._processProperty(items[item].properties[property]);
+      $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
+
+      properties = items[item].properties();
+      for(property in properties) {
+        processed = this._processProperty(properties[property]);
         $('td.properties ul', new_row).append('<li><span>' + processed.key + ': </span><span>' + processed.value + '</span></li>');
       }
       $('tbody', this.view).append(new_row);
@@ -1952,15 +1997,7 @@ var CartTableController = new JS.Class(TableController, {
   },
 
   _processProperty: function(property) {
-    switch(property.key) {
-      case 'credit_price':
-      case 'cash_price':
-        property.value = Currency.pretty(property.value);
-        break;
-      default:
-        break;
-    }
-    property.key = String.capitalize(property.key.split('_').join(' '));
+    property.key = property.key.split('_').join(' ').capitalize();
     return property;
   }
 });
@@ -1982,30 +2019,28 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Item.search(query, page, function(items) {
-      items_results = [];
-      for(item in items) {
-        items_results.push(new Item(items[item].item));
-      }
-      controller.cart_table_controller.update(items_results);
-    });
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_all';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
   },
 
   onItem: function(id) {
-    controller = this;
-    Item.find(id, function(item) {
-      if(item != null) {
-        line = new Line({
-          sell: false,
-          condition: 1,
-          quantity: 1,
-          taxable: item.taxable,
-          item: item,
-        });
-        controller.notifyObservers([new Line(line)]);
-      }
-    });
+    item = Item.find(id);
+    this.notifyObservers([new Line({
+      title: item.title,
+      quantity: 1,
+      condition: 1,
+      discount: 1,
+      price: item.price,
+      credit: item.credit,
+      cash: item.cash,
+      purchase: true,
+      taxable: item.taxable,
+      discountable: item.discountable
+    })]);
   }
 });
 
@@ -2445,17 +2480,11 @@ String.prototype.truncate = function(length) {
 }
 
 var ReviewController = new JS.Class(ViewController, {
-  include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
     this.line = $('div#review_lines table > tbody > tr', view).detach();
-
-    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
 
   reset: function() {
@@ -2471,36 +2500,37 @@ var ReviewController = new JS.Class(ViewController, {
 
   update: function(transaction) {
 
-    if(transaction.customer != undefined) {
-      if(transaction.customer.id == null) {
-        $('h2#review_customer', this.view).html("No customer");
+    if(transaction.customer_id == undefined) {
+      $('h2#review_customer', this.view).html("No customer");
+    } else {
+      if(transaction.customer.person_id != undefined) {
+        person = transaction.customer().person();
+        $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        if(transaction.customer.person != null) {
-          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
-        } else {
-          $('h2#review_customer', this.view).empty();
-        }
+        $('h2#review_customer', this.view).empty();
       }
     }
 
     $('div#review_summary table > tbody > tr#payment', this.view).remove();
     $('div#review_lines table > tbody > tr', this.view).remove();
 
-    for(line in transaction.lines) {
+    lines = transaction.lines();
+    for(line in lines) {
       var new_line = this.line.clone();
-      $('td.quantity', new_line).html(transaction.lines[line].quantity);
-      $('td.title', new_line).html(transaction.lines[line].item.title);
-      $('td.description', new_line).html(String.truncate(transaction.lines[line].item.description, 50)).attr('title', transaction.lines[line].item.description);
-      $('td.sku', new_line).html(transaction.lines[line].item.sku);
-      $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
-      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));
+      $('td.quantity', new_line).html(lines[line].quantity);
+      $('td.title', new_line).html(lines[line].item.title);
+      $('td.description', new_line).html(lines[line].item.description.truncate(), 50).attr('title', lines[line].item.description);
+      $('td.sku', new_line).html(lines[line].item.sku);
+      $('td.price', new_line).html(Currency.pretty(lines[line].price));
+      $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
-    for(payment in transaction.payments) {
-      if(transaction.payments[payment].amount != 0) {
+    payments = transaction.payments();
+    for(payment in payments) {
+      if(payments[payment].amount != 0) {
         var new_payment_row = this.payment_row.clone();
-        $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
-        $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
+        $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
+        $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
         $('div#review_summary table tbody tr#change').before(new_payment_row);
       }
     }
@@ -2515,27 +2545,13 @@ var ReviewController = new JS.Class(ViewController, {
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
-  },
-
-  onReceiptQuantityChanged: function(event) {
-    var quantity = $(this).val();
-    if(!isNaN(quantity)) {
-      event.data.instance.notifyObservers(quantity);
-    } else {
-      $(this).val(1);
-      event.data.instance.notifyObservers(1);
-    }
-  },
-
-  setReceiptQuantity: function(quantity) {
-    this.notifyObservers(quantity);
   }
 });
 
 var TransactionSummaryController = new JS.Class(ViewController, {
 
   reset: function() {
-    this.setCustomer(new Customer({}));
+    this.setCustomer(new Customer());
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();
@@ -2557,8 +2573,9 @@ var TransactionSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      if(customer.person != null) {
-        $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      if(customer.person_id != null) {
+        person = customer.person();
+        $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#summary_customer', this.view).empty();
       }
@@ -2679,7 +2696,6 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
-    this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
 
     $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
@@ -2702,15 +2718,13 @@ var TransactionController = new JS.Class(ViewController, {
 
   updateCustomer: function(customer) {
     if(this.transaction) {
-      this.transaction.customer = customer;
+      this.transaction.setCustomer(customer);
       this.notifyControllers(this.transaction);
     }
   },
 
   updateCart: function(lines) {
     if(this.transaction) {
-      this.transaction.setLines(lines);
-      this.notifyControllers(this.transaction);
     }
   },
 
@@ -2742,12 +2756,6 @@ var TransactionController = new JS.Class(ViewController, {
     }
   },
 
-  updateReceipt: function(quantity) {
-    if(this.transaction) {
-      this.transaction.receipt.quantity = quantity;
-    }
-  },
-
   presentReceipt: function(url) {
     this.receipt_controller.update(url);
     this.receipt_controller.show();
@@ -2765,7 +2773,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.reset();
     this.till = till;
     this.user_id = user_id;
-    this.setTransaction(new Transaction({user_id: user_id, till: till, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransaction(new Transaction({user_id: user_id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
   },
 
   setTransaction: function(transaction) {
@@ -2774,6 +2782,21 @@ var TransactionController = new JS.Class(ViewController, {
   },
 
   saveTransaction: function() {
+
+    /*valid: function() {
+      if(this.subtotal() > 0 && this.amountDue() <= 0) {
+        return true;
+      } else if(this.subtotal() < 0) {
+        if(this.customer != undefined) {
+          if(this.customer.valid()) {
+            return true;
+          }
+        }
+      } else if(this.countItems() > 0 && this.amountDue() <= 0) {
+        return true;
+      }
+      return false;
+    }*/
     controller = this;
     this.transaction.complete = true;
     this.transaction.save(function(transaction) {
@@ -3124,40 +3147,6 @@ var CustomerReviewController = new JS.Class(ViewController, {
     $('div#customer_data div#customer_phones > p', this.view).html(null);
     $('div#customer_data div#customer_license > p', this.view).html(null);
     $('div#customer_data div#customer_notes > p', this.view).html(null);
-  }
-});
-
-var CustomerSearchController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.reset();
-
-    this.query = $('input.query', this.view);
-    this.query.bind('change', {instance: this}, this.onChange);
-    this.alphabet_controller = new AlphabetController('ul.alphabet_nav', this.view);
-    this.alphabet_controller.addObserver(this.onLetter, this);
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear)
-  },
-
-  reset: function() {
-    $(this.query).val(null);
-  },
-
-  onLetter: function(letter) {
-    $(this.query).val(letter);
-    $(this.query).trigger('change');
-  },
-
-  onClear: function(event) {
-    event.data.instance.query.val(null);
-    event.preventDefault();
-  },
-
-  onChange: function(event) {
-    event.data.instance.notifyObservers(event.data.instance.query.val());
-    event.preventDefault();
   }
 });
 

@@ -5,9 +5,5 @@ var Entry = new JS.Class(Model, {
     resource: 'entry',
     columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
     belongs_to: ['till']
-  },
-  
-  valid: function() {
-    return true;
   }
 });

@@ -12,6 +12,7 @@ class CreateLines < ActiveRecord::Migration
       t.integer :cash,                          :null => false, :default => 0
       t.boolean :purchase,                      :null => false, :default => true
       t.boolean :taxable,                       :null => false, :default => true
+      t.boolean :discountable,                  :null => false, :default => true
 
       t.timestamps
     end

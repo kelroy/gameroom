@@ -19,29 +19,27 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Item.search(query, page, function(items) {
-      items_results = [];
-      for(item in items) {
-        items_results.push(new Item(items[item].item));
-      }
-      controller.cart_table_controller.update(items_results);
-    });
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_all';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
   },
   
   onItem: function(id) {
-    controller = this;
-    Item.find(id, function(item) {
-      if(item != null) {
-        line = new Line({
-          sell: false,
-          condition: 1,
-          quantity: 1,
-          taxable: item.taxable,
-          item: item,
-        });
-        controller.notifyObservers([new Line(line)]);
-      }
-    });
+    item = Item.find(id);
+    this.notifyObservers([new Line({
+      title: item.title,
+      quantity: 1,
+      condition: 1,
+      discount: 1,
+      price: item.price,
+      credit: item.credit,
+      cash: item.cash,
+      purchase: true,
+      taxable: item.taxable,
+      discountable: item.discountable
+    })]);
   }
 });

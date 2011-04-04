@@ -6,9 +6,5 @@ var Timecard = new JS.Class(Model, {
     resource: 'timecard',
     columns: ['id', 'employee_id', 'begin', 'end'],
     belongs_to: ['employee']
-  },
-  
-  valid: function() {
-    return true;
   }
 });

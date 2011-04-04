@@ -5,9 +5,5 @@ var User = new JS.Class(Model, {
     resource: 'user',
     belongs_to: ['person'],
     has_many: ['tills']
-  },
-  
-  valid: function() {
-    return true;
   }
 });

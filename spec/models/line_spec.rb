@@ -18,7 +18,8 @@ describe Line do
         :credit => 0,
         :cash => 0,
         :purchase => true,
-        :taxable => true
+        :taxable => true,
+        :discountable => true
       }
       Line.new(valid_data).should be_valid
     end

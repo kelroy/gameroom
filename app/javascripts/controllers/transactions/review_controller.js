@@ -3,17 +3,11 @@
 //= require "../../string"
 
 var ReviewController = new JS.Class(ViewController, {
-  include: JS.Observable,
   
   initialize: function(view) {
     this.callSuper();
     this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
     this.line = $('div#review_lines table > tbody > tr', view).detach();
-    
-    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
   
   reset: function() {
@@ -29,36 +23,37 @@ var ReviewController = new JS.Class(ViewController, {
   
   update: function(transaction) {
     
-    if(transaction.customer != undefined) {
-      if(transaction.customer.id == null) {
-        $('h2#review_customer', this.view).html("No customer");
+    if(transaction.customer_id == undefined) {
+      $('h2#review_customer', this.view).html("No customer");
+    } else {
+      if(transaction.customer.person_id != undefined) {
+        person = transaction.customer().person();
+        $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        if(transaction.customer.person != null) {
-          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
-        } else {
-          $('h2#review_customer', this.view).empty();
-        }
+        $('h2#review_customer', this.view).empty();
       }
     }
     
     $('div#review_summary table > tbody > tr#payment', this.view).remove();
     $('div#review_lines table > tbody > tr', this.view).remove();
     
-    for(line in transaction.lines) {
+    lines = transaction.lines();
+    for(line in lines) {
       var new_line = this.line.clone();
-      $('td.quantity', new_line).html(transaction.lines[line].quantity);
-      $('td.title', new_line).html(transaction.lines[line].item.title);
-      $('td.description', new_line).html(String.truncate(transaction.lines[line].item.description, 50)).attr('title', transaction.lines[line].item.description);
-      $('td.sku', new_line).html(transaction.lines[line].item.sku);
-      $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
-      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));
+      $('td.quantity', new_line).html(lines[line].quantity);
+      $('td.title', new_line).html(lines[line].item.title);
+      $('td.description', new_line).html(lines[line].item.description.truncate(), 50).attr('title', lines[line].item.description);
+      $('td.sku', new_line).html(lines[line].item.sku);
+      $('td.price', new_line).html(Currency.pretty(lines[line].price));
+      $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
-    for(payment in transaction.payments) {
-      if(transaction.payments[payment].amount != 0) {
+    payments = transaction.payments();
+    for(payment in payments) {
+      if(payments[payment].amount != 0) {
         var new_payment_row = this.payment_row.clone();
-        $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
-        $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
+        $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
+        $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
         $('div#review_summary table tbody tr#change').before(new_payment_row);
       }
     }
@@ -73,19 +68,5 @@ var ReviewController = new JS.Class(ViewController, {
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
-  },
-  
-  onReceiptQuantityChanged: function(event) {
-    var quantity = $(this).val();
-    if(!isNaN(quantity)) {
-      event.data.instance.notifyObservers(quantity);
-    } else {
-      $(this).val(1);
-      event.data.instance.notifyObservers(1);
-    }
-  },
-  
-  setReceiptQuantity: function(quantity) {
-    this.notifyObservers(quantity);
   }
 });

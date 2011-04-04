@@ -10,11 +10,7 @@ var TillController = new JS.Class(ViewController, {
   },
   
   doSelect: function(event) {
-    Till.find($('div#till select#till_id').val(), function(till) {
-      if(till != null) {
-        event.data.instance.notifyObservers(new Till(till));
-      }
-    });
+    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
     event.preventDefault();
   }
 });

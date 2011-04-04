@@ -250,20 +250,5 @@ var Transaction = new JS.Class(Model, {
     } else {
       return false;
     }
-  },
-  
-  valid: function() {
-    if(this.subtotal() > 0 && this.amountDue() <= 0) {
-      return true;
-    } else if(this.subtotal() < 0) {
-      if(this.customer != undefined) {
-        if(this.customer.valid()) {
-          return true;
-        }
-      }
-    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-      return true;
-    }
-    return false;
   }
 });

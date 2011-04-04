@@ -5,9 +5,5 @@ var Property = new JS.Class(Model, {
   extend: {
     resource: 'property',
     columns: ['id', 'key', 'value'],
-  },
-  
-  valid: function() {
-    return true;
   }
 });

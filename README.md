@@ -37,3 +37,11 @@ Tests
 To run all tests run:
 
     $ rake spec
+    
+Login
+=====
+
+The default credentials for the development environment are:
+
+    u: login
+    p: password

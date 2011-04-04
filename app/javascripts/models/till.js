@@ -1,34 +1,10 @@
-//= require "../factory"
-//= require "../factories/till"
+//= require "../model"
+//= require "entry"
 
-var Till = new JS.Class({
+var Till = new JS.Class(Model, {
   extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/tills/' + id,
-        accept: 'application/json',
-        success: function(results) {
-          callback(results.till);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x',
-        dataType: 'json'
-      });
-    }
-  },
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-  },
-  
-  valid: function() {
-    return true;
+    resource: 'till',
+    columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
+    has_many: ['entries', 'transactions', 'users']
   }
 });

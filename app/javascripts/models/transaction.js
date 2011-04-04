@@ -1,49 +1,23 @@
+//= require "../model"
 //= require "till"
 //= require "customer"
-//= require "receipt"
 //= require "item"
+//= require "line"
 //= require "payment"
 
-var Transaction = new JS.Class({
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.user_id = params.user_id;
-    if(params.till != undefined) {
-      this.till = new Till(params.till);
-    } else {
-      this.till = undefined;
-    }
-    if(params.customer != undefined) {
-      this.customer = new Customer(params.customer);
-    } else {
-      this.customer = undefined;
-    }
-    if(params.receipt != undefined) {
-      this.receipt = new Receipt(params.receipt);
-    } else {
-      this.receipt = undefined;
-    }
-    this.lines = [];
-    for(line in params.lines) {
-      this.lines.push(new Line(params.lines[line].line));
-    }
-    this.payments = [
-      new Payment({form: 'store_credit', amount: 0}),
-      new Payment({form: 'gift_card', amount: 0}),
-      new Payment({form: 'credit_card', amount: 0}),
-      new Payment({form: 'check', amount: 0}),
-      new Payment({form: 'cash', amount: 0})
-    ];
-    this.tax_rate = params.tax_rate;
-    this.complete = params.complete;
-    this.locked = params.locked;
+var Transaction = new JS.Class(Model, {
+  extend: {
+    resource: 'transaction',
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
+    belongs_to: ['customer', 'till', 'user'],
+    has_many: ['lines', 'payments']
   },
   
   subtotal: function() {
+    lines = this.lines();
     subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].subtotal();
+    for(line in lines) {
+      subtotal += lines[line].subtotal();
     }
     return parseInt(subtotal);
   },
@@ -53,12 +27,13 @@ var Transaction = new JS.Class({
   },
   
   tax: function() {
+    lines = this.lines();
     if(this.subtotal() > 0) {
       purchase_subtotal = this.purchaseSubtotal();
       taxable_subtotal = 0;
-      for(line in this.lines) {
-        if(this.lines[line].taxable) {
-          taxable_subtotal += this.lines[line].subtotal();
+      for(line in lines) {
+        if(lines[line].taxable) {
+          taxable_subtotal += lines[line].subtotal();
         }
       }
       if(taxable_subtotal < purchase_subtotal) {
@@ -72,16 +47,22 @@ var Transaction = new JS.Class({
   },
   
   ratio: function() {
-    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+    ratio = 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+    if(isNaN(ratio)) {
+      return 0;
+    } else {
+      return ratio;
+    }
   },
   
   purchaseSubtotal: function() {
+    payments = this.payments();
     subtotal = this.subtotal();
     if(subtotal >= 0) {
       store_credit_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'store_credit') {
-          store_credit_payment += parseInt(this.payments[payment].amount);
+      for(payment in payments) {
+        if(payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(payments[payment].amount);
         }
       }
       return subtotal - store_credit_payment;
@@ -91,19 +72,21 @@ var Transaction = new JS.Class({
   },
   
   amountDue: function() {
+    payments = this.payments();
+    
     if(this.subtotal() >= 0) {
       payment_total = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form != 'store_credit') {
-          payment_total += parseInt(this.payments[payment].amount);
+      for(payment in payments) {
+        if(payments[payment].form != 'store_credit') {
+          payment_total += parseInt(payments[payment].amount);
         }
       }
       return this.total() - payment_total;
     } else {
       cash_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'cash') {
-          cash_payment += this.payments[payment].amount;
+      for(payment in payments) {
+        if(payments[payment].form == 'cash') {
+          cash_payment += payments[payment].amount;
         }
       }
       return cash_payment;
@@ -111,25 +94,28 @@ var Transaction = new JS.Class({
   },
   
   countItems: function() {
+    lines = this.lines();
     count = 0;
-    for(line in this.lines) {
-      count += this.lines[line].quantity;
+    for(line in lines) {
+      count += lines[line].quantity;
     }
     return count;
   },
   
   creditSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].creditSubtotal();
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].creditSubtotal();
     }
     return Math.abs(subtotal);
   },
   
   cashSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].cashSubtotal();
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].cashSubtotal();
     }
     return Math.abs(subtotal);
   },
@@ -137,13 +123,14 @@ var Transaction = new JS.Class({
   setLines: function(lines) {
     this.lines = lines;
     
+    payments = this.payments();
     subtotal = this.subtotal();
-    for(payment in this.payments) {
-      if(subtotal < 0 && this.payments[payment].amount > 0) {
-        this.payments[payment].amount = 0;
+    for(payment in payments) {
+      if(subtotal < 0 && payments[payment].amount > 0) {
+        payments[payment].amount = 0;
       }
-      if(subtotal >= 0 && this.payments[payment].amount < 0) {
-        this.payments[payment].amount = 0;
+      if(subtotal >= 0 && payments[payment].amount < 0) {
+        payments[payment].amount = 0;
       }
     }
     if(subtotal < 0) {
@@ -182,9 +169,11 @@ var Transaction = new JS.Class({
   },
   
   updatePayment: function(updated_payment) {
-    for(payment in this.payments) {
-      if(this.payments[payment].form == updated_payment.form) {
-        this.payments[payment] = updated_payment;
+    payments = this.payments();
+    
+    for(payment in payments) {
+      if(payments[payment].form == updated_payment.form) {
+        payments[payment] = updated_payment;
       }
     }
   },
@@ -261,20 +250,5 @@ var Transaction = new JS.Class({
     } else {
       return false;
     }
-  },
-  
-  valid: function() {
-    if(this.subtotal() > 0 && this.amountDue() <= 0) {
-      return true;
-    } else if(this.subtotal() < 0) {
-      if(this.customer != undefined) {
-        if(this.customer.valid()) {
-          return true;
-        }
-      }
-    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-      return true;
-    }
-    return false;
   }
 });

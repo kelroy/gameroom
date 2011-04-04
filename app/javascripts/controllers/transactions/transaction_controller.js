@@ -6,7 +6,7 @@
 //= require "transaction_summary_controller"
 //= require "transaction_finish_controller"
 //= require "transaction_nav_controller"
-//= require "../page_controller"
+//= require "../section_controller"
 //= require "../../models/till"
 //= require "../../models/transaction"
 //= require "../../currency"
@@ -25,7 +25,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.section_controller = new PageController('ul#transactions_nav', [
+    this.section_controller = new SectionController('ul#transactions_nav', [
       this.cart_controller.view,
       this.customer_controller.view,
       this.payment_controller.view,
@@ -40,7 +40,6 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
-    this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
     
     $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
@@ -63,15 +62,15 @@ var TransactionController = new JS.Class(ViewController, {
 
   updateCustomer: function(customer) {
     if(this.transaction) {
-      this.transaction.customer = customer;
+      this.transaction.setCustomer(customer);
       this.notifyControllers(this.transaction);
     }
   },
   
   updateCart: function(lines) {
     if(this.transaction) {
-      this.transaction.setLines(lines);
-      this.notifyControllers(this.transaction);
+      //this.transaction.setLines(lines);
+      //this.notifyControllers(this.transaction);
     }
   },
   
@@ -103,12 +102,6 @@ var TransactionController = new JS.Class(ViewController, {
     }
   },
   
-  updateReceipt: function(quantity) {
-    if(this.transaction) {
-      this.transaction.receipt.quantity = quantity;
-    }
-  },
-  
   presentReceipt: function(url) {
     this.receipt_controller.update(url);
     this.receipt_controller.show();
@@ -126,7 +119,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.reset();
     this.till = till;
     this.user_id = user_id;
-    this.setTransaction(new Transaction({user_id: user_id, till: till, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransaction(new Transaction({user_id: user_id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
   },
   
   setTransaction: function(transaction) {
@@ -135,6 +128,21 @@ var TransactionController = new JS.Class(ViewController, {
   },
   
   saveTransaction: function() {
+    
+    /*valid: function() {
+      if(this.subtotal() > 0 && this.amountDue() <= 0) {
+        return true;
+      } else if(this.subtotal() < 0) {
+        if(this.customer != undefined) {
+          if(this.customer.valid()) {
+            return true;
+          }
+        }
+      } else if(this.countItems() > 0 && this.amountDue() <= 0) {
+        return true;
+      }
+      return false;
+    }*/
     controller = this;
     this.transaction.complete = true;
     this.transaction.save(function(transaction) {

@@ -9,6 +9,7 @@ describe Phone do
     it "should be valid" do
       valid_data = {
         :person_id => 1,
+        :title => "Title",
         :number => "555-555-5555"
       }
       Phone.new(valid_data).should be_valid

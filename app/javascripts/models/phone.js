@@ -1,19 +1,13 @@
-var Phone = new JS.Class({
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.number = params.number;
-  },
+//= require "../model"
+//= require "person"
 
-  save: function() {
-    
-  },
-  
-  valid: function() {
-    if(this.number == '' || this.number == undefined || this.number == null) {
-      return false;
+var Phone = new JS.Class(Model, {
+  extend: {
+    resource: 'phone',
+    columns: ['id', 'person_id', 'title', 'number'],
+    belongs_to: ['person'],
+    'number': {
+      'presence_of': {}
     }
-    return true;
   }
 });

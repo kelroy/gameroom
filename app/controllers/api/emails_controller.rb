@@ -1,45 +1,42 @@
 class Api::EmailsController < ApplicationController
-  before_filter :set_parent
   
-  # Set the parent resource based on route param
-  def set_parent
-    @person ||= Person.find(params[:person_id])
-  end
-  
-  # GET /persons/:id/emails
-  # GET /persons/:id/emails.xml
-  # GET /persons/:id/emails.json
+  # GET /emails.xml
+  # GET /emails.json
+  # GET /people/:person_id/emails.xml
+  # GET /people/:person_id/emails.json
   def index
-    @emails = @person.emails
+    if params[:person_id]
+      @emails = Email.find_all_by_person_id(params[:person_id])
+    else
+      @emails = Email.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @emails.to_json(:except => [:person_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @emails.to_xml(:except => [:person_id, :created_at, :updated_at]) }
+      format.json { render :json => @emails.to_json }
+      format.xml  { render :xml => @emails.to_xml }
     end
   end
   
-  # GET /persons/:id/emails/1
-  # GET /persons/:id/emails/1.xml
-  # GET /persons/:id/emails/1.json
+  # GET /emails/1.xml
+  # GET /emails/1.json
   def show
-    @email = @person.emails.find(params[:id])
+    @email = Email.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @email.to_json(:except => [:person_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @email.to_xml(:except => [:person_id, :created_at, :updated_at]) }
+      format.json { render :json => @email.to_json }
+      format.xml  { render :xml => @email.to_xml }
     end
   end
   
-  # POST /persons/:id/emails
-  # POST /persons/:id/emails.xml
-  # POST /persons/:id/emails.json
+  # POST /emails.xml
+  # POST /emails.json
   def create
-    @email = @person.emails.create(params[:email])
+    @email = Email.create(params[:email])
 
     respond_to do |format|
       if @email.save
-        format.json  { render :json => @email.to_json(:except => [:person_id, :created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @email.to_xml(:except => [:person_id, :created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @email.to_json, :status => :created }
+        format.xml  { render :xml => @email.to_xml, :status => :created }
       else
         format.json  { render :json => @email.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @email.errors, :status => :unprocessable_entity }
@@ -47,16 +44,15 @@ class Api::EmailsController < ApplicationController
     end
   end
 
-  # PUT /persons/:id/emails/1
-  # PUT /persons/:id/emails/1.xml
-  # PUT /persons/:id/emails/1.json
+  # PUT /emails/1.xml
+  # PUT /emails/1.json
   def update
-    @email = @person.emails.find(params[:id])
+    @email = Email.find(params[:id])
 
     respond_to do |format|
       if @email.update_attributes(params[:email])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @email.to_json, :status => :ok }
+        format.xml  { render :xml => @email.to_xml, :status => :ok }
       else
         format.json  { render :json => @email.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @email.errors, :status => :unprocessable_entity }
@@ -64,15 +60,15 @@ class Api::EmailsController < ApplicationController
     end
   end
   
-  # DELETE /persons/:id/emails/1
-  # DELETE /persons/:id/emails/1.xml
+  # DELETE /emails/1.xml
+  # DELETE /emails/1.json
   def destroy
-    @email = @person.emails.find(params[:id])
+    @email = Email.find(params[:id])
     @email.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @email.to_json, :status => :ok }
+      format.xml  { render :xml => @email.to_xml, :status => :ok }
     end
   end
 end

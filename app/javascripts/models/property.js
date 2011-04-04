@@ -1,12 +1,9 @@
-var Property = new JS.Class({
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.key = params.key;
-    this.value = params.value;
-  },
-  
-  valid: function() {
-    return true;
+//= require "../model"
+//= require "item"
+
+var Property = new JS.Class(Model, {
+  extend: {
+    resource: 'property',
+    columns: ['id', 'key', 'value'],
   }
 });

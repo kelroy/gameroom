@@ -19,9 +19,6 @@
         = g.label :title, "Title"
         = g.text_field :title
       %li
-        = g.label :description, "Description"
-        = g.text_field :description
-      %li
         = g.label :price, "Base Price"
         = g.text_field :price, :placeholder => '0.00', :class => 'price'
       %li
@@ -33,6 +30,9 @@
       %li
         = g.label :taxable
         = check_box_tag :item_taxable, 1, true
+      %li
+        = g.label :discountable
+        = check_box_tag :item_discountable, 1, true
       %li
         = g.label :clear
         %a{:href => '#clear', :class => 'button clear_row'} Clear

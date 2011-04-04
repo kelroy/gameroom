@@ -1,42 +1,38 @@
 class Api::ItemsController < ApplicationController
   
-  # GET /items
   # GET /items.xml
   # GET /items.json
   def index
     @items = Item.all
     
     respond_to do |format|
-      format.json { render :json => @items.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @items.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @items.to_json }
+      format.xml  { render :xml => @items.to_xml }
     end
   end
   
-  # GET /items/1
   # GET /items/1.xml
   # GET /items/1.json
   def show
     @item = Item.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @item.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @item.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @item.to_json }
+      format.xml  { render :xml => @item.to_xml }
     end
   end
-  
-  # GET|POST /items/search
+
   # GET|POST /items/search.xml
   # GET|POST /items/search.json
   def search
     @items = Item.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
     
     respond_to do |format|
-      format.json { render :json => @items.to_json(:include => [:properties], :except => [:created_at, :updated_at]) }
-      format.xml  { render :xml => @items.to_xml(:include => [:properties], :except => [:created_at, :updated_at]) }
+      format.json { render :json => @items.to_json }
+      format.xml  { render :xml => @items.to_xml }
     end
   end
   
-  # POST /items
   # POST /items.xml
   # POST /items.json
   def create
@@ -44,8 +40,8 @@ class Api::ItemsController < ApplicationController
 
     respond_to do |format|
       if @item.save
-        format.json  { render :json => @item.to_json(:include => [:properties], :except => [:created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @item.to_xml(:include => [:properties], :except => [:created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @item.to_json, :status => :created }
+        format.xml  { render :xml => @item.to_xml, :status => :created }
       else
         format.json  { render :json => @item.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @item.errors, :status => :unprocessable_entity }
@@ -53,7 +49,6 @@ class Api::ItemsController < ApplicationController
     end
   end
 
-  # PUT /items/1
   # PUT /items/1.xml
   # PUT /items/1.json
   def update
@@ -61,8 +56,8 @@ class Api::ItemsController < ApplicationController
 
     respond_to do |format|
       if @item.update_attributes(params[:item])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @item.to_json, :status => :ok }
+        format.xml  { render :xml => @item.to_xml, :status => :ok }
       else
         format.json  { render :json => @item.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @item.errors, :status => :unprocessable_entity }
@@ -70,12 +65,15 @@ class Api::ItemsController < ApplicationController
     end
   end
   
-  # DELETE /items/1
-  # DELETE /items/1.json
   # DELETE /items/1.xml
+  # DELETE /items/1.json
   def destroy
+    @item = Item.find(params[:id])
+    @item.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @item.to_json, :status => :ok }
+      format.xml  { render :xml => @item.to_xml, :status => :ok }
     end
   end
 end

@@ -7,7 +7,7 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.customer_table_controller = new CustomerTableController($('table', this.view));
-    this.customer_table_controller.addObserver(this.onCustomer, this);
+    this.customer_table_controller.addObserver(this.onPerson, this);
   },
   
   reset: function() {
@@ -18,22 +18,15 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Customer.search(query, page, function(customers) {
-      customers_results = [];
-      for(customer in customers) {
-        customers_results.push(new Customer(customers[customer].customer));
-      }
-      controller.customer_table_controller.update(customers_results);
-    });
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
   },
   
-  onCustomer: function(id) {
-    controller = this;
-    Customer.find(id, function(customer) {
-      if(customer != null) {
-        controller.notifyObservers(new Customer(customer));
-      }
-    });
+  onPerson: function(id) {
+    this.notifyObservers(Person.find(id).customer());
   }
 });

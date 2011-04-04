@@ -1,10 +1,4 @@
-%div{:id => 'review_header', :class => 'header_container'}  
-  %div{:id => 'review_options'}
-    = form_for :receipt, :method => 'get', :url => root_path do |f|
-      %ul
-        %li
-          = f.label :quantity, "Receipt Qty."
-          = f.number_field :quantity, :value => 1, :min => 1
+%div{:id => 'review_header', :class => 'header_container'}
   %h2{:id => 'review_customer'} No customer
 %ul{:id => 'review_nav', :class => 'tab_nav'}
   %li

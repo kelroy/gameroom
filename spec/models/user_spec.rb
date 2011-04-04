@@ -9,7 +9,9 @@ describe User do
   context "when given valid user data" do
     it "should be valid" do
       valid_data = {
+        :person_id => 1,
         :login => 'example',
+        :pin => '0000',
         :email => 'example@example.com',
         :password => 'password',
         :password_confirmation => 'password'

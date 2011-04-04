@@ -1,12 +1,9 @@
-var Payment = new JS.Class({
-  
-  initialize: function(params) {
-    this.id = params.id;
-    this.form = params.form;
-    this.amount = params.amount;
-  },
-  
-  valid: function() {
-    return true;
+//= require "../model"
+
+var Payment = new JS.Class(Model, {
+  extend: {
+    resource: 'payment',
+    columns: ['id', 'transaction_id', 'form', 'amount'],
+    belongs_to: ['transaction']
   }
 });

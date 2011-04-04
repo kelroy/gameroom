@@ -20,11 +20,11 @@ unless Rails.env.production?
     person.addresses << Factory.create(:address, :person => person)
     person.phones << Factory.create(:phone, :person => person)
     
-    customer = Factory.create(:customer, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => true)
-    employee = Factory.create(:employee, :rate => (rand(19) + 1), :pin => '0000', :active => true)
-    
-    customer.person = person
-    employee.person = person
+    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => true)
+    employee = Factory.create(:employee, :person => person, :rate => (rand(19) + 1), :active => true)
+    employee.timecards << Factory.create(:timecard, :employee => employee, :begin => Time.now, :end => Time.now)
+    employee.timecards << Factory.create(:timecard, :employee => employee, :begin => Time.now, :end => Time.now)
+
     persons.push(person)
     customers.push(customer)
     employees.push(employee)
@@ -34,7 +34,7 @@ unless Rails.env.production?
   person.emails << Factory.create(:email, :person => person)
   person.addresses << Factory.create(:address, :person => person)
   person.phones << Factory.create(:phone, :person => person)
-  user = Factory.create(:user, :person => person, :email => 'example@example.com', :login => 'login', :administrator => true)
+  user = Factory.create(:user, :person => person, :pin => '1111', :email => 'example@example.com', :login => 'login', :administrator => true)
   
   tills = []
   (1..3).each do |n|
@@ -53,16 +53,15 @@ unless Rails.env.production?
     price = (rand(9999) + 1)
     credit_price = (price * 0.8).round
     cash_price = (credit_price / 2).round
-    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :taxable => rand(100).even?, :locked => true, :active => true)
-    item.properties << Factory.create(:property, :item => item, :key => 'credit_price', :value => credit_price)
-    item.properties << Factory.create(:property, :item => item, :key => 'cash_price', :value => cash_price)
+    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(100).even?, :discountable => rand(100).even?, :locked => true, :active => true)
+    item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
     items.push(item)
   end
   
   transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
   (1...5).each do |n|
     item = items[n]
-    transaction.lines << Factory.create(:line, :quantity => (rand(9) + 1), :price => item.price, :taxable => item.taxable, :item => item, :transaction => transaction)
+    transaction.lines << Factory.create(:line, :title => item.title, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
   end
   transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
 

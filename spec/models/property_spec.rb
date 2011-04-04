@@ -8,7 +8,6 @@ describe Property do
   context "when given valid property data" do
     it "should be valid" do
       valid_data = {
-        :item_id => 1,
         :key => 'Foo',
         :value => 'Bar'
       }

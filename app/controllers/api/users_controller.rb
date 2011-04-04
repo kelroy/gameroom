@@ -1,53 +1,80 @@
 class Api::UsersController < ApplicationController
   
-  # GET /users
   # GET /users.json
   # GET /users.xml
+  # GET /tills/:till_id/users.xml
+  # GET /tills/:till_id/users.json
   def index
-    @users = User.all
+    if params[:till_id]
+      @users = User.all(:include => :tills, :conditions => ["tills.id = ?", params[:till_id]])
+    else
+      @users = User.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @users }
-      format.xml  { render :xml => @users }
+      format.json { render :json => @users.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
+      format.xml  { render :xml => @users.to_xml(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
     end
   end
   
-  # GET /users/1
   # GET /users/1.json
   # GET /users/1.xml
+  # GET /people/:person_id/users.xml
+  # GET /people/:person_id/users.json
   def show
-    @user = User.find(params[:id])
+    if params[:person_id]
+      @user = User.find_by_person_id(params[:person_id])
+    else
+      @user = User.find(params[:id])
+    end
     
     respond_to do |format|
-      format.json { render :json => @user }
-      format.xml  { render :xml => @user }
+      format.json { render :json => @user.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
+      format.xml  { render :xml => @user.to_xml(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }
     end
   end
   
-  # POST /users
   # POST /users.xml
   # POST /users.json
   def create
+    @user = User.create(params[:user])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @user.save
+        format.json  { render :json => @user.to_json, :status => :created }
+        format.xml  { render :xml => @user.to_xml, :status => :created }
+      else
+        format.json  { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+      end
     end
   end
 
-  # PUT /users/1
   # PUT /users/1.xml
   # PUT /users/1.json
   def update
+    @user = User.find(params[:id])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @user.update_attributes(params[:user])
+        format.json  { render :json => @user.to_json, :status => :ok }
+        format.xml  { render :xml => @user.to_xml, :status => :ok }
+      else
+        format.json  { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
-  # DELETE /users/1
-  # DELETE /users/1.json
+
   # DELETE /users/1.xml
+  # DELETE /users/1.json
   def destroy
+    @user = User.find(params[:id])
+    @user.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @user.to_json, :status => :ok }
+      format.xml  { render :xml => @user.to_xml, :status => :ok }
     end
   end
 end

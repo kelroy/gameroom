@@ -10,6 +10,7 @@ describe Address do
       valid_data = {
         :person_id => 1,
         :first_line => "555 Street Way",
+        :second_line => "Suite 309",
         :city => "Lincoln",
         :state => "NE",
         :country => "US",

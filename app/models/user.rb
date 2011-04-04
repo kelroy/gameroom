@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
   acts_as_authentic
   
-  has_one     :person
+  belongs_to  :person
   has_many    :transactions
   has_and_belongs_to_many :tills
   

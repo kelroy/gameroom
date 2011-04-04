@@ -1,8 +1,845 @@
 /* Gameroom */
-var ViewController = new JS.Class({
+var Association = new JS.Module({
+  extend: {
+    belongs_to: [],
+    has_one: [],
+    has_many: [],
+  },
 
-  initialize: function(view) {
-    this.view = $(view);
+  _initialize_associations: function() {
+    for(association in this.klass.belongs_to) {
+      this['_' + this.klass.belongs_to[association]] = undefined;
+      this['_' + this.klass.belongs_to[association] + '_loaded'] = false;
+      this['set' + this.klass.belongs_to[association].capitalize()] = new Function(this.klass.belongs_to[association], 'return this._set_association("' + this.klass.belongs_to[association] + '", ' + this.klass.belongs_to[association] + ');');
+      this['build' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this['create' + this.klass.belongs_to[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.belongs_to[association] + '", attributes);');
+      this[this.klass.belongs_to[association]] = new Function('force_reload', 'return this._find_belongs_to("' + this.klass.belongs_to[association] + '", force_reload);');
+    }
+    for(association in this.klass.has_one) {
+      this['_' + this.klass.has_one[association]] = undefined;
+      this['_' + this.klass.has_one[association] + '_loaded'] = false;
+      this['set' + this.klass.has_one[association].capitalize()] = new Function(this.klass.has_one[association], 'return this._set_association("' + this.klass.has_one[association] + '", ' + this.klass.has_one[association] + ');');
+      this['build' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._build_association("' + this.klass.has_one[association] + '", attributes);');
+      this['create' + this.klass.has_one[association].capitalize()] = new Function('attributes', 'return this._create_association("' + this.klass.has_one[association] + '", attributes);');
+      this[this.klass.has_one[association]] = new Function('force_reload', 'return this._find_has_one("' + this.klass.has_one[association] + '", force_reload);');
+    }
+    for(collection in this.klass.has_many) {
+      this['_' + this.klass.has_many[collection]] = [];
+      this['_' + this.klass.has_many[collection] + '_loaded'] = false;
+      this['add' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._add_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection].singularize() + ');');
+      this['set' + this.klass.has_many[collection].capitalize()] = new Function(this.klass.has_many[collection], 'return this._set_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection] + ');');
+      this['delete' + this.klass.has_many[collection].singularize().capitalize()] = new Function(this.klass.has_many[collection].singularize(), 'return this._delete_collection("' + this.klass.has_many[collection] + '", ' + this.klass.has_many[collection].singularize() + ');');
+      this['clear' + this.klass.has_many[collection].capitalize()] = new Function('return this._clear_collection("' + this.klass.has_many[collection] + '");');
+      this['count' + this.klass.has_many[collection].capitalize()] = new Function('return this._count_collection("' + this.klass.has_many[collection] + '");');
+      this['build' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._build_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this['create' + this.klass.has_many[collection].singularize().capitalize()] = new Function('attributes', 'return this._create_collection("' + this.klass.has_many[collection] + '", attributes);');
+      this[this.klass.has_many[collection]] = new Function('force_reload', 'return this._find_has_many("' + this.klass.has_many[collection] + '", force_reload);');
+    }
+  },
+
+  _set_association: function(associate, object) {
+    if(associate + '_id' in this) {
+      if(object._has_id()) {
+        this[associate + '_id'] = object.id;
+      }
+    } else {
+      if(this['_' + associate]._has_id()) {
+        this['_' + associate][this.klass.resource + '_id'] = undefined;
+        this['_' + associate].save();
+      }
+      if(this._has_id()) {
+        object[this.klass.resource + '_id'] = this.id;
+        object.save();
+      }
+    }
+    return this['_' + associate] = object;
+  },
+
+  _build_association: function(associate, attributes) {
+    return this._set_association(associate, new window[associate.capitalize()](attributes));
+  },
+
+  _create_association: function(associate, attributes) {
+    association = this._build_association(associate, attributes);
+    association.save();
+    return association;
+  },
+
+  _remove_association: function(associate, id) {
+    association = window[associate.capitalize].find(id);
+    association[associate + '_id'] = undefined;
+    return association.save();
+  },
+
+  _add_collection: function(collection, object) {
+    if(this._has_id()) {
+      if(this.klass.resource + '_id' in object) {
+        object[this.klass.resource + '_id'] = this.id;
+      }
+    }
+    return this._merge_collection(collection, [object]);
+  },
+
+  _set_collection: function(collection, objects) {
+    this._clear_collection(collection);
+    this['_' + collection] = objects;
+    return this['_' + collection];
+  },
+
+  _merge_collection: function(collection, objects) {
+    for(object in objects) {
+      if(objects[object]._has_id()) {
+        found = false;
+        for(record in this['_' + collection]) {
+          if(this['_' + collection][record]._has_id() && this['_' + collection][record].id == objects[object].id) {
+            this['_' + collection][record] = objects[object];
+            found = true;
+          }
+        }
+        if(!found) {
+          this['_' + collection].push(objects[object]);
+        }
+      } else {
+        this['_' + collection].push(objects[object]);
+      }
+    }
+    return this['_' + collection];
+  },
+
+  _delete_collection: function(collection, object) {
+    this._find_has_many(collection);
+    for(collective in this['_' + collection]) {
+      if(this['_' + collection][collective].equals(object)) {
+        this['_' + collection].splice(collective, 1);
+      }
+    }
+    if(this.klass.resource + '_id' in object) {
+      object[this.klass.resource + '_id'] = null;
+      if(object.id != undefined && object.id != null) {
+        object.save();
+      }
+    } else {
+    }
+  },
+
+  _clear_collection: function(collection) {
+    for(record in this['_' + collection]) {
+      if(this['_' + collection][record]._has_id()) {
+        this['_' + collection][record]['_' + collection.singularize()] = undefined;
+        if(collection.singularize() + '_id' in this['_' + collection][record]) {
+          this['_' + collection][record][collection.singularize() + '_id'] = undefined;
+        } else {
+        }
+        this['_' + collection][record].save();
+      }
+    }
+    this['_' + collection] = [];
+  },
+
+  _count_collection: function(collection) {
+    return this._find_has_many(collection).length;
+  },
+
+  _build_collection: function(collection, attributes) {
+    return this._add_collection(collection, new window[collection.singularize().capitalize()](attributes));
+  },
+
+  _create_collection: function(collection, attributes) {
+    collective = this._build_collection(collection, attributes);
+    collective.save();
+    return collective;
+  },
+
+  _find_belongs_to: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + associate + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      if(this[associate + '_id'] != null && this[associate + '_id'] != undefined) {
+        this['_' + associate] = window[associate.capitalize()].find(this[associate + '_id']);
+        if(!this['_' + associate + '_loaded']) {
+          this['_' + associate + '_loaded'] = true;
+        }
+      }
+    }
+    return this['_' + associate];
+  },
+
+  _find_has_one: function(associate, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + associate + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      resource = this.klass.resource;
+      klass = this;
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + associate;
+      this.klass._ajax(url, 'GET', null, function(result) {
+        klass['_' + associate] = new window[associate.capitalize()](result[associate]);
+      });
+      if(!this['_' + associate + '_loaded']) {
+        this['_' + associate + '_loaded'] = true;
+      }
+    }
+    return this['_' + associate];
+  },
+
+  _find_has_many: function(collection, force_reload) {
+    if(force_reload == undefined) {
+      force_reload = false;
+    }
+    if(!this['_' + collection + '_loaded']) {
+      force_reload = true;
+    }
+    if(this._has_id() && force_reload) {
+      resource = this.klass.resource;
+      resources = [];
+      url = '/api/' + resource.pluralize() + '/' + this.id + '/' + collection;
+      this.klass._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[collection.singularize().capitalize()](results[result][collection.singularize()]));
+        }
+      });
+      if(!this['_' + collection + '_loaded']) {
+        this['_' + collection + '_loaded'] = true;
+      }
+      return this._merge_collection(collection, resources);
+    } else {
+      if(this['_' + collection].length == 0) {
+        return [];
+      } else {
+        return this['_' + collection];
+      }
+    }
+  }
+});
+var Validation = new JS.Module({
+  _errors: [],
+
+  valid: function() {
+    this._errors = [];
+    if(this.klass.validations != undefined) {
+      for(column in this.klass.validations) {
+        for(validation in this.klass.validations[column]) {
+          if(this['_' + validation] != undefined) {
+            this['_' + validation](column, this.klass.validations[column]);
+          }
+        }
+      }
+    }
+    if(this._errors.length == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  errors: function() {
+    return this._errors;
+  },
+
+  _presence_of: function(column, options) {
+    if(this[column] != null && this[column] != undefined && this[column] != '') {
+      return true;
+    } else {
+      this._errors.push({
+        column: column,
+        type: 'presence_of',
+        message: column + ' must not be empty.'
+      });
+      return false;
+    }
+  }
+});
+
+var Model = new JS.Class({
+  include: [Association, Validation],
+
+  extend: {
+    resource: undefined,
+    columns: [],
+
+    build: function(attributes) {
+      return new window[this.resource.capitalize()](attributes);
+    },
+
+    create: function(attributes) {
+      klass = this.build(attributes);
+      klass.save();
+      return klass;
+    },
+
+    destroy: function(id) {
+      resource = this.resource;
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + id;
+      this._ajax(url, 'DELETE', null, function(result) {
+        klass = new window[resource.capitalize()](result[resource]);
+        klass.id = null;
+      });
+      return klass;
+    },
+
+    find: function(id) {
+      resource = this.resource;
+      klass = undefined;
+      url = '/api/' + resource.pluralize() + '/' + id;
+      this._ajax(url, 'GET', null, function(result) {
+        klass = new window[resource.capitalize()](result[resource]);
+      });
+      return klass;
+    },
+
+    all: function() {
+      resource = this.resource;
+      resources = [];
+      url = '/api/' + resource.pluralize();
+      this._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
+
+    where: function(pattern, query, page, per_page) {
+      resource = this.resource;
+      resources = [];
+      search = new Object();
+      search[pattern] = query.split(" ");
+      url = '/api/'+ resource.pluralize() + '/search';
+      data = {
+        search: search,
+        page: page,
+        per_page: per_page
+      };
+      this._ajax(url, 'POST', data, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
+
+    _ajax: function(url, type, data, callback) {
+      if(data != null && data != undefined) {
+        data = JSON.stringify(data);
+      } else {
+        data = undefined;
+      }
+      $.ajax({
+        url: url,
+        data: data,
+        type: type,
+        accept: 'application/json',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: false,
+        async: false,
+        success: function(result) {
+          callback(result);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    }
+  },
+
+  initialize: function(attributes) {
+    for(column in this.klass.columns) {
+      this[this.klass.columns[column]] = undefined;
+    }
+    for(attribute in attributes) {
+      this[attribute] = attributes[attribute];
+    }
+    this._initialize_associations();
+  },
+
+  save: function() {
+    if(this.valid()) {
+      instance = this;
+      resource = this.klass.resource;
+
+      if(this._has_id()) {
+        url = '/api/' + resource.pluralize() + '/' + this.id;
+        type = 'PUT';
+      } else {
+        url = '/api/' + resource.pluralize();
+        type = 'POST';
+      }
+
+      data = {};
+      data[resource] = {};
+      for(column in this.klass.columns) {
+        data[resource][this.klass.columns[column]] = this[this.klass.columns[column]];
+      }
+
+      saved = false;
+      this.klass._ajax(url, type, data, function(result) {
+        instance.id = result[resource].id;
+        saved = true;
+      });
+
+      return saved;
+    } else {
+      return false;
+    }
+  },
+
+  destroy: function() {
+    return this.klass.destroy(this.id);
+  },
+
+  equals: function(object) {
+    if(this.callSuper()) {
+      return true;
+    } else {
+      if(this._has_id() && this.id == object.id) {
+        return true;
+      } else {
+        for(column in this.klass.columns) {
+          if(this[this.klass.columns[column]] != object[this.klass.columns[column]]) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  },
+
+  _has_id: function() {
+    return this.id != undefined && this.id != null;
+  }
+});
+
+var User = new JS.Class(Model, {
+  extend: {
+    resource: 'user',
+    belongs_to: ['person'],
+    has_many: ['tills']
+  }
+});
+
+var Customer = new JS.Class(Model, {
+  extend: {
+    resource: 'customer',
+    columns: ['id', 'person_id', 'credit', 'drivers_license_number', 'drivers_license_state', 'notes', 'active'],
+    belongs_to: ['person'],
+    has_many: ['transactions']
+  }
+});
+
+var Employee = new JS.Class(Model, {
+  extend: {
+    resource: 'employee',
+    columns: ['id', 'person_id', 'title', 'rate', 'active'],
+    belongs_to: ['person'],
+    has_many: ['timecards']
+  }
+});
+
+var Phone = new JS.Class(Model, {
+  extend: {
+    resource: 'phone',
+    columns: ['id', 'person_id', 'title', 'number'],
+    belongs_to: ['person'],
+    'number': {
+      'presence_of': {}
+    }
+  }
+});
+
+var Email = new JS.Class(Model, {
+  extend: {
+    resource: 'email',
+    columns: ['id', 'person_id', 'address'],
+    belongs_to: ['person'],
+    validations: {
+      'address': {
+        'presence_of': {}
+      }
+    },
+  }
+});
+
+var Person = new JS.Class(Model, {
+  extend: {
+    resource: 'person',
+    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
+    has_one: ['customer', 'employee', 'user'],
+    has_many: ['addresses', 'emails', 'phones']
+  }
+});
+
+var Address = new JS.Class(Model, {
+  extend: {
+    resource: 'address',
+    columns: ['id', 'person_id', 'first_line', 'second_line', 'city', 'state', 'country', 'zip'],
+    belongs_to: ['person'],
+    validations: {
+      'first_line': {
+        'presence_of': {}
+      },
+      'city': {
+        'presence_of': {}
+      },
+      'state': {
+        'presence_of': {}
+      },
+      'zip': {
+        'presence_of': {}
+      }
+    }
+  }
+});
+
+var Entry = new JS.Class(Model, {
+  extend: {
+    resource: 'entry',
+    columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
+    belongs_to: ['till']
+  }
+});
+
+var Property = new JS.Class(Model, {
+  extend: {
+    resource: 'property',
+    columns: ['id', 'key', 'value'],
+  }
+});
+
+var Line = new JS.Class(Model, {
+  extend: {
+    resource: 'line',
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable', 'discountable'],
+    belongs_to: ['item', 'transaction'],
+    'title': {
+      'presence_of': {}
+    }
+  },
+
+  subtotal: function() {
+    if(this.purchase) {
+      return Math.round(this.quantity * this.discount * this.price);
+    } else {
+      return Math.round(this.quantity * this.condition * this.credit * -1);
+    }
+  },
+
+  creditSubtotal: function() {
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.credit * this.condition * -1));
+    } else {
+      return 0;
+    }
+  },
+
+  cashSubtotal: function() {
+    if(!this.purchase) {
+      return parseInt(Math.round(this.quantity * this.cash * this.condition * -1));
+    } else {
+      return 0;
+    }
+  }
+});
+
+var Item = new JS.Class(Model, {
+  extend: {
+    resource: 'item',
+    columns: ['id', 'title', 'description', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
+    has_many: ['properties'],
+    validations: {
+      'title': {
+        'presence_of': {}
+      },
+      'sku': {
+        'presence_of': {}
+      }
+    },
+  }
+});
+
+var Payment = new JS.Class(Model, {
+  extend: {
+    resource: 'payment',
+    columns: ['id', 'transaction_id', 'form', 'amount'],
+    belongs_to: ['transaction']
+  }
+});
+
+var Till = new JS.Class(Model, {
+  extend: {
+    resource: 'till',
+    columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
+    has_many: ['entries', 'transactions', 'users']
+  }
+});
+
+var Timecard = new JS.Class(Model, {
+  extend: {
+    resource: 'timecard',
+    columns: ['id', 'employee_id', 'begin', 'end'],
+    belongs_to: ['employee']
+  }
+});
+
+var Transaction = new JS.Class(Model, {
+  extend: {
+    resource: 'transaction',
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
+    belongs_to: ['customer', 'till', 'user'],
+    has_many: ['lines', 'payments']
+  },
+
+  subtotal: function() {
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].subtotal();
+    }
+    return parseInt(subtotal);
+  },
+
+  total: function() {
+    return parseInt(this.purchaseSubtotal() + this.tax());
+  },
+
+  tax: function() {
+    lines = this.lines();
+    if(this.subtotal() > 0) {
+      purchase_subtotal = this.purchaseSubtotal();
+      taxable_subtotal = 0;
+      for(line in lines) {
+        if(lines[line].taxable) {
+          taxable_subtotal += lines[line].subtotal();
+        }
+      }
+      if(taxable_subtotal < purchase_subtotal) {
+        return parseInt(Math.round(taxable_subtotal * this.tax_rate));
+      } else {
+        return parseInt(Math.round(purchase_subtotal * this.tax_rate));
+      }
+    } else {
+      return 0;
+    }
+  },
+
+  ratio: function() {
+    ratio = 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
+    if(isNaN(ratio)) {
+      return 0;
+    } else {
+      return ratio;
+    }
+  },
+
+  purchaseSubtotal: function() {
+    payments = this.payments();
+    subtotal = this.subtotal();
+    if(subtotal >= 0) {
+      store_credit_payment = 0;
+      for(payment in payments) {
+        if(payments[payment].form == 'store_credit') {
+          store_credit_payment += parseInt(payments[payment].amount);
+        }
+      }
+      return subtotal - store_credit_payment;
+    } else {
+      return subtotal;
+    }
+  },
+
+  amountDue: function() {
+    payments = this.payments();
+
+    if(this.subtotal() >= 0) {
+      payment_total = 0;
+      for(payment in payments) {
+        if(payments[payment].form != 'store_credit') {
+          payment_total += parseInt(payments[payment].amount);
+        }
+      }
+      return this.total() - payment_total;
+    } else {
+      cash_payment = 0;
+      for(payment in payments) {
+        if(payments[payment].form == 'cash') {
+          cash_payment += payments[payment].amount;
+        }
+      }
+      return cash_payment;
+    }
+  },
+
+  countItems: function() {
+    lines = this.lines();
+    count = 0;
+    for(line in lines) {
+      count += lines[line].quantity;
+    }
+    return count;
+  },
+
+  creditSubtotal: function() {
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].creditSubtotal();
+    }
+    return Math.abs(subtotal);
+  },
+
+  cashSubtotal: function() {
+    lines = this.lines();
+    subtotal = 0;
+    for(line in lines) {
+      subtotal += lines[line].cashSubtotal();
+    }
+    return Math.abs(subtotal);
+  },
+
+  setLines: function(lines) {
+    this.lines = lines;
+
+    payments = this.payments();
+    subtotal = this.subtotal();
+    for(payment in payments) {
+      if(subtotal < 0 && payments[payment].amount > 0) {
+        payments[payment].amount = 0;
+      }
+      if(subtotal >= 0 && payments[payment].amount < 0) {
+        payments[payment].amount = 0;
+      }
+    }
+    if(subtotal < 0) {
+      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
+      this.updatePayment(new Payment({form: 'cash', amount: 0}));
+    }
+  },
+
+  updateCreditPayout: function(payment) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      this.updatePayoutRatio(payment.amount / subtotal);
+    }
+  },
+
+  updateCashPayout: function(payment) {
+    subtotal = this.subtotal();
+    if(subtotal < 0) {
+      credit_cash_ratio = this.ratio();
+      cash_payout = parseInt(Math.round((credit_cash_ratio - (credit_cash_ratio * 0)) * subtotal));
+      this.updatePayoutRatio(1 - (payment.amount / cash_payout));
+    }
+  },
+
+  updatePayoutRatio: function(ratio) {
+    if(ratio < 0 || ratio > 1) {
+      ratio = 1;
+    }
+    credit_cash_ratio = this.ratio();
+    console.log(credit_cash_ratio);
+    subtotal = this.subtotal();
+    credit_payout = parseInt(subtotal * ratio);
+    cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
+    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
+    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
+  },
+
+  updatePayment: function(updated_payment) {
+    payments = this.payments();
+
+    for(payment in payments) {
+      if(payments[payment].form == updated_payment.form) {
+        payments[payment] = updated_payment;
+      }
+    }
+  },
+
+  save: function(callback) {
+    if(this.valid()) {
+      transaction = {
+        till_id: this.till.id,
+        user_id: this.user_id,
+        tax_rate: this.tax_rate,
+        complete: this.complete,
+        locked: this.locked,
+        payments_attributes: [],
+        lines_attributes: []
+      };
+      for(payment in this.payments) {
+        transaction.payments_attributes.push({
+          form: this.payments[payment].form,
+          amount: this.payments[payment].amount
+        });
+      }
+      for(line in this.lines) {
+        if(this.lines[line].item.id != undefined) {
+          transaction.lines_attributes.push({
+            item_id: this.lines[line].item.id,
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price,
+            taxable: this.lines[line].taxable
+          });
+        } else {
+          transaction.lines_attributes.push({
+            quantity: this.lines[line].quantity,
+            price: this.lines[line].price,
+            taxable: this.lines[line].taxable,
+            item_attributes: {
+              title: this.lines[line].item.title,
+              description: this.lines[line].item.description,
+              price: this.lines[line].item.price,
+              taxable: this.lines[line].item.taxable,
+              discountable: this.lines[line].item.discountable,
+              locked: this.lines[line].item.locked,
+              active: this.lines[line].item.active,
+            }
+          });
+        }
+      }
+      if(this.customer != undefined) {
+        transaction.customer_id = this.customer.id;
+      }
+
+      $.ajax({
+        url: '/api/transactions',
+        accept: 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify({transaction: transaction}),
+        dataType: 'json',
+        processData: false,
+        type: 'POST',
+        success: function(result) {
+          callback(result.transaction);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+
+      });
+
+      return true;
+    } else {
+      return false;
+    }
   }
 });
 var Factory = new JS.Class({
@@ -13,19 +850,16 @@ var Factory = new JS.Class({
       var factory = this._factory_fetch(klass);
       if(factory != null && window[klass] != undefined) {
         var properties = this._merge_properties(factory.properties, properties);
-        var object = new window[klass];
         for(property in properties) {
           if(properties[property].sequence != undefined) {
-            object[property] = this.sequence(klass, properties[property].sequence);
+            properties[property] = this.sequence(klass, properties[property].sequence);
           } else if(properties[property].factory != undefined) {
-            object[property] = this.build(properties[property].factory);
           } else if(properties[property].factories != undefined) {
-            object[property] = [this.build(properties[property].factories)];
           } else {
-            object[property] = properties[property];
+            properties[property] = properties[property];
           }
         }
-        return object;
+        return new window[klass](properties);
       } else {
         return null;
       }
@@ -86,6 +920,149 @@ var Factory = new JS.Class({
   }
 });
 
+Factory.define('Address', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  first_line: '555 Street Way',
+  second_line: 'Suite 309',
+  city: 'Lincoln',
+  state: 'NE',
+  province: '',
+  country: 'US',
+  zip: '68508'
+});
+
+Factory.define('Customer', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  credit: 1000,
+  drivers_license_number: 'H12000000',
+  drivers_license_state: 'NE',
+  notes: 'Lorem Ipsum...',
+  active: true
+});
+
+Factory.define('Email', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  address: 'example@example.com'
+});
+
+Factory.define('Employee', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  rate: 0,
+  active: true
+});
+
+Factory.define('Entry', {
+  id: {
+    sequence: 'id'
+  },
+  till: {
+    factory: 'Till'
+  },
+  title: 'Title',
+  description: 'Lorem Ipsum...',
+  time: new Date(),
+  amount: 0
+});
+
+Factory.define('Item', {
+  id: {
+    sequence: 'id'
+  },
+  properties: {
+    factories: 'Property'
+  },
+  title: 'Title',
+  description: 'Lorem Ipsum...',
+  sku: {
+    sequence: 'sku'
+  },
+  price: 1000,
+  taxable: true,
+  discountable: false,
+  locked: false,
+  active: true
+});
+
+Factory.define('Line', {
+  id: {
+    sequence: 'id'
+  },
+  properties: {
+    factories: 'Item'
+  },
+  quantity: 1,
+  price: 1000
+});
+
+Factory.define('Payment', {
+  id: {
+    sequence: 'id'
+  },
+  transaction: {
+    factory: 'Transaction'
+  },
+  form: 'cash',
+  amount: 0
+});
+
+Factory.define('Person', {
+  id: {
+    sequence: 'id'
+  },
+  phones: {
+    factories: 'Phone'
+  },
+  emails: {
+    factories: 'Email'
+  },
+  addresses: {
+    factories: 'Address'
+  },
+  first_name: 'Joe',
+  middle_name: 'Q',
+  last_name: 'Example',
+  date_of_birth: new Date()
+});
+
+Factory.define('Phone', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  title: 'Work',
+  number: '402-444-5555'
+});
+
+Factory.define('Property', {
+  id: {
+    sequence: 'id'
+  },
+  key: 'foo',
+  value: 'bar'
+});
+
 Factory.define('Till', {
   id: {
     sequence: 'id'
@@ -93,35 +1070,54 @@ Factory.define('Till', {
   title: 'Title'
 });
 
-var Till = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/tills/' + id,
-        accept: 'application/json',
-        success: function(results) {
-          callback(results.till);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x',
-        dataType: 'json'
-      });
-    }
+Factory.define('Timecard', {
+  id: {
+    sequence: 'id'
   },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
+  employee: {
+    factory: 'Employee'
   },
+  begin: new Date(),
+  end: new Date()
+});
 
-  valid: function() {
-    return true;
+Factory.define('Transaction', {
+  id: {
+    sequence: 'id'
+  },
+  till: {
+    factory: 'Till'
+  },
+  customer: {
+    factory: 'Customer'
+  },
+  lines: {
+    factories: 'Line'
+  },
+  payments: {
+    factories: 'Payment'
+  },
+  tax_rate: 0.07,
+  complete: false,
+  locked: false
+});
+
+Factory.define('User', {
+  id: {
+    sequence: 'id'
+  },
+  person: {
+    factory: 'Person'
+  },
+  login: 'login',
+  email: 'example@example.com',
+  pin: '1111',
+  active: true
+});
+var ViewController = new JS.Class({
+
+  initialize: function(view) {
+    this.view = $(view);
   }
 });
 
@@ -134,11 +1130,7 @@ var TillController = new JS.Class(ViewController, {
   },
 
   doSelect: function(event) {
-    Till.find($('div#till select#till_id').val(), function(till) {
-      if(till != null) {
-        event.data.instance.notifyObservers(new Till(till));
-      }
-    });
+    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
     event.preventDefault();
   }
 });
@@ -429,12 +1421,12 @@ var Boolean = new JS.Class({
 
 var CustomerTableController = new JS.Class(TableController, {
 
-  update: function(customers) {
+  update: function(people) {
     this.reset();
 
-    for(customer in customers){
+    for(person in people){
       new_row = $(this.table_row).clone();
-      new_row.attr('data-object-id', customers[customer].id);
+      new_row.attr('data-object-id', people[person].id);
 
       if(customers[customer].person != undefined) {
         $('td.name', new_row).html([
@@ -485,238 +1477,13 @@ var CustomerTableController = new JS.Class(TableController, {
   }
 });
 
-Factory.define('Customer', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  credit: 1000,
-  drivers_license_number: 'H12000000',
-  drivers_license_state: 'NE',
-  notes: 'Lorem Ipsum...',
-  active: true
-});
-var Person = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.first_name = params.first_name;
-    this.middle_name = params.middle_name;
-    this.last_name = params.last_name;
-    this.date_of_birth = params.date_of_birth;
-    this.addresses = [];
-    for(address in params.addresses) {
-      this.addresses.push(new Address(params.addresses[address]));
-    }
-    this.phones = [];
-    for(phone in params.phones) {
-      this.phones.push(new Phone(params.phones[phone]));
-    }
-    this.emails = [];
-    for(email in params.emails) {
-      this.emails.push(new Email(params.emails[email]));
-    }
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.first_name == '' || this.first_name == undefined || this.first_name == null) {
-      return false;
-    }
-    if(this.last_name == '' || this.last_name == undefined || this.last_name == null) {
-      return false;
-    }
-    for(address in this.addresses) {
-      if(!this.addresses[address].valid()) {
-        return false;
-      }
-    }
-    for(phone in this.phones) {
-      if(!this.phones[phone].valid()) {
-        return false;
-      }
-    }
-    for(email in this.emails) {
-      if(!this.emails[email].valid()) {
-        return false;
-      }
-    }
-    return true;
-  }
-});
-
-var Customer = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/customers/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        success: function(results) {
-          callback(results.customer);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    },
-
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { person_first_name_or_person_last_name_contains_any: query.split(" ") };
-      } else {
-        search = { person_last_name_starts_with: query };
-      }
-
-      $.ajax({
-        url: '/api/customers/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    if(params.person != undefined) {
-      this.person = new Person(params.person);
-    } else {
-      this.person = undefined;
-    }
-    this.credit = params.credit;
-    this.drivers_license_number = params.drivers_license_number;
-    this.drivers_license_state = params.drivers_license_state;
-    this.notes = params.notes;
-    this.active = params.active;
-  },
-
-  save: function(callback) {
-    if(this.valid()) {
-      customer = {
-        credit: this.credit,
-        drivers_license_number: this.drivers_license_number,
-        drivers_license_state: this.drivers_license_state,
-        notes: this.notes,
-        active: this.active
-      };
-
-      if(this.person != undefined) {
-        customer.person_attributes = {
-          first_name: this.person.first_name,
-          middle_name: this.person.middle_name,
-          last_name: this.person.last_name,
-          emails_attributes: [],
-          addresses_attributes: [],
-          phones_attributes: []
-        }
-        for(email in this.person.emails) {
-          customer.person_attributes.emails_attributes.push({
-            address: this.person.emails[email].address
-          });
-        }
-        for(address in this.person.addresses) {
-          customer.person_attributes.addresses_attributes.push({
-            first_line: this.person.addresses[address].first_line,
-            second_line: this.person.addresses[address].second_line,
-            city: this.person.addresses[address].city,
-            state: this.person.addresses[address].state,
-            country: this.person.addresses[address].country,
-            zip: this.person.addresses[address].zip
-          });
-        }
-        for(phone in this.person.phones) {
-          customer.person_attributes.phones_attributes.push({
-            title: this.person.phones[phone].title,
-            number: this.person.phones[phone].number
-          });
-        }
-      }
-
-      if(this.id == undefined || this.id == 0) {
-        url = '/api/customers';
-        type = 'POST';
-      } else {
-        url = '/api/customers/' + this.id;
-        type = 'PUT';
-      }
-
-      $.ajax({
-        url: url,
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({customer: customer}),
-        dataType: 'json',
-        processData: false,
-        type: type,
-        success: function(result) {
-          callback(result.customer);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  valid: function() {
-    if(this.credit == undefined || this.credit == null) {
-      return false;
-    }
-    if(this.person != undefined) {
-      if(!this.person.valid()) {
-        return false;
-      }
-    }
-    return true;
-  }
-});
-
 var CustomerSearchResultsController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.customer_table_controller = new CustomerTableController($('table', this.view));
-    this.customer_table_controller.addObserver(this.onCustomer, this);
+    this.customer_table_controller.addObserver(this.onPerson, this);
   },
 
   reset: function() {
@@ -727,23 +1494,16 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Customer.search(query, page, function(customers) {
-      customers_results = [];
-      for(customer in customers) {
-        customers_results.push(new Customer(customers[customer].customer));
-      }
-      controller.customer_table_controller.update(customers_results);
-    });
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
   },
 
-  onCustomer: function(id) {
-    controller = this;
-    Customer.find(id, function(customer) {
-      if(customer != null) {
-        controller.notifyObservers(new Customer(customer));
-      }
-    });
+  onPerson: function(id) {
+    this.notifyObservers(Person.find(id).customer());
   }
 });
 
@@ -756,7 +1516,7 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller = new CustomerFormController('div#customer_form');
     this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
-    this.customer_page_controller = new PageController('ul#customer_nav', [
+    this.customer_section_controller = new SectionController('ul#customer_nav', [
       this.customer_review_controller.view,
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
@@ -774,21 +1534,21 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
-    this.customer_page_controller.reset();
+    this.customer_section_controller.reset();
     this.showReviewSection();
   },
 
   showReviewSection: function() {
-    this.customer_page_controller.showSection(0);
+    this.customer_section_controller.showSection(0);
   },
 
   showFormSection: function() {
-    this.customer_page_controller.showSection(1);
+    this.customer_section_controller.showSection(1);
   },
 
   showSearchSection: function(query) {
     if(query) {
-      this.customer_page_controller.showSection(2);
+      this.customer_section_controller.showSection(2);
     }
   },
 
@@ -821,28 +1581,26 @@ var CartLineController = new JS.Class(ViewController, {
 
   set: function(line) {
 
-    if(line.item.description == null || line.item.description == undefined) {
-      line.item.description = '';
-    }
-
     $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3', this.view).html(line.item.title);
-    $('hgroup.cart_line_information h4', this.view).html(String.truncate(line.item.description, 50)).attr('title', line.item.description);
+    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(line.item.creditPrice() * line.condition));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(line.item.cashPrice() * line.condition));
+    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
     $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq((line.condition * 5) - 1).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq((line.discount * 100) / 5).addClass('selected');
-    if(line.sell) {
+    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    if(line.purchase) {
+      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      if(line.discountable) {
+        this.showPurchaseControls();
+      }
+      this.hideSellControls();
+    } else {
       $('ul.cart_line_action li a.sell', this.view).addClass('selected');
       this.showSellControls();
       this.hidePurchaseControls();
-    } else {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
-      this.showPurchaseControls();
-      this.hideSellControls();
     }
     if(this.isOpen()) {
       $('div.cart_info', this.view).css('display', 'block');
@@ -864,25 +1622,25 @@ var CartLineController = new JS.Class(ViewController, {
   },
 
   setPurchase: function() {
-    this.line.setPurchase();
+    this.line.purchase = true;
     this.notifyObservers(this.line_index, this.line);
   },
 
   setSell: function() {
-    this.line.setSell();
+    this.line.purchase = false;
     this.notifyObservers(this.line_index, this.line);
   },
 
   onDiscount: function(event) {
     index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.setDiscount($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100);
+    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
   onCondition: function(event) {
     index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.setCondition($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -895,7 +1653,7 @@ var CartLineController = new JS.Class(ViewController, {
 
   onPlus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
-    event.data.instance.line.setQuantity(parseInt(quantity) + 1);
+    event.data.instance.line.quantity = parseInt(quantity) + 1;
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
@@ -903,7 +1661,7 @@ var CartLineController = new JS.Class(ViewController, {
   onMinus: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity > 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity) - 1);
+      event.data.instance.line.quantity = parseInt(quantity) - 1;
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     }
     event.preventDefault();
@@ -912,7 +1670,7 @@ var CartLineController = new JS.Class(ViewController, {
   onSubmit: function(event) {
     quantity = $('input.quantity', event.data.instance.view).val();
     if(quantity >= 1) {
-      event.data.instance.line.setQuantity(parseInt(quantity));
+      event.data.instance.line.quantity = parseInt(quantity);
       event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     } else {
       $('input.quantity', event.data.instance.view).val(1);
@@ -1083,214 +1841,6 @@ var CartLinesController = new JS.Class(ViewController, {
     $('h2#cart_lines_notice', this.view).hide();
   }
 });
-var Line = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.condition = 1;
-    this.discount = 0;
-    this.quantity = 0;
-    this.price = 0;
-    this.taxable = params.taxable;
-    this.sell = false;
-    if(params.transaction != undefined) {
-      this.transaction = new Transaction(params.transaction);
-    } else {
-      this.transaction = undefined;
-    }
-    if(params.item != undefined) {
-      this.item = new Item(params.item);
-    } else {
-      this.item = undefined;
-    }
-    this.setQuantity(params.quantity);
-    this.setCondition(params.condition);
-    if(params.sell) {
-      this.setSell();
-    } else {
-      this.setPurchase();
-    }
-  },
-
-  subtotal: function() {
-    return this.quantity * this.price;
-  },
-
-  valid: function() {
-    if(this.item != undefined) {
-      return this.quantity > 0 && this.price >= 0 && this.item.valid();
-    } else {
-      return false;
-    }
-  },
-
-  creditSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.creditPrice() * this.condition * -1));
-    } else {
-      return 0;
-    }
-  },
-
-  cashSubtotal: function() {
-    if(this.sell) {
-      return parseInt(Math.round(this.quantity * this.item.cashPrice() * this.condition * -1));
-    } else {
-      return 0;
-    }
-  },
-
-  setQuantity: function(quantity) {
-    this.quantity = quantity;
-  },
-
-  setDiscount: function(discount) {
-    this.discount = discount;
-    this._calculatePrice();
-  },
-
-  setCondition: function(condition) {
-    this.condition = condition;
-    this._calculatePrice();
-  },
-
-  setPurchase: function() {
-    this.sell = false;
-    this._calculatePrice();
-  },
-
-  setSell: function() {
-    this.sell = true;
-    this._calculatePrice();
-  },
-
-  _calculatePrice: function() {
-    if(this.sell) {
-      this.price = parseInt(this.item.creditPrice() * this.condition * -1);
-    } else {
-      this.price = parseInt(this.item.basePrice() * (1 - this.discount));
-    }
-  }
-});
-var Item = new JS.Class({
-  extend: {
-    find: function(id, callback) {
-      $.ajax({
-        url: '/api/items/' + id,
-        accept: 'application/json',
-        dataType: 'json',
-        success: function(results) {
-          callback(results.item);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    },
-
-    search: function(query, page, callback) {
-      if(query.length > 1) {
-        search = { title_or_description_or_sku_contains_all: query.split(" ") };
-      } else {
-        search = { title_starts_with: query };
-      }
-
-      $.ajax({
-        url: '/api/items/search',
-        data: JSON.stringify({
-          search: search,
-          page: page,
-          per_page: 10
-        }),
-        dataType: 'json',
-        accept: 'application/json',
-        contentType: 'application/json',
-        processData: false,
-        type: 'POST',
-        success: function(results) {
-          callback(results);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
-    }
-  },
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.properties = [];
-    for(property in params.properties) {
-      this.properties.push(new Property(params.properties[property]));
-    }
-    this.title = params.title;
-    this.description = params.description;
-    this.sku = params.sku;
-    this.price = params.price;
-    this.taxable = params.taxable;
-    this.discountable = params.discountable;
-    this.locked = params.locked;
-    this.active = params.active;
-  },
-
-  basePrice: function() {
-    return this.price;
-  },
-
-  creditPrice: function() {
-    var credit_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
-        case 'credit_price':
-          credit_price = parseInt(this.properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return credit_price;
-  },
-
-  cashPrice: function() {
-    var cash_price = 0;
-    for(property in this.properties) {
-      switch(this.properties[property].key) {
-        case 'cash_price':
-          cash_price = parseInt(this.properties[property].value);
-          break;
-        case 'default':
-          break;
-      }
-    }
-    return cash_price;
-  },
-
-  valid: function() {
-    return this.title != '' && this.price >= 0;
-  }
-});
-var Property = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.key = params.key;
-    this.value = params.value;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
 
 var CartFormController = new JS.Class(FormController, {
 
@@ -1336,26 +1886,16 @@ var CartFormController = new JS.Class(FormController, {
     }
 
     line = new Line({
-      sell: false,
-      condition: 1,
+      title: $('input#item_title', item).val(),
       quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      condition: 1,
+      discount: 1,
+      price: base_price,
+      credit: credit_price,
+      cash: cash_price,
+      purchase: true,
       taxable: $('input#item_taxable', item).attr('checked'),
-      item: {
-        title: $('input#item_title', item).val(),
-        description: $('input#item_description', item).val(),
-        price: parseInt(Currency.toPennies($('input#item_price', item).val())),
-        taxable: $('input#item_taxable', item).attr('checked'),
-        properties: [
-          {
-            key: 'credit_price',
-            value: credit_price
-          },
-          {
-            key: 'cash_price',
-            value: cash_price
-          }
-        ]
-      }
+      discountable: $('input#item_discountable', item).attr('checked')
     });
 
     if(line.valid()) {
@@ -1377,6 +1917,7 @@ var CartFormController = new JS.Class(FormController, {
     this.callSuper();
     $('input#item_quantity', this.view).val(1);
     $('input#item_taxable', this.view).attr('checked', true);
+    $('input#item_discountable', this.view).attr('checked', true);
   },
 
   onPrice: function(event) {
@@ -1438,12 +1979,17 @@ var CartTableController = new JS.Class(TableController, {
       }
 
       $('td.title', new_row).html(items[item].title);
-      $('td.description', new_row).html(String.truncate(items[item].description, 50)).attr('title', items[item].description);
+      $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
       $('td.sku', new_row).html(items[item].sku);
       $('td.price', new_row).html(Currency.pretty(items[item].price));
+      $('td.credit', new_row).html(Currency.pretty(items[item].credit));
+      $('td.cash', new_row).html(Currency.pretty(items[item].cash));
       $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
-      for(property in items[item].properties) {
-        processed = this._processProperty(items[item].properties[property]);
+      $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
+
+      properties = items[item].properties();
+      for(property in properties) {
+        processed = this._processProperty(properties[property]);
         $('td.properties ul', new_row).append('<li><span>' + processed.key + ': </span><span>' + processed.value + '</span></li>');
       }
       $('tbody', this.view).append(new_row);
@@ -1451,15 +1997,7 @@ var CartTableController = new JS.Class(TableController, {
   },
 
   _processProperty: function(property) {
-    switch(property.key) {
-      case 'credit_price':
-      case 'cash_price':
-        property.value = Currency.pretty(property.value);
-        break;
-      default:
-        break;
-    }
-    property.key = String.capitalize(property.key.split('_').join(' '));
+    property.key = property.key.split('_').join(' ').capitalize();
     return property;
   }
 });
@@ -1481,30 +2019,28 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     if(page == undefined || page == null) {
       page = 1;
     }
-    controller = this;
-    Item.search(query, page, function(items) {
-      items_results = [];
-      for(item in items) {
-        items_results.push(new Item(items[item].item));
-      }
-      controller.cart_table_controller.update(items_results);
-    });
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_all';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
   },
 
   onItem: function(id) {
-    controller = this;
-    Item.find(id, function(item) {
-      if(item != null) {
-        line = new Line({
-          sell: false,
-          condition: 1,
-          quantity: 1,
-          taxable: item.taxable,
-          item: item,
-        });
-        controller.notifyObservers([new Line(line)]);
-      }
-    });
+    item = Item.find(id);
+    this.notifyObservers([new Line({
+      title: item.title,
+      quantity: 1,
+      condition: 1,
+      discount: 1,
+      price: item.price,
+      credit: item.credit,
+      cash: item.cash,
+      purchase: true,
+      taxable: item.taxable,
+      discountable: item.discountable
+    })]);
   }
 });
 
@@ -1517,7 +2053,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller = new CartFormController('div#cart_form');
     this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
-    this.cart_page_controller = new PageController('ul#cart_nav', [
+    this.cart_section_controller = new SectionController('ul#cart_nav', [
       this.cart_lines_controller.view,
       this.cart_form_controller.view,
       this.cart_search_results_controller.view
@@ -1536,7 +2072,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_form_controller.reset();
     this.cart_search_controller.reset();
     this.cart_search_results_controller.reset();
-    this.cart_page_controller.reset();
+    this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
     this.showFormSection();
   },
@@ -1546,15 +2082,15 @@ var CartController = new JS.Class(ViewController, {
   },
 
   showLinesSection: function() {
-    this.cart_page_controller.showSection(0);
+    this.cart_section_controller.showSection(0);
   },
 
   showFormSection: function() {
-    this.cart_page_controller.showSection(1);
+    this.cart_section_controller.showSection(1);
   },
 
   showSearchSection: function() {
-    this.cart_page_controller.showSection(2);
+    this.cart_section_controller.showSection(2);
   },
 
   addLines: function(lines) {
@@ -1769,303 +2305,6 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
     }
   }
 });
-var Receipt = new JS.Class({
-
-  initialize: function(params) {
-    this.quantity = params.quantity;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-var Payment = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.form = params.form;
-    this.amount = params.amount;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-
-var Transaction = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.user_id = params.user_id;
-    if(params.till != undefined) {
-      this.till = new Till(params.till);
-    } else {
-      this.till = undefined;
-    }
-    if(params.customer != undefined) {
-      this.customer = new Customer(params.customer);
-    } else {
-      this.customer = undefined;
-    }
-    if(params.receipt != undefined) {
-      this.receipt = new Receipt(params.receipt);
-    } else {
-      this.receipt = undefined;
-    }
-    this.lines = [];
-    for(line in params.lines) {
-      this.lines.push(new Line(params.lines[line].line));
-    }
-    this.payments = [
-      new Payment({form: 'store_credit', amount: 0}),
-      new Payment({form: 'gift_card', amount: 0}),
-      new Payment({form: 'credit_card', amount: 0}),
-      new Payment({form: 'check', amount: 0}),
-      new Payment({form: 'cash', amount: 0})
-    ];
-    this.tax_rate = params.tax_rate;
-    this.complete = params.complete;
-    this.locked = params.locked;
-  },
-
-  subtotal: function() {
-    subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].subtotal();
-    }
-    return parseInt(subtotal);
-  },
-
-  total: function() {
-    return parseInt(this.purchaseSubtotal() + this.tax());
-  },
-
-  tax: function() {
-    if(this.subtotal() > 0) {
-      purchase_subtotal = this.purchaseSubtotal();
-      taxable_subtotal = 0;
-      for(line in this.lines) {
-        if(this.lines[line].taxable) {
-          taxable_subtotal += this.lines[line].subtotal();
-        }
-      }
-      if(taxable_subtotal < purchase_subtotal) {
-        return parseInt(Math.round(taxable_subtotal * this.tax_rate));
-      } else {
-        return parseInt(Math.round(purchase_subtotal * this.tax_rate));
-      }
-    } else {
-      return 0;
-    }
-  },
-
-  ratio: function() {
-    return 1.0 / Math.abs(this.creditSubtotal() / this.cashSubtotal());
-  },
-
-  purchaseSubtotal: function() {
-    subtotal = this.subtotal();
-    if(subtotal >= 0) {
-      store_credit_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'store_credit') {
-          store_credit_payment += parseInt(this.payments[payment].amount);
-        }
-      }
-      return subtotal - store_credit_payment;
-    } else {
-      return subtotal;
-    }
-  },
-
-  amountDue: function() {
-    if(this.subtotal() >= 0) {
-      payment_total = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form != 'store_credit') {
-          payment_total += parseInt(this.payments[payment].amount);
-        }
-      }
-      return this.total() - payment_total;
-    } else {
-      cash_payment = 0;
-      for(payment in this.payments) {
-        if(this.payments[payment].form == 'cash') {
-          cash_payment += this.payments[payment].amount;
-        }
-      }
-      return cash_payment;
-    }
-  },
-
-  countItems: function() {
-    count = 0;
-    for(line in this.lines) {
-      count += this.lines[line].quantity;
-    }
-    return count;
-  },
-
-  creditSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].creditSubtotal();
-    }
-    return Math.abs(subtotal);
-  },
-
-  cashSubtotal: function() {
-    var subtotal = 0;
-    for(line in this.lines) {
-      subtotal += this.lines[line].cashSubtotal();
-    }
-    return Math.abs(subtotal);
-  },
-
-  setLines: function(lines) {
-    this.lines = lines;
-
-    subtotal = this.subtotal();
-    for(payment in this.payments) {
-      if(subtotal < 0 && this.payments[payment].amount > 0) {
-        this.payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && this.payments[payment].amount < 0) {
-        this.payments[payment].amount = 0;
-      }
-    }
-    if(subtotal < 0) {
-      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
-      this.updatePayment(new Payment({form: 'cash', amount: 0}));
-    }
-  },
-
-  updateCreditPayout: function(payment) {
-    subtotal = this.subtotal();
-    if(subtotal < 0) {
-      this.updatePayoutRatio(payment.amount / subtotal);
-    }
-  },
-
-  updateCashPayout: function(payment) {
-    subtotal = this.subtotal();
-    if(subtotal < 0) {
-      credit_cash_ratio = this.ratio();
-      cash_payout = parseInt(Math.round((credit_cash_ratio - (credit_cash_ratio * 0)) * subtotal));
-      this.updatePayoutRatio(1 - (payment.amount / cash_payout));
-    }
-  },
-
-  updatePayoutRatio: function(ratio) {
-    if(ratio < 0 || ratio > 1) {
-      ratio = 1;
-    }
-    credit_cash_ratio = this.ratio();
-    console.log(credit_cash_ratio);
-    subtotal = this.subtotal();
-    credit_payout = parseInt(subtotal * ratio);
-    cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
-    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
-    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
-  },
-
-  updatePayment: function(updated_payment) {
-    for(payment in this.payments) {
-      if(this.payments[payment].form == updated_payment.form) {
-        this.payments[payment] = updated_payment;
-      }
-    }
-  },
-
-  save: function(callback) {
-    if(this.valid()) {
-      transaction = {
-        till_id: this.till.id,
-        user_id: this.user_id,
-        tax_rate: this.tax_rate,
-        complete: this.complete,
-        locked: this.locked,
-        payments_attributes: [],
-        lines_attributes: []
-      };
-      for(payment in this.payments) {
-        transaction.payments_attributes.push({
-          form: this.payments[payment].form,
-          amount: this.payments[payment].amount
-        });
-      }
-      for(line in this.lines) {
-        if(this.lines[line].item.id != undefined) {
-          transaction.lines_attributes.push({
-            item_id: this.lines[line].item.id,
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable
-          });
-        } else {
-          transaction.lines_attributes.push({
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable,
-            item_attributes: {
-              title: this.lines[line].item.title,
-              description: this.lines[line].item.description,
-              price: this.lines[line].item.price,
-              taxable: this.lines[line].item.taxable,
-              discountable: this.lines[line].item.discountable,
-              locked: this.lines[line].item.locked,
-              active: this.lines[line].item.active,
-            }
-          });
-        }
-      }
-      if(this.customer != undefined) {
-        transaction.customer_id = this.customer.id;
-      }
-
-      $.ajax({
-        url: '/api/transactions',
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({transaction: transaction}),
-        dataType: 'json',
-        processData: false,
-        type: 'POST',
-        success: function(result) {
-          callback(result.transaction);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  valid: function() {
-    if(this.subtotal() > 0 && this.amountDue() <= 0) {
-      return true;
-    } else if(this.subtotal() < 0) {
-      if(this.customer != undefined) {
-        if(this.customer.valid()) {
-          return true;
-        }
-      }
-    } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-      return true;
-    }
-    return false;
-  }
-});
 
 var PaymentScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -2224,38 +2463,28 @@ var Currency = new JS.Class({
     }
   }
 });
-var String = new JS.Class({
-  extend: {
-    ucfirst: function(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    },
+String.prototype.ucfirst = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+}
 
-    capitalize: function(string) {
-      sentence = string.split(' ');
-      for(word in sentence) {
-        sentence[word] = String.ucfirst(sentence[word])
-      }
-      return sentence.join(' ');
-    },
-
-    truncate: function(string, length) {
-      return string.substr(0, length - 1) + (string.length > length? '...' : '');
-    }
+String.prototype.capitalize = function() {
+  sentence = this.split(' ');
+  for(word in sentence) {
+    sentence[word] = sentence[word].ucfirst();
   }
-});
+  return sentence.join(' ');
+}
+
+String.prototype.truncate = function(length) {
+  return this.substr(0, length - 1) + (this.length > length? '...' : '');
+}
 
 var ReviewController = new JS.Class(ViewController, {
-  include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
     this.line = $('div#review_lines table > tbody > tr', view).detach();
-
-    $('input#receipt_quantity', view).bind('change', {instance: this}, this.onReceiptQuantityChanged);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
 
   reset: function() {
@@ -2271,36 +2500,37 @@ var ReviewController = new JS.Class(ViewController, {
 
   update: function(transaction) {
 
-    if(transaction.customer != undefined) {
-      if(transaction.customer.id == null) {
-        $('h2#review_customer', this.view).html("No customer");
+    if(transaction.customer_id == undefined) {
+      $('h2#review_customer', this.view).html("No customer");
+    } else {
+      if(transaction.customer.person_id != undefined) {
+        person = transaction.customer().person();
+        $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        if(transaction.customer.person != null) {
-          $('h2#review_customer', this.view).html(transaction.customer.person.first_name + ' ' + transaction.customer.person.last_name);
-        } else {
-          $('h2#review_customer', this.view).empty();
-        }
+        $('h2#review_customer', this.view).empty();
       }
     }
 
     $('div#review_summary table > tbody > tr#payment', this.view).remove();
     $('div#review_lines table > tbody > tr', this.view).remove();
 
-    for(line in transaction.lines) {
+    lines = transaction.lines();
+    for(line in lines) {
       var new_line = this.line.clone();
-      $('td.quantity', new_line).html(transaction.lines[line].quantity);
-      $('td.title', new_line).html(transaction.lines[line].item.title);
-      $('td.description', new_line).html(String.truncate(transaction.lines[line].item.description, 50)).attr('title', transaction.lines[line].item.description);
-      $('td.sku', new_line).html(transaction.lines[line].item.sku);
-      $('td.price', new_line).html(Currency.pretty(transaction.lines[line].price));
-      $('td.subtotal', new_line).html(Currency.pretty(transaction.lines[line].subtotal()));
+      $('td.quantity', new_line).html(lines[line].quantity);
+      $('td.title', new_line).html(lines[line].item.title);
+      $('td.description', new_line).html(lines[line].item.description.truncate(), 50).attr('title', lines[line].item.description);
+      $('td.sku', new_line).html(lines[line].item.sku);
+      $('td.price', new_line).html(Currency.pretty(lines[line].price));
+      $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
-    for(payment in transaction.payments) {
-      if(transaction.payments[payment].amount != 0) {
+    payments = transaction.payments();
+    for(payment in payments) {
+      if(payments[payment].amount != 0) {
         var new_payment_row = this.payment_row.clone();
-        $('td', new_payment_row).eq(0).html(String.capitalize(transaction.payments[payment].form.replace('_', ' ')));
-        $('td', new_payment_row).eq(1).html(Currency.pretty(transaction.payments[payment].amount));
+        $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
+        $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
         $('div#review_summary table tbody tr#change').before(new_payment_row);
       }
     }
@@ -2315,27 +2545,13 @@ var ReviewController = new JS.Class(ViewController, {
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
       $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
-  },
-
-  onReceiptQuantityChanged: function(event) {
-    var quantity = $(this).val();
-    if(!isNaN(quantity)) {
-      event.data.instance.notifyObservers(quantity);
-    } else {
-      $(this).val(1);
-      event.data.instance.notifyObservers(1);
-    }
-  },
-
-  setReceiptQuantity: function(quantity) {
-    this.notifyObservers(quantity);
   }
 });
 
 var TransactionSummaryController = new JS.Class(ViewController, {
 
   reset: function() {
-    this.setCustomer(new Customer({}));
+    this.setCustomer(new Customer());
     this.setItemCount(0);
     this.setTotal(0);
     this.view.show();
@@ -2357,8 +2573,9 @@ var TransactionSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      if(customer.person != null) {
-        $('h2#summary_customer', this.view).html(customer.person.first_name + ' ' + customer.person.last_name);
+      if(customer.person_id != null) {
+        person = customer.person();
+        $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#summary_customer', this.view).empty();
       }
@@ -2417,7 +2634,7 @@ var TransactionNavController = new JS.Class(ViewController, {
   }
 });
 
-var PageController = new JS.Class(ViewController, {
+var SectionController = new JS.Class(ViewController, {
 
   initialize: function(view, sections) {
     this.callSuper();
@@ -2464,7 +2681,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.cart_controller = new CartController('section#cart');
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
-    this.section_controller = new PageController('ul#transactions_nav', [
+    this.section_controller = new SectionController('ul#transactions_nav', [
       this.cart_controller.view,
       this.customer_controller.view,
       this.payment_controller.view,
@@ -2479,7 +2696,6 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
-    this.review_controller.addObserver(this.updateReceipt, this);
     this.finish_controller.addObserver(this.saveTransaction, this);
 
     $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
@@ -2502,15 +2718,13 @@ var TransactionController = new JS.Class(ViewController, {
 
   updateCustomer: function(customer) {
     if(this.transaction) {
-      this.transaction.customer = customer;
+      this.transaction.setCustomer(customer);
       this.notifyControllers(this.transaction);
     }
   },
 
   updateCart: function(lines) {
     if(this.transaction) {
-      this.transaction.setLines(lines);
-      this.notifyControllers(this.transaction);
     }
   },
 
@@ -2542,12 +2756,6 @@ var TransactionController = new JS.Class(ViewController, {
     }
   },
 
-  updateReceipt: function(quantity) {
-    if(this.transaction) {
-      this.transaction.receipt.quantity = quantity;
-    }
-  },
-
   presentReceipt: function(url) {
     this.receipt_controller.update(url);
     this.receipt_controller.show();
@@ -2565,7 +2773,7 @@ var TransactionController = new JS.Class(ViewController, {
     this.reset();
     this.till = till;
     this.user_id = user_id;
-    this.setTransaction(new Transaction({user_id: user_id, till: till, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransaction(new Transaction({user_id: user_id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
   },
 
   setTransaction: function(transaction) {
@@ -2574,6 +2782,21 @@ var TransactionController = new JS.Class(ViewController, {
   },
 
   saveTransaction: function() {
+
+    /*valid: function() {
+      if(this.subtotal() > 0 && this.amountDue() <= 0) {
+        return true;
+      } else if(this.subtotal() < 0) {
+        if(this.customer != undefined) {
+          if(this.customer.valid()) {
+            return true;
+          }
+        }
+      } else if(this.countItems() > 0 && this.amountDue() <= 0) {
+        return true;
+      }
+      return false;
+    }*/
     controller = this;
     this.transaction.complete = true;
     this.transaction.save(function(transaction) {
@@ -2615,12 +2838,191 @@ var TerminalController = new JS.Class({
   }
 });
 
+var ClockInOutController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
+    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
+  },
+
+  doClockInOut: function(event) {
+    id = '';
+    pin = '';
+
+    event.data.instance.validateUser(id, pin, function(valid) {
+      if(valid) {
+        event.data.instance.timestampUser(id, function() {
+          event.data.instance.view.hide();
+          event.data.instance.notifyObservers();
+        });
+      }
+    });
+    event.preventDefault();
+  },
+
+  hideClockInOut: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  timestampUser: function(id, callback) {
+    callback();
+  },
+
+  validateUser: function(id, pin, callback) {
+    callback(true);
+  }
+});
+
+var OverviewChartController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
+  },
+
+  reset: function() {
+
+  },
+
+  refresh: function() {
+
+  },
+
+  update: function(date) {
+
+  },
+
+  doRefresh: function(event) {
+    event.data.instance.refresh();
+    event.preventDefault();
+  }
+});
+
+var OverviewInController = new JS.Class(OverviewChartController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  refresh: function() {
+
+  },
+
+  update: function(date) {
+
+  }
+});
+
+var OverviewOutController = new JS.Class(OverviewChartController, {
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  refresh: function() {
+
+  }
+});
+
+var OverviewController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.clock_in_out_controller = new ClockInOutController('div#clock_in_out');
+    this.overview_in_controller = new OverviewInController('div#overview_in');
+    this.overview_out_controller = new OverviewOutController('div#overview_out');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_in_controller.view,
+      this.overview_out_controller.view
+    ]);
+
+    controller = this;
+    this.updateClock();
+    this.clock_interval = window.setInterval(function() {
+      controller.updateClock();
+    }, 1000);
+
+    this.clock_in_out_controller.addObserver(this.updateCharts, this);
+
+    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_in_controller.reset();
+    this.overview_out_controller.reset();
+    this.showInSection();
+  },
+
+  showInSection: function() {
+    this.overview_section_controller.showSection(0);
+  },
+
+  showOutSection: function() {
+    this.overview_section_controller.showSection(1);
+  },
+
+  showClockInOut: function(event) {
+    event.data.instance.clock_in_out_controller.view.show();
+    event.preventDefault();
+  },
+
+  updateCharts: function() {
+    this.overview_in_controller.refresh();
+    this.overview_out_controller.refresh();
+  },
+
+  updateClock: function() {
+    date = new Date();
+    this.overview_in_controller.update(date);
+    $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
+  }
+});
+
+var AdminController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.reset();
+  },
+
+  reset: function() {
+  }
+});
+
+var TimeclockController = new JS.Class({
+
+  initialize: function() {
+    this.overview_controller = new OverviewController('section#overview');
+    this.admin_controller = new AdminController('section#admin');
+    this.section_controller = new SectionController('ul#timeclock_nav', [
+      this.overview_controller.view,
+      this.admin_controller.view
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_controller.reset();
+    this.admin_controller.reset();
+    this.section_controller.reset();
+  }
+});
+
 var transactions = {
 
   run: function() {
-
     new TerminalController();
-
   }
 
 };
@@ -2637,6 +3039,14 @@ var reports = {
 
   run: function() {
 
+  }
+
+};
+
+var timeclock = {
+
+  run: function() {
+    new TimeclockController();
   }
 
 };
@@ -2740,40 +3150,6 @@ var CustomerReviewController = new JS.Class(ViewController, {
   }
 });
 
-var CustomerSearchController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.reset();
-
-    this.query = $('input.query', this.view);
-    this.query.bind('change', {instance: this}, this.onChange);
-    this.alphabet_controller = new AlphabetController('ul.alphabet_nav', this.view);
-    this.alphabet_controller.addObserver(this.onLetter, this);
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear)
-  },
-
-  reset: function() {
-    $(this.query).val(null);
-  },
-
-  onLetter: function(letter) {
-    $(this.query).val(letter);
-    $(this.query).trigger('change');
-  },
-
-  onClear: function(event) {
-    event.data.instance.query.val(null);
-    event.preventDefault();
-  },
-
-  onChange: function(event) {
-    event.data.instance.notifyObservers(event.data.instance.query.val());
-    event.preventDefault();
-  }
-});
-
 var ReceiptController = new JS.Class(ViewController, {
   include: JS.Observable,
 
@@ -2795,163 +3171,5 @@ var ReceiptController = new JS.Class(ViewController, {
   doPrint: function(event) {
     window.frames['receipt_window'].print();
     event.preventDefault();
-  }
-});
-
-Factory.define('Address', {
-  id: {
-    sequence: 'id'
-  },
-  first_line: '555 Street Way',
-  second_line: 'Suite 309',
-  city: 'Lincoln',
-  state: 'NE',
-  province: '',
-  country: 'US',
-  zip: '68508'
-});
-
-Factory.define('Email', {
-  id: {
-    sequence: 'id'
-  },
-  address: 'example@example.com'
-});
-
-Factory.define('Item', {
-  id: {
-    sequence: 'id'
-  },
-  properties: {
-    factories: 'Property'
-  },
-  title: 'Title',
-  description: 'Lorem Ipsum...',
-  sku: {
-    sequence: 'sku'
-  },
-  price: 1000,
-  taxable: true,
-  discountable: false,
-  locked: false,
-  active: true
-});
-
-Factory.define('Person', {
-  id: {
-    sequence: 'id'
-  },
-  phones: {
-    factories: 'Phone'
-  },
-  emails: {
-    factories: 'Email'
-  },
-  addresses: {
-    factories: 'Address'
-  },
-  first_name: 'Joe',
-  middle_name: 'T',
-  last_name: 'Customer',
-  date_of_birth: new Date()
-});
-
-Factory.define('Phone', {
-  id: {
-    sequence: 'id'
-  },
-  title: 'Work',
-  number: '402-444-5555'
-});
-
-Factory.define('Property', {
-  id: {
-    sequence: 'id'
-  },
-  key: 'foo',
-  value: 'bar'
-});
-var Address = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.first_line = params.first_line;
-    this.second_line = params.second_line;
-    this.city = params.city;
-    this.state = params.state;
-    this.country = params.country;
-    this.zip = params.zip;
-  },
-
-  valid: function() {
-    if(this.first_line == '' || this.first_line == undefined || this.first_line == null) {
-      return false;
-    }
-    if(this.city == '' || this.city == undefined || this.city == null) {
-      return false;
-    }
-    if(this.state == '' || this.state == undefined || this.state == null) {
-      return false;
-    }
-    if(this.zip == '' || this.zip == undefined || this.zip == null) {
-      return false;
-    }
-    return true;
-  }
-});
-var Email = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.address = params.address;
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.address == '' || this.address == undefined || this.address == null) {
-      return false;
-    }
-    return true;
-  }
-});
-var Entry = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.description = params.description;
-    if(params.time != undefined) {
-      this.time = new Date(params.time);
-    } else {
-      this.time = new Date();
-    }
-    this.amount = params.amount;
-    this.action = params.action;
-  },
-
-  valid: function() {
-    return true;
-  }
-});
-var Phone = new JS.Class({
-
-  initialize: function(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.number = params.number;
-  },
-
-  save: function() {
-
-  },
-
-  valid: function() {
-    if(this.number == '' || this.number == undefined || this.number == null) {
-      return false;
-    }
-    return true;
   }
 });

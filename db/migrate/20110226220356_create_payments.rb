@@ -1,7 +1,7 @@
 class CreatePayments < ActiveRecord::Migration
   def self.up
     create_table :payments do |t|
-      t.integer :transaction_id,     :null => false
+      t.integer :transaction_id
       t.string  :form,               :null => false
       t.integer :amount,             :null => false, :default => 0
 

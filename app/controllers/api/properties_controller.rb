@@ -1,45 +1,42 @@
 class Api::PropertiesController < ApplicationController
-  before_filter :set_parent
   
-  # Set the parent resource based on route param
-  def set_parent
-    @good ||= Good.find(params[:good_id])
-  end
-  
-  # GET /goods/:id/properties
-  # GET /goods/:id/properties.xml
-  # GET /goods/:id/properties.json
+  # GET /properties.xml
+  # GET /properties.json
+  # GET /items/:item_id/properties.xml
+  # GET /items/:item_id/properties.json
   def index
-    @properties = @good.properties
+    if params[:item_id]
+      @properties = Property.all(:include => :items, :conditions => ["items.id = ?", params[:item_id]])
+    else
+      @properties = Property.all
+    end
     
     respond_to do |format|
-      format.json { render :json => @properties.to_json(:except => [:good_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @properties.to_xml(:except => [:good_id, :created_at, :updated_at]) }
+      format.json { render :json => @properties.to_json }
+      format.xml  { render :xml => @properties.to_xml }
     end
   end
   
-  # GET /goods/:id/properties/1
-  # GET /goods/:id/properties/1.xml
-  # GET /goods/:id/properties/1.json
+  # GET /properties/1.xml
+  # GET /properties/1.json
   def show
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
     
     respond_to do |format|
-      format.json { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]) }
+      format.json { render :json => @property.to_json }
+      format.xml  { render :xml => @property.to_xml }
     end
   end
   
-  # POST /goods/:id/properties
-  # POST /goods/:id/properties.xml
-  # POST /goods/:id/properties.json
+  # POST /properties.xml
+  # POST /properties.json
   def create
-    @property = @good.properties.create(params[:property])
+    @property = Property.create(params[:property])
 
     respond_to do |format|
       if @property.save
-        format.json  { render :json => @property.to_json(:except => [:good_id, :created_at, :updated_at]), :status => :created }
-        format.xml  { render :xml => @property.to_xml(:except => [:good_id, :created_at, :updated_at]), :status => :created }
+        format.json  { render :json => @property.to_json, :status => :created }
+        format.xml  { render :xml => @property.to_xml, :status => :created }
       else
         format.html { render :action => "new" }
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }
@@ -48,16 +45,15 @@ class Api::PropertiesController < ApplicationController
     end
   end
 
-  # PUT /goods/:id/properties/1
-  # PUT /goods/:id/properties/1.xml
-  # PUT /goods/:id/properties/1.json
+  # PUT /properties/1.xml
+  # PUT /properties/1.json
   def update
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
 
     respond_to do |format|
       if @property.update_attributes(params[:property])
-        format.json  { head :ok }
-        format.xml  { head :ok }
+        format.json  { render :json => @property.to_json, :status => :ok }
+        format.xml  { render :xml => @property.to_xml, :status => :ok }
       else
         format.json  { render :json => @property.errors, :status => :unprocessable_entity }
         format.xml  { render :xml => @property.errors, :status => :unprocessable_entity }
@@ -65,15 +61,15 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
-  # DELETE /goods/:id/properties/1
-  # DELETE /goods/:id/properties/1.xml
+  # DELETE /properties/1.xml
+  # DELETE /properties/1.json
   def destroy
-    @property = @good.properties.find(params[:id])
+    @property = Property.find(params[:id])
     @property.destroy
 
     respond_to do |format|
-      format.json  { head :ok }
-      format.xml  { head :ok }
+      format.json  { render :json => @property.to_json, :status => :ok }
+      format.xml  { render :xml => @property.to_xml, :status => :ok }
     end
   end
 end

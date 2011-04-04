@@ -14,7 +14,7 @@ Factory.define('Person', {
     factories: 'Address'
   },
   first_name: 'Joe',
-  middle_name: 'T',
-  last_name: 'Customer',
+  middle_name: 'Q',
+  last_name: 'Example',
   date_of_birth: new Date()
 });

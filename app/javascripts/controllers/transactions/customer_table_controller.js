@@ -3,12 +3,12 @@
 
 var CustomerTableController = new JS.Class(TableController, {
   
-  update: function(customers) {
+  update: function(people) {
     this.reset();
     
-    for(customer in customers){
+    for(person in people){
       new_row = $(this.table_row).clone();
-      new_row.attr('data-object-id', customers[customer].id);
+      new_row.attr('data-object-id', people[person].id);
       
       if(customers[customer].person != undefined) {
         $('td.name', new_row).html([

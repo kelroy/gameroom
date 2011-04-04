@@ -1,53 +1,74 @@
 class Api::EmployeesController < ApplicationController
   
-  # GET /employees
   # GET /employees.json
   # GET /employees.xml
   def index
     @employees = Employee.all
     
     respond_to do |format|
-      format.json { render :json => @employees.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @employees.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
+      format.json { render :json => @employees.to_json}
+      format.xml  { render :xml => @employees.to_xml }
     end
   end
   
-  # GET /employees/1
   # GET /employees/1.json
   # GET /employees/1.xml
+  # GET /people/:person_id/employees.xml
+  # GET /people/:person_id/employees.json
   def show
-    @employee = Employee.find(params[:id])
+    if params[:person_id]
+      @employee = Employee.find_by_person_id(params[:person_id])
+    else
+      @employee = Employee.find(params[:id])
+    end
     
     respond_to do |format|
-      format.json { render :json => @employee.to_json(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
-      format.xml  { render :xml => @employee.to_xml(:include => { :person => {:include => [:emails, :addresses, :phones]}}, :except => [:account_id, :created_at, :updated_at]) }
+      format.json { render :json => @employee.to_json }
+      format.xml  { render :xml => @employee.to_xml }
     end
   end
   
-  # POST /employees
-  # POST /employees.json
   # POST /employees.xml
+  # POST /employees.json
   def create
+    @employee = Employee.create(params[:employee])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @employee.save
+        format.json  { render :json => @employee.to_json, :status => :created }
+        format.xml  { render :xml => @employee.to_xml, :status => :created }
+      else
+        format.json  { render :json => @employee.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @employee.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
-  # PUT /employees/1
-  # PUT /employees/1.json
+
   # PUT /employees/1.xml
+  # PUT /employees/1.json
   def update
+    @employee = Employee.find(params[:id])
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      if @employee.update_attributes(params[:employee])
+        format.json  { render :json => @employee.to_json, :status => :ok }
+        format.xml  { render :xml => @employee.to_xml, :status => :ok }
+      else
+        format.json  { render :json => @employee.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @employee.errors, :status => :unprocessable_entity }
+      end
     end
   end
-  
-  # DELETE /employees/1
-  # DELETE /employees/1.json
+
   # DELETE /employees/1.xml
+  # DELETE /employees/1.json
   def destroy
+    @employee = Employee.find(params[:id])
+    @employee.destroy
+
     respond_to do |format|
-      format.any { render :nothing => true, :status => :method_not_allowed }
+      format.json  { render :json => @employee.to_json, :status => :ok }
+      format.xml  { render :xml => @employee.to_xml, :status => :ok }
     end
   end
 end

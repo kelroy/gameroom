@@ -5,31 +5,53 @@ Gameroom::Application.routes.draw do
   resource :user_sessions, :except => [:index, :show]
   
   namespace 'api' do
+    resources :addresses
     resources :customers do
       collection do
         match 'search' => 'customers#search', :via => [:get, :post]
       end
+      resources :transactions, :only => [:index]
     end
-    resources :employees
+    resources :emails
+    resources :employees do
+      resources :timecards, :only => [:index]
+    end
+    resources :entries
     resources :items do
       collection do
         match 'search' => 'items#search', :via => [:get, :post]
       end
-      resources :properties
+      resources :lines,       :only => [:index]
+      resources :properties,  :only => [:index]
     end
+    resources :lines
+    resources :payments
     resources :people do
-      resources :addresses
-      resources :phones
-      resources :emails
+      resource  :customer,  :only => [:show]
+      resource  :employee,  :only => [:show]
+      resource  :user,      :only => [:show]
+      resources :addresses, :only => [:index]
+      resources :emails,    :only => [:index]
+      resources :phones,    :only => [:index]
     end
+    resources :phones
+    resources :properties
+    resources :timecards
     resources :transactions do
-      resources :lines
       member do
         match 'receipt' => 'transactions#receipt', :via => [:get]
       end
+      resources :payments,  :only => [:index]
+      resources :lines,     :only => [:index]
     end
-    resources :tills
-    resources :users
+    resources :tills do
+      resources :entries,       :only => [:index]
+      resources :transactions,  :only => [:index]
+      resources :users,         :only => [:index]
+    end
+    resources :users do
+      resources :tills,         :only => [:index]
+    end
   end
   
   namespace 'transactions' do
@@ -42,6 +64,10 @@ Gameroom::Application.routes.draw do
   
   namespace 'dashboard' do
     root :to => 'dashboard#index'
+  end
+  
+  namespace 'timeclock' do
+    root :to => 'timeclock#index'
   end
   
   namespace 'users' do

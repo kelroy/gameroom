@@ -9,7 +9,15 @@ describe Item do
     it "should be valid" do
       valid_data = {
         :title => 'Title',
-        :sku => 0001
+        :description => 'Lorem Ipsum...',
+        :sku => 0001,
+        :price => 0,
+        :credit => 0,
+        :cash => 0,
+        :taxable => true,
+        :discountable => true,
+        :locked => true,
+        :active => true
       }
       Item.new(valid_data).should be_valid
     end

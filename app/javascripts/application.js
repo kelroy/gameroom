@@ -22,7 +22,7 @@ var dashboard = {
 var reports = {
   
   run: function() {
-
+    
   }
   
 };
@@ -35,10 +35,18 @@ var timeclock = {
   
 };
 
-var users = {
+var tills = {
   
   run: function() {
 
+  }
+  
+};
+
+var users = {
+  
+  run: function() {
+    
   }
   
 };

@@ -54,20 +54,24 @@ Gameroom::Application.routes.draw do
     end
   end
   
-  namespace 'transactions' do
-    root :to => 'transactions#index'
+  namespace 'dashboard' do
+    root :to => 'dashboard#index'
   end
   
   namespace 'reports' do
     root :to => 'reports#index'
   end
   
-  namespace 'dashboard' do
-    root :to => 'dashboard#index'
+  namespace 'tills' do
+    root :to => 'tills#index'
   end
   
   namespace 'timeclock' do
     root :to => 'timeclock#index'
+  end
+  
+  namespace 'transactions' do
+    root :to => 'transactions#index'
   end
   
   namespace 'users' do

@@ -7,7 +7,6 @@
 //= require "transaction_finish_controller"
 //= require "transaction_nav_controller"
 //= require "../section_controller"
-//= require "../../models/till"
 //= require "../../models/transaction"
 //= require "../../currency"
 
@@ -16,7 +15,7 @@ var TransactionController = new JS.Class(ViewController, {
   
   initialize: function() {
     this.callSuper();
-    this.till = null;
+    this.till_id = null;
     this.user_id = null;
     this.transaction = null;
     
@@ -56,7 +55,7 @@ var TransactionController = new JS.Class(ViewController, {
   },
   
   onReset: function(event) {
-    event.data.instance.newTransaction(event.data.instance.till, event.data.instance.user_id);
+    event.data.instance.newTransaction(event.data.instance.till_id, event.data.instance.user_id);
     event.preventDefault();
   },
 
@@ -69,14 +68,14 @@ var TransactionController = new JS.Class(ViewController, {
   
   updateCart: function(lines) {
     if(this.transaction) {
-      //this.transaction.setLines(lines);
-      //this.notifyControllers(this.transaction);
+      this.transaction.setLines(lines);
+      this.notifyControllers(this.transaction);
     }
   },
   
-  updatePayment: function(payment) {
+  updatePayment: function(payments) {
     if(this.transaction) {
-      this.transaction.updatePayment(payment);
+      this.transaction.setPayments(payments);
       this.notifyControllers(this.transaction);
     }
   },
@@ -115,11 +114,11 @@ var TransactionController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
   
-  newTransaction: function(till, user_id) {
+  newTransaction: function(till_id, user_id) {
     this.reset();
-    this.till = till;
+    this.till_id = till_id;
     this.user_id = user_id;
-    this.setTransaction(new Transaction({user_id: user_id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransaction(new Transaction({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
   },
   
   setTransaction: function(transaction) {
@@ -128,7 +127,40 @@ var TransactionController = new JS.Class(ViewController, {
   },
   
   saveTransaction: function() {
-    
+    /*# Update customer
+    def update_customer
+      unless self.customer.nil?
+        credit = 0
+        self.payments.each do |payment|
+          if payment.form == 'store_credit'
+            credit = payment.amount
+          end
+        end
+        self.customer.credit = self.customer.credit - credit
+      end
+    end
+
+    # Update till
+    def update_till
+      unless self.till.nil?
+        cash_total = 0
+        self.payments.each do |payment|
+          if payment.form == 'cash'
+            cash_total += payment.amount
+          end
+        end
+        if self.total < 0
+          if cash_total != 0
+            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => cash_total)
+          end
+        elsif self.total > 0
+          amount = cash_total - self.change
+          if amount != 0
+            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
+          end
+        end
+      end
+    end*/
     /*valid: function() {
       if(this.subtotal() > 0 && this.amountDue() <= 0) {
         return true;
@@ -144,10 +176,10 @@ var TransactionController = new JS.Class(ViewController, {
       return false;
     }*/
     controller = this;
-    this.transaction.complete = true;
-    this.transaction.save(function(transaction) {
-      controller.newTransaction(controller.till, controller.user_id);
+    console.log(this.transaction);
+    if(this.transaction.save()) {
+      controller.newTransaction(controller.till_id, controller.user_id);
       controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
-    });
+    };
   }
 });

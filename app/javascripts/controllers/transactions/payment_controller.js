@@ -12,6 +12,9 @@ var PaymentController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
+    this.payments = [];
+    this.purchase = true;
+    
     this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
     this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
@@ -25,13 +28,14 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller.addObserver(this.updatePayment, this);
     this.credit_card_controller.addObserver(this.updatePayment, this);
     this.cash_controller.addObserver(this.updatePayment, this);
+    
     this.reset();
+    this.enableBuyFromStore();
   },
   
   reset: function() {
     this.resetSummary();
     this.resetPaymentFields();
-    this.enableBuyFromStore();
   },
   
   resetSummary: function() {
@@ -53,7 +57,6 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   enablePaymentFields: function() {
-    this.store_credit_controller.enable();
     this.gift_card_controller.enable();
     this.check_controller.enable();
     this.credit_card_controller.enable();
@@ -73,40 +76,76 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
+    this.reset();
     amount_due = transaction.amountDue();
-    for(payment in transaction.payments) {
-      switch(transaction.payments[payment].form) {
-        case 'store_credit':
-          this.store_credit_controller.update(transaction.payments[payment].amount, transaction.subtotal(), transaction.customer);
-          this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'cash':
-          this.cash_controller.update(transaction.payments[payment].amount, amount_due);
-          this.cash_payout_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'gift_card':
-          this.gift_card_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'credit_card':
-          this.credit_card_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'check':
-          this.check_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-      }
-    }
+    payments = transaction.payments();
     
+    this.store_credit_controller.update(0, transaction.subtotal());
+    this.store_credit_payout_controller.update(0, amount_due);
+    this.cash_controller.update(0, amount_due);
+    this.cash_payout_controller.update(0, amount_due);
+    this.gift_card_controller.update(0, amount_due);
+    this.credit_card_controller.update(0, amount_due);
+    this.check_controller.update(0, amount_due);
+    
+    if(payments.length > 0) {
+      this.payments = payments;
+      for(payment in payments) {
+        switch(payments[payment].form) {
+          case 'store_credit':
+            this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
+            this.store_credit_payout_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'cash':
+            this.cash_controller.update(payments[payment].amount, amount_due);
+            this.cash_payout_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'gift_card':
+            this.gift_card_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'credit_card':
+            this.credit_card_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'check':
+            this.check_controller.update(payments[payment].amount, amount_due);
+            break;
+        }
+      }
+    } else {
+      this.payments = [];
+    }
+    this.store_credit_controller.setCustomer(transaction.customer());
     this.updateSummary(transaction);
     
     if(transaction.total() >= 0) {
+      if(!this.purchase) {
+        this.purchase = true;
+        this.payments = [];
+        this.notifyObservers(this.payments);
+      }
       this.enableBuyFromStore();
     } else {
+      if(this.purchase) {
+        this.purchase = false;
+        this.payments = [];
+        this.notifyObservers(this.payments);
+      }
       this.enableSellToStore();
     }
   },
   
-  updatePayment: function(payment) {
-    this.notifyObservers(payment);
+  updatePayment: function(updated_payment) {
+    found = false;
+    for(payment in this.payments) {
+      if(this.payments[payment].form == updated_payment.form) {
+        this.payments[payment] = updated_payment;
+        found = true;
+      }
+    }
+    if(!found) {
+      this.payments.push(updated_payment);
+    }
+    this.notifyObservers(this.payments);
   },
   
   updateSummary: function(transaction) {
@@ -124,11 +163,13 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   enableBuyFromStore: function() {
+    this.purchase = true;
     this.enablePaymentFields();
     this.scale_controller.view.hide();
   },
   
   enableSellToStore: function() {
+    this.purchase = false;
     this.disablePaymentFields();
     this.scale_controller.view.show();
   }

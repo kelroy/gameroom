@@ -11,6 +11,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
   
   reset: function() {
+    this.amount_due = 0;
     $('input.payment', this.view).val(null);
   },
   
@@ -30,7 +31,11 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
   
   update: function(amount, amount_due) {
-    this.amount_due = amount_due;
+    if(amount_due > 0) {
+      this.amount_due = amount_due;
+    } else {
+      this.amount_due = 0;
+    }
 
     if(amount > 0) {
       $('input.payment', this.view).val(Currency.format(amount));

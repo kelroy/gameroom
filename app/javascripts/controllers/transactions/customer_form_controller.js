@@ -8,7 +8,6 @@ var CustomerFormController = new JS.Class(FormController, {
   
   update: function(customer) {
     this.reset();
-    console.log(customer);
     
     $('input#customer_id', this.view).val(customer.id);
     $('input#customer_credit', this.view).val(Currency.format(customer.credit));
@@ -159,16 +158,16 @@ var CustomerFormController = new JS.Class(FormController, {
   },
   
   valid: function() {
-    if($('input#customer_person_first_name', this.view).val() == null) {
+    if($('input#customer_person_first_name', this.view).val() == '') {
       return false;
     }
-    if($('input#customer_person_last_name', this.view).val() == null) {
+    if($('input#customer_person_last_name', this.view).val() == '') {
       return false;
     }
-    if($('input#customer_person_phone_number', this.view).val() == null &&
-       $('input#customer_person_email_address', this.view).val() == null &&
-       $('input#customer_drivers_license_number', this.view).val() == null &&
-       $('input#customer_drivers_license_number', this.view).val() == null) {
+    if($('input#customer_person_phone_number', this.view).val() == '' &&
+       $('input#customer_person_email_address', this.view).val() == '' &&
+       $('input#customer_drivers_license_number', this.view).val() == '' &&
+       $('input#customer_drivers_license_number', this.view).val() == '') {
       return false;
     }
     return true;
@@ -181,7 +180,7 @@ var CustomerFormController = new JS.Class(FormController, {
   reset: function() {
     this.callSuper();
     $('input#customer_id', this.view).val(0);
-    $('input#customer_credit', this.view).val(0);
+    $('input#customer_credit', this.view).val(Currency.format(0));
     $(':required', this.view).removeClass('error');
   }
 });

@@ -160,7 +160,6 @@ var Transaction = new JS.Class(Model, {
       ratio = 1;
     }
     credit_cash_ratio = this.ratio();
-    console.log(credit_cash_ratio);
     subtotal = this.subtotal();
     credit_payout = parseInt(subtotal * ratio);
     cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
@@ -170,11 +169,15 @@ var Transaction = new JS.Class(Model, {
   
   updatePayment: function(updated_payment) {
     payments = this.payments();
-    
+    found = false;
     for(payment in payments) {
       if(payments[payment].form == updated_payment.form) {
         payments[payment] = updated_payment;
+        found = true;
       }
+    }
+    if(!found) {
+      this.addPayment(updated_payment);
     }
   },
   

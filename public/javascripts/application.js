@@ -750,7 +750,6 @@ var Transaction = new JS.Class(Model, {
       ratio = 1;
     }
     credit_cash_ratio = this.ratio();
-    console.log(credit_cash_ratio);
     subtotal = this.subtotal();
     credit_payout = parseInt(subtotal * ratio);
     cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
@@ -760,11 +759,15 @@ var Transaction = new JS.Class(Model, {
 
   updatePayment: function(updated_payment) {
     payments = this.payments();
-
+    found = false;
     for(payment in payments) {
       if(payments[payment].form == updated_payment.form) {
         payments[payment] = updated_payment;
+        found = true;
       }
+    }
+    if(!found) {
+      this.addPayment(updated_payment);
     }
   },
 
@@ -1246,7 +1249,6 @@ var CustomerFormController = new JS.Class(FormController, {
 
   update: function(customer) {
     this.reset();
-    console.log(customer);
 
     $('input#customer_id', this.view).val(customer.id);
     $('input#customer_credit', this.view).val(Currency.format(customer.credit));
@@ -1397,16 +1399,16 @@ var CustomerFormController = new JS.Class(FormController, {
   },
 
   valid: function() {
-    if($('input#customer_person_first_name', this.view).val() == null) {
+    if($('input#customer_person_first_name', this.view).val() == '') {
       return false;
     }
-    if($('input#customer_person_last_name', this.view).val() == null) {
+    if($('input#customer_person_last_name', this.view).val() == '') {
       return false;
     }
-    if($('input#customer_person_phone_number', this.view).val() == null &&
-       $('input#customer_person_email_address', this.view).val() == null &&
-       $('input#customer_drivers_license_number', this.view).val() == null &&
-       $('input#customer_drivers_license_number', this.view).val() == null) {
+    if($('input#customer_person_phone_number', this.view).val() == '' &&
+       $('input#customer_person_email_address', this.view).val() == '' &&
+       $('input#customer_drivers_license_number', this.view).val() == '' &&
+       $('input#customer_drivers_license_number', this.view).val() == '') {
       return false;
     }
     return true;
@@ -1419,7 +1421,7 @@ var CustomerFormController = new JS.Class(FormController, {
   reset: function() {
     this.callSuper();
     $('input#customer_id', this.view).val(0);
-    $('input#customer_credit', this.view).val(0);
+    $('input#customer_credit', this.view).val(Currency.format(0));
     $(':required', this.view).removeClass('error');
   }
 });
@@ -2164,6 +2166,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
 
   reset: function() {
+    this.amount_due = 0;
     $('input.payment', this.view).val(null);
   },
 
@@ -2183,7 +2186,11 @@ var PaymentFieldController = new JS.Class(ViewController, {
   },
 
   update: function(amount, amount_due) {
-    this.amount_due = amount_due;
+    if(amount_due > 0) {
+      this.amount_due = amount_due;
+    } else {
+      this.amount_due = 0;
+    }
 
     if(amount > 0) {
       $('input.payment', this.view).val(Currency.format(amount));
@@ -2205,22 +2212,11 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.enabled = false;
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
     $('form', this.view).submit(function(event) {
       event.preventDefault();
     });
-  },
-
-  enable: function() {
-    this.enabled = true;
-    this.callSuper();
-  },
-
-  disable: function() {
-    this.enabled = true;
-    this.callSuper();
   },
 
   onAmountDue: function(event) {
@@ -2268,37 +2264,29 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.customer = null;
+    this.reset();
   },
 
   reset: function() {
-    this.customer = new Customer({});
     this.callSuper();
+    this.disable();
+    this.customer = undefined;
+    $('div#payment_store_credit span#payment_customer').empty();
   },
 
-  enable: function() {
-    if(this.customer.id != null) {
-      this.callSuper();
+  setCustomer: function(customer) {
+    if(customer != undefined) {
+      this.customer = customer;
+      person = customer.person();
+      if(person != undefined) {
+        $('div#payment_store_credit span#payment_customer').html(person.first_name + ' ' + person.last_name + ': ' + Currency.pretty(customer.credit));
+      } else {
+        $('div#payment_store_credit span#payment_customer').empty();
+      }
+      this.enable();
     } else {
       this.disable();
     }
-  },
-
-  update: function(amount, amount_due, customer) {
-    if(customer != undefined) {
-      if(customer.id != null) {
-        this.customer = customer;
-        if(this.customer.person != null) {
-          $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
-        } else {
-          $('div#payment_store_credit span#payment_customer').empty();
-        }
-        this.enable();
-      }
-    } else {
-      $('div#payment_store_credit span#payment_customer').empty();
-    }
-    this.callSuper(amount, amount_due);
   },
 
   onApply: function(event) {
@@ -2377,6 +2365,9 @@ var PaymentController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.payments = [];
+    this.purchase = true;
+
     this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
     this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
     this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
@@ -2390,13 +2381,14 @@ var PaymentController = new JS.Class(ViewController, {
     this.check_controller.addObserver(this.updatePayment, this);
     this.credit_card_controller.addObserver(this.updatePayment, this);
     this.cash_controller.addObserver(this.updatePayment, this);
+
     this.reset();
+    this.enableBuyFromStore();
   },
 
   reset: function() {
     this.resetSummary();
     this.resetPaymentFields();
-    this.enableBuyFromStore();
   },
 
   resetSummary: function() {
@@ -2418,7 +2410,6 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   enablePaymentFields: function() {
-    this.store_credit_controller.enable();
     this.gift_card_controller.enable();
     this.check_controller.enable();
     this.credit_card_controller.enable();
@@ -2438,40 +2429,76 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
+    this.reset();
     amount_due = transaction.amountDue();
-    for(payment in transaction.payments) {
-      switch(transaction.payments[payment].form) {
-        case 'store_credit':
-          this.store_credit_controller.update(transaction.payments[payment].amount, transaction.subtotal(), transaction.customer);
-          this.store_credit_payout_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'cash':
-          this.cash_controller.update(transaction.payments[payment].amount, amount_due);
-          this.cash_payout_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'gift_card':
-          this.gift_card_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'credit_card':
-          this.credit_card_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-        case 'check':
-          this.check_controller.update(transaction.payments[payment].amount, amount_due);
-          break;
-      }
-    }
+    payments = transaction.payments();
 
+    this.store_credit_controller.update(0, transaction.subtotal());
+    this.store_credit_payout_controller.update(0, amount_due);
+    this.cash_controller.update(0, amount_due);
+    this.cash_payout_controller.update(0, amount_due);
+    this.gift_card_controller.update(0, amount_due);
+    this.credit_card_controller.update(0, amount_due);
+    this.check_controller.update(0, amount_due);
+
+    if(payments.length > 0) {
+      this.payments = payments;
+      for(payment in payments) {
+        switch(payments[payment].form) {
+          case 'store_credit':
+            this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
+            this.store_credit_payout_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'cash':
+            this.cash_controller.update(payments[payment].amount, amount_due);
+            this.cash_payout_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'gift_card':
+            this.gift_card_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'credit_card':
+            this.credit_card_controller.update(payments[payment].amount, amount_due);
+            break;
+          case 'check':
+            this.check_controller.update(payments[payment].amount, amount_due);
+            break;
+        }
+      }
+    } else {
+      this.payments = [];
+    }
+    this.store_credit_controller.setCustomer(transaction.customer());
     this.updateSummary(transaction);
 
     if(transaction.total() >= 0) {
+      if(!this.purchase) {
+        this.purchase = true;
+        this.payments = [];
+        this.notifyObservers(this.payments);
+      }
       this.enableBuyFromStore();
     } else {
+      if(this.purchase) {
+        this.purchase = false;
+        this.payments = [];
+        this.notifyObservers(this.payments);
+      }
       this.enableSellToStore();
     }
   },
 
-  updatePayment: function(payment) {
-    this.notifyObservers(payment);
+  updatePayment: function(updated_payment) {
+    found = false;
+    for(payment in this.payments) {
+      if(this.payments[payment].form == updated_payment.form) {
+        this.payments[payment] = updated_payment;
+        found = true;
+      }
+    }
+    if(!found) {
+      this.payments.push(updated_payment);
+    }
+    this.notifyObservers(this.payments);
   },
 
   updateSummary: function(transaction) {
@@ -2489,11 +2516,13 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   enableBuyFromStore: function() {
+    this.purchase = true;
     this.enablePaymentFields();
     this.scale_controller.view.hide();
   },
 
   enableSellToStore: function() {
+    this.purchase = false;
     this.disablePaymentFields();
     this.scale_controller.view.show();
   }
@@ -2743,7 +2772,7 @@ var TransactionController = new JS.Class(ViewController, {
 
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);
-    this.payment_controller.addObserver(this.updatePayment, this);
+    this.payment_controller.addObserver(this.updatePayments, this);
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
@@ -2781,7 +2810,7 @@ var TransactionController = new JS.Class(ViewController, {
     }
   },
 
-  updatePayment: function(payments) {
+  updatePayments: function(payments) {
     if(this.transaction) {
       this.transaction.setPayments(payments);
       this.notifyControllers(this.transaction);

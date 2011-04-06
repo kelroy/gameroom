@@ -35,7 +35,7 @@ var TransactionController = new JS.Class(ViewController, {
     
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);
-    this.payment_controller.addObserver(this.updatePayment, this);
+    this.payment_controller.addObserver(this.updatePayments, this);
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
@@ -73,7 +73,7 @@ var TransactionController = new JS.Class(ViewController, {
     }
   },
   
-  updatePayment: function(payments) {
+  updatePayments: function(payments) {
     if(this.transaction) {
       this.transaction.setPayments(payments);
       this.notifyControllers(this.transaction);

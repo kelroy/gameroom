@@ -5,37 +5,29 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.customer = null;
+    this.reset();
   },
   
   reset: function() {
-    this.customer = new Customer({});
     this.callSuper();
+    this.disable();
+    this.customer = undefined;
+    $('div#payment_store_credit span#payment_customer').empty();
   },
   
-  enable: function() {
-    if(this.customer.id != null) {
-      this.callSuper();
+  setCustomer: function(customer) {
+    if(customer != undefined) {
+      this.customer = customer;
+      person = customer.person();
+      if(person != undefined) {
+        $('div#payment_store_credit span#payment_customer').html(person.first_name + ' ' + person.last_name + ': ' + Currency.pretty(customer.credit));
+      } else {
+        $('div#payment_store_credit span#payment_customer').empty();
+      }
+      this.enable();
     } else {
       this.disable();
     }
-  },
-  
-  update: function(amount, amount_due, customer) {
-    if(customer != undefined) {
-      if(customer.id != null) {
-        this.customer = customer;
-        if(this.customer.person != null) {
-          $('div#payment_store_credit span#payment_customer').html(this.customer.person.first_name + ' ' + this.customer.person.last_name + ': ' + Currency.pretty(this.customer.credit));
-        } else {
-          $('div#payment_store_credit span#payment_customer').empty();
-        }
-        this.enable();
-      }
-    } else {
-      $('div#payment_store_credit span#payment_customer').empty();
-    }
-    this.callSuper(amount, amount_due);
   },
   
   onApply: function(event) {

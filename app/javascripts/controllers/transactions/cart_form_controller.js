@@ -7,78 +7,78 @@ var CartFormController = new JS.Class(FormController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.row = $('ul.item_elements', view).first().clone();
+    this.row = $('ul.line_elements', view).first().clone();
     
+    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
-    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
+    $('a.clear_all', this.view).live('click', {instance: this}, this.onClearAll);
+    $('a.add_all', this.view).live('click', {instance: this}, this.onAddAll);
     $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
     $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
   },
   
-  save: function() {
-    lines = [];
-    controller = this;
-    $('ul.item_elements', this.view).each(function(index, value) {
-      line = controller.saveLine(index);
-      if(line != false) {
-        lines.push(line);
-      }
+  saveAll: function() {
+    var controller = this;
+    $('ul.line_elements', this.view).each(function(index, value) {
+      controller.saveLine(index);
     });
-    if(this.valid(lines)) {
-      this.notifyObservers(lines);
-    }
   },
   
   saveLine: function(index) {
-    item = $('ul.item_elements', this.view).eq(index);
+    new_line = $('ul.line_elements', this.view).eq(index);
     
-    base_price = parseInt(Currency.toPennies($('input#item_price', item).val()));
+    base_price = parseInt(Currency.toPennies($('input#line_price', new_line).val()));
     if(base_price <= 0) {
       base_price = 0;
     }
-    credit_price = parseInt(Currency.toPennies($('input#item_credit', item).val()));
+    credit_price = parseInt(Currency.toPennies($('input#line_credit', new_line).val()));
     if(credit_price <= 0) {
       credit_price = 0;
     }
-    cash_price = parseInt(Currency.toPennies($('input#item_cash', item).val()));
+    cash_price = parseInt(Currency.toPennies($('input#line_cash', new_line).val()));
     if(cash_price <= 0) {
       cash_price = 0;
     }
     
     line = new Line({
-      title: $('input#item_title', item).val(),
-      quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      title: $('input#line_title', new_line).val(),
+      description: $('input#line_description', new_line).val(),
+      quantity: parseInt(Math.abs($('input#line_quantity', new_line).val())),
       condition: 1,
       discount: 1,
       price: base_price,
       credit: credit_price,
       cash: cash_price,
       purchase: true,
-      taxable: $('input#item_taxable', item).attr('checked'),
-      discountable: $('input#item_discountable', item).attr('checked')
+      taxable: $('input#line_taxable', new_line).attr('checked'),
+      discountable: $('input#line_discountable', new_line).attr('checked')
     });
     
-    if(line.valid()) {
-      return line;
-    } else {
-      return false;
+    if(this.valid([line])) {
+      this.notifyObservers([line]);
     }
   },
   
   valid: function(lines) {
-    valid = false;
-    for(line in lines) {
-      valid = lines[line].valid();
+    for(l in lines) {
+      if(lines[l].valid()) {
+        if((lines[l].price > 0 || lines[l].credit > 0 || lines[l].cash > 0) && lines[l].quantity > 0) {
+          return true;
+        }
+        return false;
+      } else {
+        return false;
+      }
     }
-    return valid;
+    return false;
   },
   
   reset: function() {
     this.callSuper();
-    $('input#item_quantity', this.view).val(1);
-    $('input#item_taxable', this.view).attr('checked', true);
-    $('input#item_discountable', this.view).attr('checked', true);
+    $('input#line_quantity', this.view).val(1);
+    $('input#line_taxable', this.view).attr('checked', true);
+    $('input#line_discountable', this.view).attr('checked', true);
   },
   
   onPrice: function(event) {
@@ -96,11 +96,16 @@ var CartFormController = new JS.Class(FormController, {
   },
   
   onLess: function(event) {
-    $('ul.item_elements', event.data.instance.view).last().remove();
+    $('ul.line_elements', event.data.instance.view).last().remove();
     event.preventDefault();
   },
   
-  onClear: function(event) {
+  onAddAll: function(event) {
+    event.data.instance.saveAll();
+    event.preventDefault();
+  },
+  
+  onClearAll: function(event) {
     event.data.instance.reset();
     event.preventDefault();
   },
@@ -112,16 +117,21 @@ var CartFormController = new JS.Class(FormController, {
       .not(':button, :submit, :reset, :hidden')
       .val(null)
       .removeAttr('checked')
-      .removeAttr('selected');
+      .removeAttr('selected')
+    $(this)
+      .closest('ul')
+      .find('input#line_quantity').val(1);
+    $(this)
+      .closest('ul')
+      .find('input#line_taxable').attr('checked', true);
+    $(this)
+      .closest('ul')
+      .find('input#line_discountable').attr('checked', true);
     event.preventDefault();
   },
   
   onAddRow: function(event) {
-    index = $('ul.item_elements li > a.add_row', event.data.instance.view).index(this);
-    line = event.data.instance.saveLine(index);
-    if(line != false) {
-      event.data.instance.notifyObservers([line]);
-    }
+    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
     event.preventDefault();
   }
 });

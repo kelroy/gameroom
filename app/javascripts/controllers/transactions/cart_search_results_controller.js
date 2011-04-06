@@ -31,6 +31,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     item = Item.find(id);
     this.notifyObservers([new Line({
       title: item.title,
+      description: item.description,
       quantity: 1,
       condition: 1,
       discount: 1,

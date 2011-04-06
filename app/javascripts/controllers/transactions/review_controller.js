@@ -23,15 +23,16 @@ var ReviewController = new JS.Class(ViewController, {
   
   update: function(transaction) {
     
-    if(transaction.customer_id == undefined) {
-      $('h2#review_customer', this.view).html("No customer");
-    } else {
-      if(transaction.customer.person_id != undefined) {
-        person = transaction.customer().person();
+    customer = transaction.customer();
+    if(customer != undefined) {
+      person = customer.person();
+      if(person != undefined) {
         $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#review_customer', this.view).empty();
       }
+    } else {
+      $('h2#review_customer', this.view).html("No customer");
     }
     
     $('div#review_summary table > tbody > tr#payment', this.view).remove();
@@ -41,10 +42,8 @@ var ReviewController = new JS.Class(ViewController, {
     for(line in lines) {
       var new_line = this.line.clone();
       $('td.quantity', new_line).html(lines[line].quantity);
-      $('td.title', new_line).html(lines[line].item.title);
-      $('td.description', new_line).html(lines[line].item.description.truncate(), 50).attr('title', lines[line].item.description);
-      $('td.sku', new_line).html(lines[line].item.sku);
-      $('td.price', new_line).html(Currency.pretty(lines[line].price));
+      $('td.title', new_line).html(lines[line].title);
+      $('td.description', new_line).html(lines[line].description.truncate(50));
       $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }

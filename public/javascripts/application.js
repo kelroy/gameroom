@@ -523,7 +523,7 @@ var Property = new JS.Class(Model, {
 var Line = new JS.Class(Model, {
   extend: {
     resource: 'line',
-    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable', 'discountable'],
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'description', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable', 'discountable'],
     belongs_to: ['item', 'transaction'],
     'title': {
       'presence_of': {}
@@ -1245,116 +1245,151 @@ var CustomerFormController = new JS.Class(FormController, {
   },
 
   update: function(customer) {
-    if(customer != undefined) {
-      $('input#customer_id', this.view).val(customer.id);
-      $('input#customer_credit', this.view).val(Currency.format(customer.credit));
-      $('input#customer_drivers_license_number', this.view).val(customer.drivers_license_number);
-      $('input#customer_drivers_license_state', this.view).val(customer.drivers_license_state);
-      $('input#customer_flagged', this.view).attr('checked', !customer.active);
-      $('textarea#customer_notes', this.view).val(customer.notes);
+    this.reset();
+    console.log(customer);
 
-      if(customer.person != undefined) {
-        $('input#customer_person_first_name', this.view).val(customer.person.first_name);
-        $('input#customer_person_middle_name', this.view).val(customer.person.middle_name);
-        $('input#customer_person_last_name', this.view).val(customer.person.last_name);
+    $('input#customer_id', this.view).val(customer.id);
+    $('input#customer_credit', this.view).val(Currency.format(customer.credit));
+    $('input#customer_drivers_license_number', this.view).val(customer.drivers_license_number);
+    $('input#customer_drivers_license_state', this.view).val(customer.drivers_license_state);
+    $('input#customer_flagged', this.view).attr('checked', !customer.active);
+    $('textarea#customer_notes', this.view).val(customer.notes);
 
-        if(customer.person.addresses != undefined) {
-          if(customer.person.addresses.length > 0){
-            $('input#customer_person_address_first_line', this.view).val(customer.person.addresses[0].first_line);
-            $('input#customer_person_address_second_line', this.view).val(customer.person.addresses[0].second_line);
-            $('input#customer_person_address_city', this.view).val(customer.person.addresses[0].city);
-            $('input#customer_person_address_state', this.view).val(customer.person.addresses[0].state);
-            $('input#customer_person_address_zip', this.view).val(customer.person.addresses[0].zip);
-          }
-        }
-        if(customer.person.phones != undefined) {
-          if(customer.person.phones.length > 0){
-            $('input#customer_person_phone_number', this.view).val(customer.person.phones[0].number);
-          }
-        }
-        if(customer.person.emails != undefined) {
-          if(customer.person.emails.length > 0){
-            $('input#customer_person_email_address', this.view).val(customer.person.emails[0].address);
-          }
-        }
-      } else {
-        $('input#customer_person_first_name', this.view).val(null);
-        $('input#customer_person_middle_name', this.view).val(null);
-        $('input#customer_person_last_name', this.view).val(null);
-        $('input#customer_person_address_first_line', this.view).val(null);
-        $('input#customer_person_address_second_line', this.view).val(null);
-        $('input#customer_person_address_city', this.view).val(null);
-        $('input#customer_person_address_state', this.view).val(null);
-        $('input#customer_person_address_zip', this.view).val(null);
-        $('input#customer_person_phone_number', this.view).val(null);
-        $('input#customer_person_email_address', this.view).val(null);
+    person = customer.person();
+    if(person != undefined) {
+      $('input#customer_person_first_name', this.view).val(person.first_name);
+      $('input#customer_person_middle_name', this.view).val(person.middle_name);
+      $('input#customer_person_last_name', this.view).val(person.last_name);
+
+      addresses = person.addresses();
+      if(addresses.length > 0) {
+        $('input#customer_person_address_first_line', this.view).val(addresses[0].first_line);
+        $('input#customer_person_address_second_line', this.view).val(addresses[0].second_line);
+        $('input#customer_person_address_city', this.view).val(addresses[0].city);
+        $('input#customer_person_address_state', this.view).val(addresses[0].state);
+        $('input#customer_person_address_zip', this.view).val(addresses[0].zip);
       }
-    } else {
-      this.reset();
+
+      phones = person.phones();
+      if(phones.length > 0){
+        $('input#customer_person_phone_number', this.view).val(phones[0].number);
+      }
+
+      emails = person.emails();
+      if(emails.length > 0){
+        $('input#customer_person_email_address', this.view).val(emails[0].address);
+      }
     }
   },
 
   save: function() {
-    addresses = [];
-    phones = [];
-    emails = [];
-
-    address = new Address({
-      first_line: $('input#customer_person_address_first_line', this.view).val(),
-      second_line: $('input#customer_person_address_second_line', this.view).val(),
-      city: $('input#customer_person_address_city', this.view).val(),
-      state: $('input#customer_person_address_state', this.view).val(),
-      zip: $('input#customer_person_address_zip', this.view).val(),
-    });
-
-    if(address.valid()) {
-      addresses.push(address);
-    }
-
-    phone = new Phone({
-      number: $('input#customer_person_phone_number', this.view).val()
-    });
-
-    if(phone.valid()) {
-      phones.push(phone);
-    }
-
-    email = new Email({
-      address: $('input#customer_person_email_address', this.view).val()
-    });
-
-    if(email.valid()) {
-      emails.push(email);
-    }
-
-    person = new Person({
-      first_name: $('input#customer_person_first_name', this.view).val(),
-      middle_name: $('input#customer_person_middle_name', this.view).val(),
-      last_name: $('input#customer_person_last_name', this.view).val(),
-      addresses: addresses,
-      phones: phones,
-      emails: emails
-    });
-
-    customer = new Customer({
-      id: $('input#customer_id', this.view).val(),
-      person: person,
-      credit: parseInt(Currency.toPennies($('input#customer_credit', this.view).val())),
-      notes: $('textarea#customer_notes', this.view).val(),
-      drivers_license_number: $('input#customer_drivers_license_number', this.view).val(),
-      drivers_license_state: $('input#customer_drivers_license_state', this.view).val(),
-      active: !$('input#customer_flagged', this.view).is(':checked')
-    });
-
     if(this.valid()) {
-      controller = this;
-      success = customer.save(function(customer) {
-        controller.update(new Customer(customer));
-        controller.notifyObservers(new Customer(customer));
-      });
-      if(!success) {
-        console.log('here');
-        this.error();
+      if($('input#customer_id', this.view).val() > 0) {
+        customer = Customer.find($('input#customer_id', this.view).val());
+        customer.credit = parseInt(Currency.toPennies($('input#customer_credit', this.view).val()));
+        customer.notes = $('textarea#customer_notes', this.view).val();
+        customer.drivers_license_number = $('input#customer_drivers_license_number', this.view).val();
+        customer.drivers_license_state = $('input#customer_drivers_license_state', this.view).val();
+        customer.active = !$('input#customer_flagged', this.view).is(':checked');
+        customer.save();
+
+        if(customer != undefined) {
+          person = customer.person();
+          if(person != undefined) {
+            person.first_name = $('input#customer_person_first_name', this.view).val();
+            person.middle_name = $('input#customer_person_middle_name', this.view).val();
+            person.last_name = $('input#customer_person_last_name', this.view).val();
+            person.save();
+
+            addresses = person.addresses();
+            if(addresses.length > 0) {
+              addresses[0].first_line =  $('input#customer_person_address_first_line', this.view).val();
+              addresses[0].second_line = $('input#customer_person_address_second_line', this.view).val();
+              addresses[0].city = $('input#customer_person_address_city', this.view).val();
+              addresses[0].state = $('input#customer_person_address_state', this.view).val();
+              addresses[0].zip = $('input#customer_person_address_zip', this.view).val();
+              addresses[0].save();
+            } else {
+              address = new Address({
+                first_line: $('input#customer_person_address_first_line', this.view).val(),
+                second_line: $('input#customer_person_address_second_line', this.view).val(),
+                city: $('input#customer_person_address_city', this.view).val(),
+                state: $('input#customer_person_address_state', this.view).val(),
+                zip: $('input#customer_person_address_zip', this.view).val(),
+              });
+              address.setPerson(person);
+              address.save();
+            }
+
+            phones = person.phones();
+            if(phones.length > 0) {
+              phones[0].number =  $('input#customer_person_phone_number', this.view).val();
+              phones[0].save();
+            } else {
+              phone = new Phone({
+                number: $('input#customer_person_phone_number', this.view).val()
+              });
+              phone.setPerson(person);
+              phone.save();
+            }
+
+            emails = person.emails();
+            if(emails.length > 0) {
+              emails[0].address =  $('input#customer_person_email_address', this.view).val();
+              emails[0].save();
+            } else {
+              email = new Email({
+                address: $('input#customer_person_email_address', this.view).val()
+              });
+              email.setPerson(person);
+              email.save();
+            }
+
+            customer.setPerson(person);
+          }
+        }
+      } else {
+        person = new Person({
+          first_name: $('input#customer_person_first_name', this.view).val(),
+          middle_name: $('input#customer_person_middle_name', this.view).val(),
+          last_name: $('input#customer_person_last_name', this.view).val()
+        });
+        if(person.save()) {
+          address = new Address({
+            first_line: $('input#customer_person_address_first_line', this.view).val(),
+            second_line: $('input#customer_person_address_second_line', this.view).val(),
+            city: $('input#customer_person_address_city', this.view).val(),
+            state: $('input#customer_person_address_state', this.view).val(),
+            zip: $('input#customer_person_address_zip', this.view).val(),
+          });
+          address.setPerson(person);
+          address.save();
+
+          phone = new Phone({
+            number: $('input#customer_person_phone_number', this.view).val()
+          });
+          phone.setPerson(person);
+          phone.save();
+
+          email = new Email({
+            address: $('input#customer_person_email_address', this.view).val()
+          });
+          email.setPerson(person);
+          email.save();
+        }
+
+        customer = new Customer({
+          credit: parseInt(Currency.toPennies($('input#customer_credit', this.view).val())),
+          notes: $('textarea#customer_notes', this.view).val(),
+          drivers_license_number: $('input#customer_drivers_license_number', this.view).val(),
+          drivers_license_state: $('input#customer_drivers_license_state', this.view).val(),
+          active: !$('input#customer_flagged', this.view).is(':checked')
+        });
+        customer.setPerson(person);
+      }
+      if(customer.save()) {
+        this.update(customer);
+        this.notifyObservers(customer);
       }
     } else {
       this.error();
@@ -1383,6 +1418,7 @@ var CustomerFormController = new JS.Class(FormController, {
 
   reset: function() {
     this.callSuper();
+    $('input#customer_id', this.view).val(0);
     $('input#customer_credit', this.view).val(0);
     $(':required', this.view).removeClass('error');
   }
@@ -1428,51 +1464,52 @@ var CustomerTableController = new JS.Class(TableController, {
       new_row = $(this.table_row).clone();
       new_row.attr('data-object-id', people[person].id);
 
-      if(customers[customer].person != undefined) {
-        $('td.name', new_row).html([
-          customers[customer].person.first_name,
-          customers[customer].person.last_name
-        ].join(' '));
-        if(customers[customer].person.addresses != undefined) {
-          for(address in customers[customer].person.addresses) {
-            address_string = [
-              customers[customer].person.addresses[address].first_line,
-              customers[customer].person.addresses[address].second_line,
-              customers[customer].person.addresses[address].city + ',',
-              customers[customer].person.addresses[address].state,
-              customers[customer].person.addresses[address].province,
-              customers[customer].person.addresses[address].country,
-              customers[customer].person.addresses[address].zip
-            ].join(' ');
-            $('td.address', new_row).append($('<address></address>').html(address_string));
-          }
-        }
-        if(customers[customer].person.phones != undefined) {
-          for(phone in customers[customer].person.phones) {
-            if(customers[customer].person.phones[phone].title != null) {
-              phone_string = customers[customer].person.phones[phone].title + ' - ' + customers[customer].person.phones[phone].number;
-            } else {
-              phone_string = customers[customer].person.phones[phone].number;
-            }
-            $('td.phone', new_row).append($('<p></p>').html(phone_string));
-          }
-        }
-        if(customers[customer].person.emails != undefined) {
-          for(email in customers[customer].person.emails) {
-            email_string = customers[customer].person.emails[email].address;
-            $('td.email', new_row).append($('<p></p>').html(email_string));
-          }
-        }
+      $('td.name', new_row).html([
+        people[person].first_name,
+        people[person].last_name
+      ].join(' '));
+
+      addresses = people[person].addresses();
+      for(address in addresses) {
+        address_string = [
+          addresses[address].first_line,
+          addresses[address].second_line,
+          addresses[address].city + ',',
+          addresses[address].state,
+          addresses[address].province,
+          addresses[address].country,
+          addresses[address].zip
+        ].join(' ');
+        $('td.address', new_row).append($('<address></address>').html(address_string));
       }
 
-      $('td.credit', new_row).html(Currency.pretty(customers[customer].credit));
-      $('td.drivers_license', new_row).html([
-        customers[customer].drivers_license_number,
-        customers[customer].drivers_license_state
-      ].join(' '));
-      $('td.flagged', new_row).html(Boolean.toString(!customers[customer].active));
-      $('td.notes', new_row).html(customers[customer].notes);
-      $('tbody', this.view).append(new_row);
+      phones = people[person].phones();
+      for(phone in phones) {
+        if(phones[phone].title != null) {
+          phone_string = phones[phone].title + ' - ' + phones[phone].number;
+        } else {
+          phone_string = phones[phone].number;
+        }
+        $('td.phone', new_row).append($('<p></p>').html(phone_string));
+      }
+
+      emails = people[person].emails();
+      for(email in emails) {
+        email_string = emails[email].address;
+        $('td.email', new_row).append($('<p></p>').html(email_string));
+      }
+
+      customer = people[person].customer();
+      if(customer != undefined) {
+        $('td.credit', new_row).html(Currency.pretty(customer.credit));
+        $('td.drivers_license', new_row).html([
+          customer.drivers_license_number,
+          customer.drivers_license_state
+        ].join(' '));
+        $('td.flagged', new_row).html(Boolean.toString(!customer.active));
+        $('td.notes', new_row).html(customer.notes);
+        $('tbody', this.view).append(new_row);
+      }
     }
   }
 });
@@ -1568,7 +1605,7 @@ var CartLineController = new JS.Class(ViewController, {
     this.line_index = index;
     this.line = line;
     this.open = open;
-    this.set(this.line);
+    this.set(line);
     $('a.remove', this.view).bind('click', {instance: this}, this.onRemove);
     $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
     $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
@@ -1583,6 +1620,9 @@ var CartLineController = new JS.Class(ViewController, {
 
     $('input.quantity', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
+    if(line.description != undefined) {
+      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
+    }
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
     $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
@@ -1846,78 +1886,78 @@ var CartFormController = new JS.Class(FormController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.row = $('ul.item_elements', view).first().clone();
+    this.row = $('ul.line_elements', view).first().clone();
 
+    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
     $('a.less', this.view).bind('click', {instance: this}, this.onLess);
-    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
+    $('a.clear_all', this.view).live('click', {instance: this}, this.onClearAll);
+    $('a.add_all', this.view).live('click', {instance: this}, this.onAddAll);
     $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
     $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
   },
 
-  save: function() {
-    lines = [];
-    controller = this;
-    $('ul.item_elements', this.view).each(function(index, value) {
-      line = controller.saveLine(index);
-      if(line != false) {
-        lines.push(line);
-      }
+  saveAll: function() {
+    var controller = this;
+    $('ul.line_elements', this.view).each(function(index, value) {
+      controller.saveLine(index);
     });
-    if(this.valid(lines)) {
-      this.notifyObservers(lines);
-    }
   },
 
   saveLine: function(index) {
-    item = $('ul.item_elements', this.view).eq(index);
+    new_line = $('ul.line_elements', this.view).eq(index);
 
-    base_price = parseInt(Currency.toPennies($('input#item_price', item).val()));
+    base_price = parseInt(Currency.toPennies($('input#line_price', new_line).val()));
     if(base_price <= 0) {
       base_price = 0;
     }
-    credit_price = parseInt(Currency.toPennies($('input#item_credit', item).val()));
+    credit_price = parseInt(Currency.toPennies($('input#line_credit', new_line).val()));
     if(credit_price <= 0) {
       credit_price = 0;
     }
-    cash_price = parseInt(Currency.toPennies($('input#item_cash', item).val()));
+    cash_price = parseInt(Currency.toPennies($('input#line_cash', new_line).val()));
     if(cash_price <= 0) {
       cash_price = 0;
     }
 
     line = new Line({
-      title: $('input#item_title', item).val(),
-      quantity: parseInt(Math.abs($('input#item_quantity', item).val())),
+      title: $('input#line_title', new_line).val(),
+      description: $('input#line_description', new_line).val(),
+      quantity: parseInt(Math.abs($('input#line_quantity', new_line).val())),
       condition: 1,
       discount: 1,
       price: base_price,
       credit: credit_price,
       cash: cash_price,
       purchase: true,
-      taxable: $('input#item_taxable', item).attr('checked'),
-      discountable: $('input#item_discountable', item).attr('checked')
+      taxable: $('input#line_taxable', new_line).attr('checked'),
+      discountable: $('input#line_discountable', new_line).attr('checked')
     });
 
-    if(line.valid()) {
-      return line;
-    } else {
-      return false;
+    if(this.valid([line])) {
+      this.notifyObservers([line]);
     }
   },
 
   valid: function(lines) {
-    valid = false;
-    for(line in lines) {
-      valid = lines[line].valid();
+    for(l in lines) {
+      if(lines[l].valid()) {
+        if((lines[l].price > 0 || lines[l].credit > 0 || lines[l].cash > 0) && lines[l].quantity > 0) {
+          return true;
+        }
+        return false;
+      } else {
+        return false;
+      }
     }
-    return valid;
+    return false;
   },
 
   reset: function() {
     this.callSuper();
-    $('input#item_quantity', this.view).val(1);
-    $('input#item_taxable', this.view).attr('checked', true);
-    $('input#item_discountable', this.view).attr('checked', true);
+    $('input#line_quantity', this.view).val(1);
+    $('input#line_taxable', this.view).attr('checked', true);
+    $('input#line_discountable', this.view).attr('checked', true);
   },
 
   onPrice: function(event) {
@@ -1935,11 +1975,16 @@ var CartFormController = new JS.Class(FormController, {
   },
 
   onLess: function(event) {
-    $('ul.item_elements', event.data.instance.view).last().remove();
+    $('ul.line_elements', event.data.instance.view).last().remove();
     event.preventDefault();
   },
 
-  onClear: function(event) {
+  onAddAll: function(event) {
+    event.data.instance.saveAll();
+    event.preventDefault();
+  },
+
+  onClearAll: function(event) {
     event.data.instance.reset();
     event.preventDefault();
   },
@@ -1951,16 +1996,21 @@ var CartFormController = new JS.Class(FormController, {
       .not(':button, :submit, :reset, :hidden')
       .val(null)
       .removeAttr('checked')
-      .removeAttr('selected');
+      .removeAttr('selected')
+    $(this)
+      .closest('ul')
+      .find('input#line_quantity').val(1);
+    $(this)
+      .closest('ul')
+      .find('input#line_taxable').attr('checked', true);
+    $(this)
+      .closest('ul')
+      .find('input#line_discountable').attr('checked', true);
     event.preventDefault();
   },
 
   onAddRow: function(event) {
-    index = $('ul.item_elements li > a.add_row', event.data.instance.view).index(this);
-    line = event.data.instance.saveLine(index);
-    if(line != false) {
-      event.data.instance.notifyObservers([line]);
-    }
+    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
     event.preventDefault();
   }
 });
@@ -2031,6 +2081,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     item = Item.find(id);
     this.notifyObservers([new Line({
       title: item.title,
+      description: item.description,
       quantity: 1,
       condition: 1,
       discount: 1,
@@ -2500,15 +2551,16 @@ var ReviewController = new JS.Class(ViewController, {
 
   update: function(transaction) {
 
-    if(transaction.customer_id == undefined) {
-      $('h2#review_customer', this.view).html("No customer");
-    } else {
-      if(transaction.customer.person_id != undefined) {
-        person = transaction.customer().person();
+    customer = transaction.customer();
+    if(customer != undefined) {
+      person = customer.person();
+      if(person != undefined) {
         $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#review_customer', this.view).empty();
       }
+    } else {
+      $('h2#review_customer', this.view).html("No customer");
     }
 
     $('div#review_summary table > tbody > tr#payment', this.view).remove();
@@ -2518,10 +2570,8 @@ var ReviewController = new JS.Class(ViewController, {
     for(line in lines) {
       var new_line = this.line.clone();
       $('td.quantity', new_line).html(lines[line].quantity);
-      $('td.title', new_line).html(lines[line].item.title);
-      $('td.description', new_line).html(lines[line].item.description.truncate(), 50).attr('title', lines[line].item.description);
-      $('td.sku', new_line).html(lines[line].item.sku);
-      $('td.price', new_line).html(Currency.pretty(lines[line].price));
+      $('td.title', new_line).html(lines[line].title);
+      $('td.description', new_line).html(lines[line].description.truncate(50));
       $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
       $('div#review_lines table tbody').append(new_line);
     }
@@ -2558,8 +2608,9 @@ var TransactionSummaryController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    if(transaction.customer != undefined) {
-      this.setCustomer(transaction.customer);
+    customer = transaction.customer();
+    if(customer != undefined) {
+      this.setCustomer(customer);
     }
     this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
@@ -2573,8 +2624,8 @@ var TransactionSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      if(customer.person_id != null) {
-        person = customer.person();
+      person = customer.person();
+      if(person != undefined) {
         $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#summary_customer', this.view).empty();
@@ -3123,51 +3174,44 @@ var CustomerReviewController = new JS.Class(ViewController, {
   },
 
   update: function(customer) {
+    $('div#customer_data h3#customer_name', this.view).empty();
     $('div#customer_data div#customer_addresses > p', this.view).empty();
     $('div#customer_data div#customer_phones > p', this.view).empty();
     $('div#customer_data div#customer_emails > p', this.view).empty();
 
-    if(customer.person != undefined) {
-      $('div#customer_data h3#customer_name', this.view).html([
-        customer.person.first_name,
-        customer.person.middle_name,
-        customer.person.last_name
-      ].join(' '));
+    person = customer.person();
+    $('div#customer_data h3#customer_name', this.view).html([
+      person.first_name,
+      person.middle_name,
+      person.last_name
+    ].join(' '));
 
-      if(customer.person.addresses != undefined) {
-        if(customer.person.addresses.length > 0) {
-          for(address in customer.person.addresses) {
-            $('div#customer_data div#customer_addresses > p', this.view).append('<address>' + [
-              customer.person.addresses[address].first_line,
-              customer.person.addresses[address].second_line,
-              customer.person.addresses[address].city + ',',
-              customer.person.addresses[address].state,
-              customer.person.addresses[address].zip
-            ].join(' ') + '</address>');
-          }
-        }
+    if(person != undefined) {
+      addresses = person.addresses();
+      for(address in addresses) {
+        $('div#customer_data div#customer_addresses > p', this.view).append('<address>' + [
+          addresses[address].first_line,
+          addresses[address].second_line,
+          addresses[address].city + ',',
+          addresses[address].state,
+          addresses[address].zip
+        ].join(' ') + '</address>');
       }
-      if(customer.person.phones != undefined) {
-        if(customer.person.phones.length > 0){
-          for(phone in customer.person.phones) {
-            if(customer.person.phones[phone].title != null) {
-              phone_string = customer.person.phones[phone].title + ' - ' + customer.person.phones[phone].number;
-            } else {
-              phone_string = customer.person.phones[phone].number;
-            }
-            $('div#customer_data div#customer_phones > p', this.view).append('<span>' + phone_string + '</span>');
-          }
+
+      phones = person.phones();
+      for(phone in phones) {
+        if(phones[phone].title != null) {
+          phone_string = phones[phone].title + ' - ' + phones[phone].number;
+        } else {
+          phone_string = phones[phone].number;
         }
+        $('div#customer_data div#customer_phones > p', this.view).append('<span>' + phone_string + '</span>');
       }
-      if(customer.person.emails != undefined) {
-        if(customer.person.emails.length > 0){
-          for(email in customer.person.emails) {
-            $('div#customer_data div#customer_emails > p', this.view).append('<span>' + customer.person.emails[email].address + '</span>');
-          }
-        }
+
+      emails = person.emails();
+      for(email in emails) {
+        $('div#customer_data div#customer_emails > p', this.view).append('<span>' + emails[email].address + '</span>');
       }
-    } else {
-      $('div#customer_data h3#customer_name', this.view).empty();
     }
 
     $('div#customer_data div#customer_license > p', this.view).html([

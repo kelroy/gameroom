@@ -1,5 +1,5 @@
-= form_for :item, :method => 'get', :url => root_path do |g|
-  %ul{:class => 'item_nav'}
+= form_for :line, :method => 'get', :url => root_path do |g|
+  %ul{:class => 'line_nav'}
     %li
       %ul{:class => 'button_nav'}
         %li
@@ -7,17 +7,20 @@
         %li
           %a{:href => '#less', :class => 'button less'} Less
         %li
-          %a{:href => '#clear', :class => 'button clear'} Clear
+          %a{:href => '#clear_all', :class => 'button clear_all'} Clear
         %li
-          %a{:href => '#save', :class => 'button save'} Add All To Cart
+          %a{:href => '#add_all', :class => 'button add_all'} Add All To Cart
   - (1..5).each do
-    %ul{:class => 'item_elements'}
+    %ul{:class => 'line_elements'}
       %li
         = g.label :quantity, "Qty."
-        = g.text_field :quantity, :class => 'quantity'
+        = g.text_field :quantity, :value => 1, :class => 'quantity'
       %li
         = g.label :title, "Title"
         = g.text_field :title
+      %li
+        = g.label :description, "Description"
+        = g.text_field :description
       %li
         = g.label :price, "Base Price"
         = g.text_field :price, :placeholder => '0.00', :class => 'price'
@@ -29,13 +32,13 @@
         = g.text_field :cash, :placeholder => '0.00', :class => 'price'
       %li
         = g.label :taxable
-        = check_box_tag :item_taxable, 1, true
+        = check_box_tag :line_taxable, 1, true
       %li
         = g.label :discountable
-        = check_box_tag :item_discountable, 1, true
+        = check_box_tag :line_discountable, 1, true
       %li
         = g.label :clear
-        %a{:href => '#clear', :class => 'button clear_row'} Clear
+        %a{:href => '#clear_row', :class => 'button clear_row'} Clear
       %li
         = g.label :add
-        %a{:href => '#add', :class => 'button add_row'} Add
+        %a{:href => '#add_row', :class => 'button add_row'} Add

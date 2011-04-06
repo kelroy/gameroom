@@ -20,7 +20,7 @@ unless Rails.env.production?
     person.addresses << Factory.create(:address, :person => person)
     person.phones << Factory.create(:phone, :person => person)
     
-    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => true)
+    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(100).even?)
     employee = Factory.create(:employee, :person => person, :rate => (rand(19) + 1), :active => true)
     employee.timecards << Factory.create(:timecard, :employee => employee, :begin => Time.now, :end => Time.now)
     employee.timecards << Factory.create(:timecard, :employee => employee, :begin => Time.now, :end => Time.now)
@@ -61,7 +61,7 @@ unless Rails.env.production?
   transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
   (1...5).each do |n|
     item = items[n]
-    transaction.lines << Factory.create(:line, :title => item.title, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
+    transaction.lines << Factory.create(:line, :title => item.title, :description => item.description, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
   end
   transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
 

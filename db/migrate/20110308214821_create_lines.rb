@@ -4,6 +4,7 @@ class CreateLines < ActiveRecord::Migration
       t.integer :transaction_id
       t.integer :item_id
       t.string  :title,                         :null => false
+      t.string  :description,                   :null => false
       t.integer :quantity,                      :null => false, :default => 0
       t.decimal :condition,                     :null => false, :default => 1
       t.decimal :discount,                      :null => false, :default => 1

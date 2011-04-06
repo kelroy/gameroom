@@ -8,7 +8,7 @@ var CartLineController = new JS.Class(ViewController, {
     this.line_index = index;
     this.line = line;
     this.open = open;
-    this.set(this.line);
+    this.set(line);
     $('a.remove', this.view).bind('click', {instance: this}, this.onRemove);
     $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
     $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
@@ -23,6 +23,9 @@ var CartLineController = new JS.Class(ViewController, {
     
     $('input.quantity', this.view).val(line.quantity);
     $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
+    if(line.description != undefined) {
+      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
+    }
     $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
     $('ul.cart_line_action li a', this.view).removeClass('selected');
     $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));

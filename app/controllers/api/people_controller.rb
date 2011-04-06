@@ -22,6 +22,17 @@ class Api::PeopleController < ApplicationController
     end
   end
   
+  # GET|POST /people/search.xml
+  # GET|POST /people/search.json
+  def search
+    @people = Person.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @people.to_json }
+      format.xml  { render :xml => @people.to_xml }
+    end
+  end
+  
   # POST /people.xml
   # POST /people.json
   def create

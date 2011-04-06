@@ -11,8 +11,9 @@ var TransactionSummaryController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    if(transaction.customer != undefined) {
-      this.setCustomer(transaction.customer);
+    customer = transaction.customer();
+    if(customer != undefined) {
+      this.setCustomer(customer);
     }
     this.setItemCount(transaction.countItems());
     this.setTotal(transaction.total());
@@ -26,8 +27,8 @@ var TransactionSummaryController = new JS.Class(ViewController, {
     if(customer.id == null) {
       $('h2#summary_customer', this.view).html("No customer");
     } else {
-      if(customer.person_id != null) {
-        person = customer.person();
+      person = customer.person();
+      if(person != undefined) {
         $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
         $('h2#summary_customer', this.view).empty();

@@ -11,6 +11,7 @@ describe Line do
         :transaction_id => 1,
         :item_id => 1,
         :title => "Title",
+        :description => "Lorem Ipsum...",
         :quantity => 0,
         :condition => 1,
         :discount => 1,

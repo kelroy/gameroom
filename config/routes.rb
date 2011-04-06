@@ -27,6 +27,9 @@ Gameroom::Application.routes.draw do
     resources :lines
     resources :payments
     resources :people do
+      collection do
+        match 'search' => 'people#search', :via => [:get, :post]
+      end
       resource  :customer,  :only => [:show]
       resource  :employee,  :only => [:show]
       resource  :user,      :only => [:show]

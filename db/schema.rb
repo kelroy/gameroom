@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
     t.integer  "till_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-04-02 14:40:29', :null => false
+    t.datetime "time",        :default => '2011-04-05 01:41:38', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -85,6 +85,7 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
     t.integer  "transaction_id"
     t.integer  "item_id"
     t.string   "title",                            :null => false
+    t.string   "description",                      :null => false
     t.integer  "quantity",       :default => 0,    :null => false
     t.decimal  "condition",      :default => 1.0,  :null => false
     t.decimal  "discount",       :default => 1.0,  :null => false
@@ -148,7 +149,7 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "employee_id"
-    t.datetime "begin",       :default => '2011-04-02 14:40:29', :null => false
+    t.datetime "begin",       :default => '2011-04-05 01:41:39', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"

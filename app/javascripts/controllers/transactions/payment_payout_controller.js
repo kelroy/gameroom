@@ -7,9 +7,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
     this.callSuper();
   },
   
-  update: function(amount, amount_due) {
-    this.amount_due = amount_due;
-    
+  update: function(amount) {
     if(amount < 0) {
       $('input.payment', this.view).val(Currency.format(amount * -1));
     } else {

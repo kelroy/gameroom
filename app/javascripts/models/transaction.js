@@ -32,7 +32,7 @@ var Transaction = new JS.Class(Model, {
       purchase_subtotal = this.purchaseSubtotal();
       taxable_subtotal = 0;
       for(line in lines) {
-        if(lines[line].taxable) {
+        if(lines[line].taxable && lines[line].subtotal() > 0) {
           taxable_subtotal += lines[line].subtotal();
         }
       }
@@ -118,25 +118,6 @@ var Transaction = new JS.Class(Model, {
       subtotal += lines[line].cashSubtotal();
     }
     return Math.abs(subtotal);
-  },
-  
-  setLines: function(lines) {
-    this.lines = lines;
-    
-    payments = this.payments();
-    subtotal = this.subtotal();
-    for(payment in payments) {
-      if(subtotal < 0 && payments[payment].amount > 0) {
-        payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && payments[payment].amount < 0) {
-        payments[payment].amount = 0;
-      }
-    }
-    if(subtotal < 0) {
-      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
-      this.updatePayment(new Payment({form: 'cash', amount: 0}));
-    }
   },
   
   updateCreditPayout: function(payment) {

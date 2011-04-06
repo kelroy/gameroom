@@ -69,6 +69,11 @@ var TransactionController = new JS.Class(ViewController, {
   updateCart: function(lines) {
     if(this.transaction) {
       this.transaction.setLines(lines);
+      if(this.transaction.subtotal() < 0) {
+        this.transaction.setPayments([new Payment({form: 'store_credit', amount: this.transaction.subtotal()})]);
+      } else {
+        this.transaction.setPayments([]);
+      }
       this.notifyControllers(this.transaction);
     }
   },
@@ -175,11 +180,10 @@ var TransactionController = new JS.Class(ViewController, {
       }
       return false;
     }*/
-    controller = this;
     console.log(this.transaction);
-    if(this.transaction.save()) {
-      controller.newTransaction(controller.till_id, controller.user_id);
-      controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
-    };
+    //if(this.transaction.save()) {
+    //  this.newTransaction(this.till_id, this.user_id);
+    //  this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
+    //};
   }
 });

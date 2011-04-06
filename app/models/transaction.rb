@@ -25,7 +25,9 @@ class Transaction < ActiveRecord::Base
       purchase_subtotal = self.purchase_subtotal
       taxable_subtotal = 0
       self.lines.each do |line|
-        taxable_subtotal += line.subtotal if line.taxable?
+        if line.taxable? && line.subtotal > 0
+          taxable_subtotal += line.subtotal
+        end
       end
       if taxable_subtotal < purchase_subtotal
         return (taxable_subtotal * self.tax_rate).round

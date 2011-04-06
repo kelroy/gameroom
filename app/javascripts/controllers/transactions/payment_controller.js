@@ -13,7 +13,6 @@ var PaymentController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.payments = [];
-    this.purchase = true;
     
     this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
     this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
@@ -81,7 +80,7 @@ var PaymentController = new JS.Class(ViewController, {
     payments = transaction.payments();
     
     this.store_credit_controller.update(0, transaction.subtotal());
-    this.store_credit_payout_controller.update(0, amount_due);
+    this.store_credit_payout_controller.update(0, transaction.subtotal());
     this.cash_controller.update(0, amount_due);
     this.cash_payout_controller.update(0, amount_due);
     this.gift_card_controller.update(0, amount_due);
@@ -94,7 +93,7 @@ var PaymentController = new JS.Class(ViewController, {
         switch(payments[payment].form) {
           case 'store_credit':
             this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
-            this.store_credit_payout_controller.update(payments[payment].amount, amount_due);
+            this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
             break;
           case 'cash':
             this.cash_controller.update(payments[payment].amount, amount_due);
@@ -118,18 +117,8 @@ var PaymentController = new JS.Class(ViewController, {
     this.updateSummary(transaction);
     
     if(transaction.total() >= 0) {
-      if(!this.purchase) {
-        this.purchase = true;
-        this.payments = [];
-        this.notifyObservers(this.payments);
-      }
       this.enableBuyFromStore();
     } else {
-      if(this.purchase) {
-        this.purchase = false;
-        this.payments = [];
-        this.notifyObservers(this.payments);
-      }
       this.enableSellToStore();
     }
   },
@@ -163,13 +152,11 @@ var PaymentController = new JS.Class(ViewController, {
   },
   
   enableBuyFromStore: function() {
-    this.purchase = true;
     this.enablePaymentFields();
     this.scale_controller.view.hide();
   },
   
   enableSellToStore: function() {
-    this.purchase = false;
     this.disablePaymentFields();
     this.scale_controller.view.show();
   }

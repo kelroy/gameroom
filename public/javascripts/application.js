@@ -622,7 +622,7 @@ var Transaction = new JS.Class(Model, {
       purchase_subtotal = this.purchaseSubtotal();
       taxable_subtotal = 0;
       for(line in lines) {
-        if(lines[line].taxable) {
+        if(lines[line].taxable && lines[line].subtotal() > 0) {
           taxable_subtotal += lines[line].subtotal();
         }
       }
@@ -708,25 +708,6 @@ var Transaction = new JS.Class(Model, {
       subtotal += lines[line].cashSubtotal();
     }
     return Math.abs(subtotal);
-  },
-
-  setLines: function(lines) {
-    this.lines = lines;
-
-    payments = this.payments();
-    subtotal = this.subtotal();
-    for(payment in payments) {
-      if(subtotal < 0 && payments[payment].amount > 0) {
-        payments[payment].amount = 0;
-      }
-      if(subtotal >= 0 && payments[payment].amount < 0) {
-        payments[payment].amount = 0;
-      }
-    }
-    if(subtotal < 0) {
-      this.updatePayment(new Payment({form: 'store_credit', amount: subtotal}));
-      this.updatePayment(new Payment({form: 'cash', amount: 0}));
-    }
   },
 
   updateCreditPayout: function(payment) {
@@ -2082,6 +2063,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
   onItem: function(id) {
     item = Item.find(id);
     this.notifyObservers([new Line({
+      item_id: item.id,
       title: item.title,
       description: item.description,
       quantity: 1,
@@ -2326,9 +2308,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
     this.callSuper();
   },
 
-  update: function(amount, amount_due) {
-    this.amount_due = amount_due;
-
+  update: function(amount) {
     if(amount < 0) {
       $('input.payment', this.view).val(Currency.format(amount * -1));
     } else {
@@ -2366,7 +2346,6 @@ var PaymentController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.payments = [];
-    this.purchase = true;
 
     this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
     this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
@@ -2434,7 +2413,7 @@ var PaymentController = new JS.Class(ViewController, {
     payments = transaction.payments();
 
     this.store_credit_controller.update(0, transaction.subtotal());
-    this.store_credit_payout_controller.update(0, amount_due);
+    this.store_credit_payout_controller.update(0, transaction.subtotal());
     this.cash_controller.update(0, amount_due);
     this.cash_payout_controller.update(0, amount_due);
     this.gift_card_controller.update(0, amount_due);
@@ -2447,7 +2426,7 @@ var PaymentController = new JS.Class(ViewController, {
         switch(payments[payment].form) {
           case 'store_credit':
             this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
-            this.store_credit_payout_controller.update(payments[payment].amount, amount_due);
+            this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
             break;
           case 'cash':
             this.cash_controller.update(payments[payment].amount, amount_due);
@@ -2471,18 +2450,8 @@ var PaymentController = new JS.Class(ViewController, {
     this.updateSummary(transaction);
 
     if(transaction.total() >= 0) {
-      if(!this.purchase) {
-        this.purchase = true;
-        this.payments = [];
-        this.notifyObservers(this.payments);
-      }
       this.enableBuyFromStore();
     } else {
-      if(this.purchase) {
-        this.purchase = false;
-        this.payments = [];
-        this.notifyObservers(this.payments);
-      }
       this.enableSellToStore();
     }
   },
@@ -2516,13 +2485,11 @@ var PaymentController = new JS.Class(ViewController, {
   },
 
   enableBuyFromStore: function() {
-    this.purchase = true;
     this.enablePaymentFields();
     this.scale_controller.view.hide();
   },
 
   enableSellToStore: function() {
-    this.purchase = false;
     this.disablePaymentFields();
     this.scale_controller.view.show();
   }
@@ -2806,6 +2773,11 @@ var TransactionController = new JS.Class(ViewController, {
   updateCart: function(lines) {
     if(this.transaction) {
       this.transaction.setLines(lines);
+      if(this.transaction.subtotal() < 0) {
+        this.transaction.setPayments([new Payment({form: 'store_credit', amount: this.transaction.subtotal()})]);
+      } else {
+        this.transaction.setPayments([]);
+      }
       this.notifyControllers(this.transaction);
     }
   },
@@ -2912,12 +2884,7 @@ var TransactionController = new JS.Class(ViewController, {
       }
       return false;
     }*/
-    controller = this;
     console.log(this.transaction);
-    if(this.transaction.save()) {
-      controller.newTransaction(controller.till_id, controller.user_id);
-      controller.notifyObservers('/api/transactions/' + transaction.id + '/receipt');
-    };
   }
 });
 
@@ -2946,7 +2913,7 @@ var TerminalController = new JS.Class({
   },
 
   updateTill: function(till) {
-    this.transaction_controller.newTransaction(till.id, $('ul#user_nav li.current_user_login').attr('data-user-id'));
+    this.transaction_controller.newTransaction(till.id, parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')));
     this.transaction_controller.transaction_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transaction_controller.view.show();

@@ -31,7 +31,7 @@ var TransactionFinishController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
-    if(transaction.valid()) {
+    if(transaction.finishable()) {
       this.enable();
     } else {
       this.disable();

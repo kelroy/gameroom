@@ -132,58 +132,58 @@ var TransactionController = new JS.Class(ViewController, {
   },
   
   saveTransaction: function() {
-    /*# Update customer
-    def update_customer
-      unless self.customer.nil?
-        credit = 0
-        self.payments.each do |payment|
-          if payment.form == 'store_credit'
-            credit = payment.amount
-          end
-        end
-        self.customer.credit = self.customer.credit - credit
-      end
-    end
-
-    # Update till
-    def update_till
-      unless self.till.nil?
-        cash_total = 0
-        self.payments.each do |payment|
-          if payment.form == 'cash'
-            cash_total += payment.amount
-          end
-        end
-        if self.total < 0
-          if cash_total != 0
-            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => cash_total)
-          end
-        elsif self.total > 0
-          amount = cash_total - self.change
-          if amount != 0
-            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
-          end
-        end
-      end
-    end*/
-    /*valid: function() {
-      if(this.subtotal() > 0 && this.amountDue() <= 0) {
-        return true;
-      } else if(this.subtotal() < 0) {
-        if(this.customer != undefined) {
-          if(this.customer.valid()) {
-            return true;
+    if(this.transaction.finishable() && this.transaction.save()) {
+      credit_adjustment = 0;
+      till_adjustment = 0;
+      
+      lines = this.transaction.lines();
+      for(line in lines) {
+        lines[line].transaction_id = this.transaction.id;
+        if(!lines[line].save()) {
+          console.error('Line not saved.');
+        }
+      }
+      
+      payments = this.transaction.payments();
+      for(payment in payments) {
+        if(payments[payment].form == 'store_credit') {
+          credit_adjustment += payments[payment].amount;
+        }
+        if(payments[payment].form == 'cash') {
+          till_adjustment += payments[payment].amount;
+        }
+        payments[payment].transaction_id = this.transaction.id;
+        if(!payments[payment].save()) {
+          console.error('Payment not saved.');
+        }
+      }
+      
+      if(credit_adjustment != 0) {
+        customer = this.transaction.customer();
+        if(customer != undefined) {
+          customer.credit = customer.credit - credit_adjustment,
+          if(!customer.save()) {
+            console.error('Customer not saved.');
           }
         }
-      } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-        return true;
       }
-      return false;
-    }*/
-    console.log(this.transaction);
-    //if(this.transaction.save()) {
-    //  this.newTransaction(this.till_id, this.user_id);
-    //  this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-    //};
+      
+      if(this.transaction.total() > 0) {
+        till_adjustment = till_adjustment + this.transaction.amountDue();
+      }
+      if(till_adjustment != 0) {
+        entry = new Entry({
+          till_id: this.transaction.id,
+          title: 'Transaction: ' + this.transaction.id,
+          amount: till_adjustment
+        });
+        if(!entry.save()) {
+          console.error('Entry not saved.');
+        }
+      }
+      
+      this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
+      this.newTransaction(this.till_id, this.user_id);
+    }
   }
 });

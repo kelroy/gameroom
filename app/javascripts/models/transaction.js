@@ -55,6 +55,28 @@ var Transaction = new JS.Class(Model, {
     }
   },
   
+  finishable: function() {
+    if(this.valid()) {
+      subtotal = this.subtotal();
+      amount_due = this.amountDue();
+      if(subtotal > 0 && amount_due <= 0) {
+        return true;
+      } else if(subtotal < 0) {
+        customer = this.customer();
+        if(customer != undefined) {
+          if(customer.valid()) {
+            return true;
+          }
+        }
+      } else if(this.countItems() > 0 && amount_due <= 0) {
+        return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
+  },
+  
   purchaseSubtotal: function() {
     payments = this.payments();
     subtotal = this.subtotal();
@@ -159,80 +181,6 @@ var Transaction = new JS.Class(Model, {
     }
     if(!found) {
       this.addPayment(updated_payment);
-    }
-  },
-  
-  save: function(callback) {
-    if(this.valid()) {
-      transaction = {
-        till_id: this.till.id,
-        user_id: this.user_id,
-        tax_rate: this.tax_rate,
-        complete: this.complete,
-        locked: this.locked,
-        payments_attributes: [],
-        lines_attributes: []
-      };
-      for(payment in this.payments) {
-        transaction.payments_attributes.push({
-          form: this.payments[payment].form,
-          amount: this.payments[payment].amount
-        });
-      }
-      for(line in this.lines) {
-        if(this.lines[line].item.id != undefined) {
-          transaction.lines_attributes.push({
-            item_id: this.lines[line].item.id,
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable
-          });
-        } else {
-          transaction.lines_attributes.push({
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable,
-            item_attributes: {
-              title: this.lines[line].item.title,
-              description: this.lines[line].item.description,
-              price: this.lines[line].item.price,
-              taxable: this.lines[line].item.taxable,
-              discountable: this.lines[line].item.discountable,
-              locked: this.lines[line].item.locked,
-              active: this.lines[line].item.active,
-            }
-          });
-        }
-      }
-      if(this.customer != undefined) {
-        transaction.customer_id = this.customer.id;
-      }
-      
-      $.ajax({
-        url: '/api/transactions',
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({transaction: transaction}),
-        dataType: 'json',
-        processData: false,
-        type: 'POST',
-        success: function(result) {
-          callback(result.transaction);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-        
-      });
-      
-      return true;
-    } else {
-      return false;
     }
   }
 });

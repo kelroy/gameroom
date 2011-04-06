@@ -645,6 +645,28 @@ var Transaction = new JS.Class(Model, {
     }
   },
 
+  finishable: function() {
+    if(this.valid()) {
+      subtotal = this.subtotal();
+      amount_due = this.amountDue();
+      if(subtotal > 0 && amount_due <= 0) {
+        return true;
+      } else if(subtotal < 0) {
+        customer = this.customer();
+        if(customer != undefined) {
+          if(customer.valid()) {
+            return true;
+          }
+        }
+      } else if(this.countItems() > 0 && amount_due <= 0) {
+        return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
+  },
+
   purchaseSubtotal: function() {
     payments = this.payments();
     subtotal = this.subtotal();
@@ -749,80 +771,6 @@ var Transaction = new JS.Class(Model, {
     }
     if(!found) {
       this.addPayment(updated_payment);
-    }
-  },
-
-  save: function(callback) {
-    if(this.valid()) {
-      transaction = {
-        till_id: this.till.id,
-        user_id: this.user_id,
-        tax_rate: this.tax_rate,
-        complete: this.complete,
-        locked: this.locked,
-        payments_attributes: [],
-        lines_attributes: []
-      };
-      for(payment in this.payments) {
-        transaction.payments_attributes.push({
-          form: this.payments[payment].form,
-          amount: this.payments[payment].amount
-        });
-      }
-      for(line in this.lines) {
-        if(this.lines[line].item.id != undefined) {
-          transaction.lines_attributes.push({
-            item_id: this.lines[line].item.id,
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable
-          });
-        } else {
-          transaction.lines_attributes.push({
-            quantity: this.lines[line].quantity,
-            price: this.lines[line].price,
-            taxable: this.lines[line].taxable,
-            item_attributes: {
-              title: this.lines[line].item.title,
-              description: this.lines[line].item.description,
-              price: this.lines[line].item.price,
-              taxable: this.lines[line].item.taxable,
-              discountable: this.lines[line].item.discountable,
-              locked: this.lines[line].item.locked,
-              active: this.lines[line].item.active,
-            }
-          });
-        }
-      }
-      if(this.customer != undefined) {
-        transaction.customer_id = this.customer.id;
-      }
-
-      $.ajax({
-        url: '/api/transactions',
-        accept: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify({transaction: transaction}),
-        dataType: 'json',
-        processData: false,
-        type: 'POST',
-        success: function(result) {
-          callback(result.transaction);
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-
-      });
-
-      return true;
-    } else {
-      return false;
     }
   }
 });
@@ -2665,7 +2613,7 @@ var TransactionFinishController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    if(transaction.valid()) {
+    if(transaction.finishable()) {
       this.enable();
     } else {
       this.disable();
@@ -2836,55 +2784,59 @@ var TransactionController = new JS.Class(ViewController, {
   },
 
   saveTransaction: function() {
-    /*# Update customer
-    def update_customer
-      unless self.customer.nil?
-        credit = 0
-        self.payments.each do |payment|
-          if payment.form == 'store_credit'
-            credit = payment.amount
-          end
-        end
-        self.customer.credit = self.customer.credit - credit
-      end
-    end
+    if(this.transaction.finishable() && this.transaction.save()) {
+      credit_adjustment = 0;
+      till_adjustment = 0;
 
-    # Update till
-    def update_till
-      unless self.till.nil?
-        cash_total = 0
-        self.payments.each do |payment|
-          if payment.form == 'cash'
-            cash_total += payment.amount
-          end
-        end
-        if self.total < 0
-          if cash_total != 0
-            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => cash_total)
-          end
-        elsif self.total > 0
-          amount = cash_total - self.change
-          if amount != 0
-            self.till.entries.create(:title => "Transaction: #{self.id}", :amount => amount)
-          end
-        end
-      end
-    end*/
-    /*valid: function() {
-      if(this.subtotal() > 0 && this.amountDue() <= 0) {
-        return true;
-      } else if(this.subtotal() < 0) {
-        if(this.customer != undefined) {
-          if(this.customer.valid()) {
-            return true;
+      lines = this.transaction.lines();
+      for(line in lines) {
+        lines[line].transaction_id = this.transaction.id;
+        if(!lines[line].save()) {
+          console.error('Line not saved.');
+        }
+      }
+
+      payments = this.transaction.payments();
+      for(payment in payments) {
+        if(payments[payment].form == 'store_credit') {
+          credit_adjustment += payments[payment].amount;
+        }
+        if(payments[payment].form == 'cash') {
+          till_adjustment += payments[payment].amount;
+        }
+        payments[payment].transaction_id = this.transaction.id;
+        if(!payments[payment].save()) {
+          console.error('Payment not saved.');
+        }
+      }
+
+      if(credit_adjustment != 0) {
+        customer = this.transaction.customer();
+        if(customer != undefined) {
+          customer.credit = customer.credit - credit_adjustment,
+          if(!customer.save()) {
+            console.error('Customer not saved.');
           }
         }
-      } else if(this.countItems() > 0 && this.amountDue() <= 0) {
-        return true;
       }
-      return false;
-    }*/
-    console.log(this.transaction);
+
+      if(this.transaction.total() > 0) {
+        till_adjustment = till_adjustment + this.transaction.amountDue();
+      }
+      if(till_adjustment != 0) {
+        entry = new Entry({
+          till_id: this.transaction.id,
+          title: 'Transaction: ' + this.transaction.id,
+          amount: till_adjustment
+        });
+        if(!entry.save()) {
+          console.error('Entry not saved.');
+        }
+      }
+
+      this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
+      this.newTransaction(this.till_id, this.user_id);
+    }
   }
 });
 

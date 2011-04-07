@@ -28,6 +28,28 @@ class Api::PaymentsController < ApplicationController
     end
   end
   
+  # GET|POST /payments/search.xml
+  # GET|POST /payments/search.json
+  def search
+    @payments = Payment.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @payments.to_json }
+      format.xml  { render :xml => @payments.to_xml }
+    end
+  end
+  
+  # GET|POST /payments/where.xml
+  # GET|POST /payments/where.json
+  def where
+    @payments = Payment.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @payments.to_json }
+      format.xml  { render :xml => @payments.to_xml }
+    end
+  end
+  
   # POST /payments.xml
   # POST /payments.json
   def create

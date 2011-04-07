@@ -33,6 +33,17 @@ class Api::ItemsController < ApplicationController
     end
   end
   
+  # GET|POST /items/where.xml
+  # GET|POST /items/where.json
+  def where
+    @items = Item.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @items.to_json }
+      format.xml  { render :xml => @items.to_xml }
+    end
+  end
+  
   # POST /items.xml
   # POST /items.json
   def create

@@ -28,6 +28,28 @@ class Api::TillsController < ApplicationController
     end
   end
   
+  # GET|POST /tills/search.xml
+  # GET|POST /tills/search.json
+  def search
+    @tills = Till.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @tills.to_json }
+      format.xml  { render :xml => @tills.to_xml }
+    end
+  end
+  
+  # GET|POST /tills/where.xml
+  # GET|POST /tills/where.json
+  def where
+    @tills = Till.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @tills.to_json }
+      format.xml  { render :xml => @tills.to_xml }
+    end
+  end
+  
   # POST /tills.xml
   # POST /tills.json
   def create

@@ -30,6 +30,28 @@ class Api::TransactionsController < ApplicationController
     end
   end
   
+  # GET|POST /transactions/search.xml
+  # GET|POST /transactions/search.json
+  def search
+    @transactions = Transaction.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @transactions.to_json }
+      format.xml  { render :xml => @transactions.to_xml }
+    end
+  end
+  
+  # GET|POST /transactions/where.xml
+  # GET|POST /transactions/where.json
+  def where
+    @transactions = Transaction.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @transactions.to_json }
+      format.xml  { render :xml => @transactions.to_xml }
+    end
+  end
+  
   # GET /transactions/1/receipt
   # GET /transactions/1/receipt.svg
   def receipt

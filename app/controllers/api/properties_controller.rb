@@ -28,6 +28,28 @@ class Api::PropertiesController < ApplicationController
     end
   end
   
+  # GET|POST /properties/search.xml
+  # GET|POST /properties/search.json
+  def search
+    @properties = Property.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @properties.to_json }
+      format.xml  { render :xml => @properties.to_xml }
+    end
+  end
+  
+  # GET|POST /properties/where.xml
+  # GET|POST /properties/where.json
+  def where
+    @properties = Property.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @properties.to_json }
+      format.xml  { render :xml => @properties.to_xml }
+    end
+  end
+  
   # POST /properties.xml
   # POST /properties.json
   def create

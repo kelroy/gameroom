@@ -5,30 +5,62 @@ Gameroom::Application.routes.draw do
   resource :user_sessions, :except => [:index, :show]
   
   namespace 'api' do
-    resources :addresses
+    resources :addresses do
+      collection do
+        match 'search' => 'addresses#search', :via => [:get, :post]
+        match 'where' => 'addresses#where', :via => [:get, :post]
+      end
+    end
     resources :customers do
       collection do
         match 'search' => 'customers#search', :via => [:get, :post]
+        match 'where' => 'customers#where', :via => [:get, :post]
       end
       resources :transactions, :only => [:index]
     end
-    resources :emails
+    resources :emails do
+      collection do
+        match 'search' => 'emails#search', :via => [:get, :post]
+        match 'where' => 'emails#where', :via => [:get, :post]
+      end
+    end
     resources :employees do
+      collection do
+        match 'search' => 'employees#search', :via => [:get, :post]
+        match 'where' => 'employees#where', :via => [:get, :post]
+      end
       resources :timecards, :only => [:index]
     end
-    resources :entries
+    resources :entries do
+      collection do
+        match 'search' => 'entries#search', :via => [:get, :post]
+        match 'where' => 'entries#where', :via => [:get, :post]
+      end
+    end
     resources :items do
       collection do
         match 'search' => 'items#search', :via => [:get, :post]
+        match 'where' => 'items#where', :via => [:get, :post]
       end
       resources :lines,       :only => [:index]
       resources :properties,  :only => [:index]
     end
-    resources :lines
-    resources :payments
+    resources :lines do
+      collection do
+        match 'search' => 'lines#search', :via => [:get, :post]
+        match 'where' => 'lines#where', :via => [:get, :post]
+      end
+    end
+    resources :payments do
+      collection do
+        match 'search' => 'payments#search', :via => [:get, :post]
+        match 'where' => 'payments#where', :via => [:get, :post]
+      end
+    end
     resources :people do
       collection do
         match 'search' => 'people#search', :via => [:get, :post]
+        match 'where' => 'people#where', :via => [:get, :post]
       end
       resource  :customer,  :only => [:show]
       resource  :employee,  :only => [:show]
@@ -37,10 +69,29 @@ Gameroom::Application.routes.draw do
       resources :emails,    :only => [:index]
       resources :phones,    :only => [:index]
     end
-    resources :phones
-    resources :properties
-    resources :timecards
+    resources :phones do
+      collection do
+        match 'search' => 'phones#search', :via => [:get, :post]
+        match 'where' => 'phones#where', :via => [:get, :post]
+      end
+    end
+    resources :properties do
+      collection do
+        match 'search' => 'properties#search', :via => [:get, :post]
+        match 'where' => 'properties#where', :via => [:get, :post]
+      end
+    end
+    resources :timecards do
+      collection do
+        match 'search' => 'timecards#search', :via => [:get, :post]
+        match 'where' => 'timecards#where', :via => [:get, :post]
+      end
+    end
     resources :transactions do
+      collection do
+        match 'search' => 'transactions#search', :via => [:get, :post]
+        match 'where' => 'transactions#where', :via => [:get, :post]
+      end
       member do
         match 'receipt' => 'transactions#receipt', :via => [:get]
       end
@@ -48,11 +99,19 @@ Gameroom::Application.routes.draw do
       resources :lines,     :only => [:index]
     end
     resources :tills do
+      collection do
+        match 'search' => 'tills#search', :via => [:get, :post]
+        match 'where' => 'tills#where', :via => [:get, :post]
+      end
       resources :entries,       :only => [:index]
       resources :transactions,  :only => [:index]
       resources :users,         :only => [:index]
     end
     resources :users do
+      collection do
+        match 'search' => 'users#search', :via => [:get, :post]
+        match 'where' => 'users#where', :via => [:get, :post]
+      end
       resources :tills,         :only => [:index]
     end
   end

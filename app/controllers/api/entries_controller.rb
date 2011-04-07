@@ -28,6 +28,28 @@ class Api::EntriesController < ApplicationController
     end
   end
   
+  # GET|POST /entries/search.xml
+  # GET|POST /entries/search.json
+  def search
+    @entries = Entry.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @entries.to_json }
+      format.xml  { render :xml => @entries.to_xml }
+    end
+  end
+  
+  # GET|POST /entries/where.xml
+  # GET|POST /entries/where.json
+  def where
+    @entries = Entry.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @entries.to_json }
+      format.xml  { render :xml => @entries.to_xml }
+    end
+  end
+  
   # POST /entries.xml
   # POST /entries.json
   def create

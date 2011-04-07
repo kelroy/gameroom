@@ -28,6 +28,28 @@ class Api::EmailsController < ApplicationController
     end
   end
   
+  # GET|POST /emails/search.xml
+  # GET|POST /emails/search.json
+  def search
+    @emails = Email.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @emails.to_json }
+      format.xml  { render :xml => @emails.to_xml }
+    end
+  end
+  
+  # GET|POST /emails/where.xml
+  # GET|POST /emails/where.json
+  def where
+    @emails = Email.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @emails.to_json }
+      format.xml  { render :xml => @emails.to_xml }
+    end
+  end
+  
   # POST /emails.xml
   # POST /emails.json
   def create

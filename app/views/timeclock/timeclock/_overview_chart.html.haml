@@ -1,4 +1,4 @@
-%ul{:id => 'overview_chart_list'}
+%ul{:id => 'overview_chart_list', :class => chart_class}
   %li
     %ul{:class => 'button_nav'}
       %li
@@ -7,9 +7,6 @@
       %li 12:00a
       %li 12:00p
       %li 12:00a
-  %li
-    %h3 Joe Example
-    %canvas
-  %li
-    %h3 Joe Example
+  %li{:class => 'overview_chart_item'}
+    %h3
     %canvas

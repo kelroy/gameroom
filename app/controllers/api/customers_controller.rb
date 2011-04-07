@@ -39,6 +39,17 @@ class Api::CustomersController < ApplicationController
     end
   end
   
+  # GET|POST /customers/where.xml
+  # GET|POST /customers/where.json
+  def where
+    @customers = Customer.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @customers.to_json }
+      format.xml  { render :xml => @customers.to_xml }
+    end
+  end
+  
   # POST /customers.xml
   # POST /customers.json
   def create

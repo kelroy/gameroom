@@ -32,6 +32,28 @@ class Api::LinesController < ApplicationController
     end
   end
   
+  # GET|POST /lines/search.xml
+  # GET|POST /lines/search.json
+  def search
+    @lines = Line.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @lines.to_json }
+      format.xml  { render :xml => @lines.to_xml }
+    end
+  end
+  
+  # GET|POST /lines/where.xml
+  # GET|POST /lines/where.json
+  def where
+    @lines = Line.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @lines.to_json }
+      format.xml  { render :xml => @lines.to_xml }
+    end
+  end
+  
   # POST /lines
   # POST /lines.xml
   # POST /lines.json

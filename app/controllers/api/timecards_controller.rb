@@ -28,6 +28,28 @@ class Api::TimecardsController < ApplicationController
     end
   end
   
+  # GET|POST /timecards/search.xml
+  # GET|POST /timecards/search.json
+  def search
+    @timecards = Timecard.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @timecards.to_json }
+      format.xml  { render :xml => @timecards.to_xml }
+    end
+  end
+  
+  # GET|POST /timecards/where.xml
+  # GET|POST /timecards/where.json
+  def where
+    @timecards = Timecard.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @timecards.to_json }
+      format.xml  { render :xml => @timecards.to_xml }
+    end
+  end
+  
   # POST /timecards.xml
   # POST /timecards.json
   def create

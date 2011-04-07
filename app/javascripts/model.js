@@ -51,11 +51,29 @@ var Model = new JS.Class({
       return resources;
     },
     
-    where: function(pattern, query, page, per_page) {
+    where: function(statement, params, page, per_page) {
+      resource = this.resource;
+      resources = [];
+      url = '/api/'+ resource.pluralize() + '/where';
+      data = {
+        statement: statement,
+        params: params,
+        page: page,
+        per_page: per_page
+      };
+      this._ajax(url, 'POST', data, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
+    
+    search: function(pattern, query, page, per_page) {
       resource = this.resource;
       resources = [];
       search = new Object();
-      search[pattern] = query.split(" ");
+      search[pattern] = query;
       url = '/api/'+ resource.pluralize() + '/search';
       data = {
         search: search,

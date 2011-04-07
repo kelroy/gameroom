@@ -28,6 +28,28 @@ class Api::AddressesController < ApplicationController
     end
   end
   
+  # GET|POST /addresses/search.xml
+  # GET|POST /addresses/search.json
+  def search
+    @addresses = Address.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @addresses.to_json }
+      format.xml  { render :xml => @addresses.to_xml }
+    end
+  end
+  
+  # GET|POST /addresses/where.xml
+  # GET|POST /addresses/where.json
+  def where
+    @addresses = Address.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @addresses.to_json }
+      format.xml  { render :xml => @addresses.to_xml }
+    end
+  end
+  
   # POST /addresses.xml
   # POST /addresses.json
   def create

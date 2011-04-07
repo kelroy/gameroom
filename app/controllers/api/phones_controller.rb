@@ -28,6 +28,28 @@ class Api::PhonesController < ApplicationController
     end
   end
   
+  # GET|POST /phones/search.xml
+  # GET|POST /phones/search.json
+  def search
+    @phones = Phone.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @phones.to_json }
+      format.xml  { render :xml => @phones.to_xml }
+    end
+  end
+  
+  # GET|POST /phones/where.xml
+  # GET|POST /phones/where.json
+  def where
+    @phones = Phone.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @phones.to_json }
+      format.xml  { render :xml => @phones.to_xml }
+    end
+  end
+  
   # POST /phones.xml
   # POST /phones.json
   def create

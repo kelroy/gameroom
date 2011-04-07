@@ -307,11 +307,29 @@ var Model = new JS.Class({
       return resources;
     },
 
-    where: function(pattern, query, page, per_page) {
+    where: function(statement, params, page, per_page) {
+      resource = this.resource;
+      resources = [];
+      url = '/api/'+ resource.pluralize() + '/where';
+      data = {
+        statement: statement,
+        params: params,
+        page: page,
+        per_page: per_page
+      };
+      this._ajax(url, 'POST', data, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
+
+    search: function(pattern, query, page, per_page) {
       resource = this.resource;
       resources = [];
       search = new Object();
-      search[pattern] = query.split(" ");
+      search[pattern] = query;
       url = '/api/'+ resource.pluralize() + '/search';
       data = {
         search: search,
@@ -1467,7 +1485,7 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     } else {
       pattern = 'last_name_starts_with';
     }
-    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
+    this.customer_table_controller.update(Person.search(pattern, query.split(' '), page, 10));
   },
 
   onPerson: function(id) {
@@ -2005,7 +2023,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     } else {
       pattern = 'title_starts_with';
     }
-    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
+    this.cart_table_controller.update(Item.search(pattern, query.split(' '), page, 10));
   },
 
   onItem: function(id) {
@@ -2918,25 +2936,41 @@ var OverviewChartController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.line = $('li.overview_chart_item', this.view).detach();
+    this.lines = [];
 
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },
 
   reset: function() {
-
-  },
-
-  refresh: function() {
-
+    this.lines = [];
+    this.clearLines();
   },
 
   update: function(date) {
+    for(line in this.lines) {
+      this.lines[line].update(date);
+    }
+  },
 
+  clearLines: function() {
+    $('ul#overview_chart_list > li.overview_chart_item').remove();
   },
 
   doRefresh: function(event) {
     event.data.instance.refresh();
     event.preventDefault();
+  }
+});
+
+var OverviewChartLineController = new JS.Class(ViewController, {
+
+  initialize: function(view, employee) {
+    this.callSuper();
+  },
+
+  update: function(date) {
+
   }
 });
 
@@ -2947,11 +2981,22 @@ var OverviewInController = new JS.Class(OverviewChartController, {
   },
 
   refresh: function() {
-
+    today = new Date();
+    date = new Date(today.getYear(), today.getMonth(), today.getDate());
+    employees = Employee.search('timecards_begin_greater_than', date.valueOf(), 1, 20);
+    lines = [];
+    for(employee in employees) {
+      lines.push(new OverviewChartLineController(this.line.clone(), employees[employee]));
+    }
+    this.setLines(lines);
   },
 
-  update: function(date) {
-
+  setLines: function(lines) {
+    this.reset();
+    for(line in lines) {
+      this.lines.push(lines[line]);
+      $('ul.overview_chart_in', this.view).append(lines[line].view);
+    }
   }
 });
 
@@ -2962,7 +3007,22 @@ var OverviewOutController = new JS.Class(OverviewChartController, {
   },
 
   refresh: function() {
+    today = new Date();
+    date = new Date(today.getYear(), today.getMonth(), today.getDate());
+    employees = Employee.search('timecards_begin_greater_than', date.valueOf(), 1, 20);
+    lines = [];
+    for(employee in employees) {
+      lines.push(new OverviewChartLineController(this.line.clone(), employees[employee]));
+    }
+    this.setLines(lines);
+  },
 
+  setLines: function(lines) {
+    this.reset();
+    for(line in lines) {
+      this.lines.push(lines[line]);
+      $('ul.overview_chart_out', this.view).append(lines[line].view);
+    }
   }
 });
 
@@ -2978,6 +3038,9 @@ var OverviewController = new JS.Class(ViewController, {
       this.overview_in_controller.view,
       this.overview_out_controller.view
     ]);
+    this.reset();
+
+    this.clock_in_out_controller.addObserver(this.updateCharts, this);
 
     controller = this;
     this.updateClock();
@@ -2985,15 +3048,13 @@ var OverviewController = new JS.Class(ViewController, {
       controller.updateClock();
     }, 1000);
 
-    this.clock_in_out_controller.addObserver(this.updateCharts, this);
-
     $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
-    this.reset();
   },
 
   reset: function() {
     this.overview_in_controller.reset();
     this.overview_out_controller.reset();
+    this.updateCharts();
     this.showInSection();
   },
 

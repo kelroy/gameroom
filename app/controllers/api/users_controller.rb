@@ -34,6 +34,28 @@ class Api::UsersController < ApplicationController
     end
   end
   
+  # GET|POST /users/search.xml
+  # GET|POST /users/search.json
+  def search
+    @users = User.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @users.to_json }
+      format.xml  { render :xml => @users.to_xml }
+    end
+  end
+  
+  # GET|POST /users/where.xml
+  # GET|POST /users/where.json
+  def where
+    @users = User.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @users.to_json }
+      format.xml  { render :xml => @users.to_xml }
+    end
+  end
+  
   # POST /users.xml
   # POST /users.json
   def create

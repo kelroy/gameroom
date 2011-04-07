@@ -28,6 +28,28 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
+  # GET|POST /employees/search.xml
+  # GET|POST /employees/search.json
+  def search
+    @employees = Employee.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @employees.to_json }
+      format.xml  { render :xml => @employees.to_xml }
+    end
+  end
+  
+  # GET|POST /employees/where.xml
+  # GET|POST /employees/where.json
+  def where
+    @employees = Employee.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @employees.to_json }
+      format.xml  { render :xml => @employees.to_xml }
+    end
+  end
+  
   # POST /employees.xml
   # POST /employees.json
   def create

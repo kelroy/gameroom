@@ -24,7 +24,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     } else {
       pattern = 'title_starts_with';
     }
-    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
+    this.cart_table_controller.update(Item.search(pattern, query.split(' '), page, 10));
   },
   
   onItem: function(id) {

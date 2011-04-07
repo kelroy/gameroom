@@ -23,7 +23,7 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     } else {
       pattern = 'last_name_starts_with';
     }
-    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
+    this.customer_table_controller.update(Person.search(pattern, query.split(' '), page, 10));
   },
   
   onPerson: function(id) {

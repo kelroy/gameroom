@@ -33,6 +33,17 @@ class Api::PeopleController < ApplicationController
     end
   end
   
+  # GET|POST /people/where.xml
+  # GET|POST /people/where.json
+  def where
+    @people = Person.where(params[:statement], *params[:params]).paginate(:page => params[:page], :per_page => params[:per_page])
+    
+    respond_to do |format|
+      format.json { render :json => @people.to_json }
+      format.xml  { render :xml => @people.to_xml }
+    end
+  end
+  
   # POST /people.xml
   # POST /people.json
   def create

@@ -16,6 +16,9 @@ var OverviewController = new JS.Class(ViewController, {
       this.overview_in_controller.view,
       this.overview_out_controller.view
     ]);
+    this.reset();
+    
+    this.clock_in_out_controller.addObserver(this.updateCharts, this);
     
     controller = this;
     this.updateClock();
@@ -23,15 +26,13 @@ var OverviewController = new JS.Class(ViewController, {
       controller.updateClock();
     }, 1000);
     
-    this.clock_in_out_controller.addObserver(this.updateCharts, this);
-    
     $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
-    this.reset();
   },
   
   reset: function() {
     this.overview_in_controller.reset();
     this.overview_out_controller.reset();
+    this.updateCharts();
     this.showInSection();
   },
   

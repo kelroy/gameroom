@@ -1,6 +1,7 @@
 //= require "view_controller"
 
 var SectionController = new JS.Class(ViewController, {
+  include: JS.Observable,
   
   initialize: function(view, sections) {
     this.callSuper();
@@ -11,6 +12,7 @@ var SectionController = new JS.Class(ViewController, {
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
     event.data.instance.showSection(index);
+    event.data.instance.notifyObservers(index);
     event.preventDefault();
   },
   

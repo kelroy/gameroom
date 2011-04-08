@@ -11,6 +11,10 @@ var TimeclockController = new JS.Class({
       this.admin_controller.view
     ]);
     this.reset();
+    
+    this.overview_controller.updateClock();
+    this.overview_controller.updateCanvas();
+    this.overview_controller.updateCharts();
   },
   
   reset: function() {

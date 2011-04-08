@@ -10,6 +10,6 @@
     %a{:href => '#overview_out', :class => 'overview_out selected'} Out
 %div{:id => 'overview_pages', :class => 'page_container'}
   %div{:id => 'overview_in'}
-    = render :partial => 'overview_chart', :locals => {:chart_class => 'overview_chart_in'}
+    = render :partial => 'overview_chart', :locals => {:chart_class => 'overview_chart_in', :chart_line_class => 'overview_chart_in_item'}
   %div{:id => 'overview_out'}
-    = render :partial => 'overview_chart', :locals => {:chart_class => 'overview_chart_out'}
+    = render :partial => 'overview_chart', :locals => {:chart_class => 'overview_chart_out', :chart_line_class => 'overview_chart_out_item'}

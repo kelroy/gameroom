@@ -20,14 +20,18 @@ unless Rails.env.production?
     person.addresses << Factory.create(:address, :person => person)
     person.phones << Factory.create(:phone, :person => person)
     
-    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(100).even?)
+    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(2).even?)
     employee = Factory.create(:employee, :person => person, :rate => (rand(19) + 1), :active => true)
     
-    timecard_begin = Time.local(Time.now.year, Time.now.month, Time.now.day) + rand(60 * 60 * 24)
-    timecard_end = timecard_begin + rand(60 * 60 * 24)
-    employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_begin, :end => timecard_end)
-    employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_end + (60 * 60))
-
+    if rand(2).even?
+      timecard_begin = Time.local(Time.now.year, Time.now.month, Time.now.day) + rand(60 * 60 * 24)
+      timecard_end = timecard_begin + rand(60 * 60 * 24)
+      employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_begin, :end => timecard_end)
+      #if rand(2).even?
+      #  employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_end + (60 * 60))
+      #end
+    end
+    
     persons.push(person)
     customers.push(customer)
     employees.push(employee)
@@ -56,7 +60,7 @@ unless Rails.env.production?
     price = (rand(9999) + 1)
     credit_price = (price * 0.8).round
     cash_price = (credit_price / 2).round
-    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(100).even?, :discountable => rand(100).even?, :locked => true, :active => true)
+    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
     item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
     items.push(item)
   end

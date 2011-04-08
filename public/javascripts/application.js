@@ -2648,6 +2648,7 @@ var TransactionNavController = new JS.Class(ViewController, {
 });
 
 var SectionController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   initialize: function(view, sections) {
     this.callSuper();
@@ -2658,6 +2659,7 @@ var SectionController = new JS.Class(ViewController, {
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
     event.data.instance.showSection(index);
+    event.data.instance.notifyObservers(index);
     event.preventDefault();
   },
 
@@ -2933,44 +2935,24 @@ var ClockInOutController = new JS.Class(ViewController, {
 });
 
 var OverviewChartController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
-    this.line = $('li.overview_chart_item', this.view).detach();
     this.lines = [];
 
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },
 
-  reset: function() {
-    this.lines = [];
-    this.clearLines();
-  },
-
-  update: function(date) {
+  update: function() {
     for(line in this.lines) {
-      this.lines[line].update(date);
+      this.lines[line].update();
     }
   },
 
-  clearLines: function() {
-    $('ul#overview_chart_list > li.overview_chart_item').remove();
-  },
-
   doRefresh: function(event) {
-    event.data.instance.refresh();
+    event.data.instance.notifyObservers();
     event.preventDefault();
-  }
-});
-
-var OverviewChartLineController = new JS.Class(ViewController, {
-
-  initialize: function(view, employee) {
-    this.callSuper();
-  },
-
-  update: function(date) {
-
   }
 });
 
@@ -2978,21 +2960,16 @@ var OverviewInController = new JS.Class(OverviewChartController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.line = $('ul.overview_chart_in > li.overview_chart_in_item', this.view).detach();
   },
 
-  refresh: function() {
-    today = new Date();
-    date = new Date(today.getYear(), today.getMonth(), today.getDate());
-    employees = Employee.search('timecards_begin_greater_than', date.valueOf(), 1, 20);
-    lines = [];
-    for(employee in employees) {
-      lines.push(new OverviewChartLineController(this.line.clone(), employees[employee]));
-    }
-    this.setLines(lines);
+  clearLines: function() {
+    $('ul.overview_chart_in > li.overview_chart_in_item', this.view).remove();
   },
 
   setLines: function(lines) {
-    this.reset();
+    this.clearLines();
+    this.lines = [];
     for(line in lines) {
       this.lines.push(lines[line]);
       $('ul.overview_chart_in', this.view).append(lines[line].view);
@@ -3004,25 +2981,102 @@ var OverviewOutController = new JS.Class(OverviewChartController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.line = $('ul.overview_chart_out > li.overview_chart_out_item', this.view).detach();
   },
 
-  refresh: function() {
-    today = new Date();
-    date = new Date(today.getYear(), today.getMonth(), today.getDate());
-    employees = Employee.search('timecards_begin_greater_than', date.valueOf(), 1, 20);
-    lines = [];
-    for(employee in employees) {
-      lines.push(new OverviewChartLineController(this.line.clone(), employees[employee]));
-    }
-    this.setLines(lines);
+  clearLines: function() {
+    $('ul.overview_chart_out > li.overview_chart_out_item', this.view).remove();
   },
 
   setLines: function(lines) {
-    this.reset();
+    this.clearLines();
+    this.lines = [];
     for(line in lines) {
       this.lines.push(lines[line]);
       $('ul.overview_chart_out', this.view).append(lines[line].view);
     }
+  }
+});
+Date.prototype.setISO8601 = function(string) {
+  var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
+      "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
+      "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
+  var d = string.match(new RegExp(regexp));
+  var offset = 0;
+  var date = new Date(d[1], 0, 1);
+
+  if (d[3]) { date.setMonth(d[3] - 1); }
+  if (d[5]) { date.setDate(d[5]); }
+  if (d[7]) { date.setHours(d[7]); }
+  if (d[8]) { date.setMinutes(d[8]); }
+  if (d[10]) { date.setSeconds(d[10]); }
+  if (d[12]) { date.setMilliseconds(Number("0." + d[12]) * 1000); }
+  if (d[14]) {
+      offset = (Number(d[16]) * 60) + Number(d[17]);
+      offset *= ((d[15] == '-') ? 1 : -1);
+  }
+
+  offset -= date.getTimezoneOffset();
+  time = (Number(date) + (offset * 60 * 1000));
+  this.setTime(Number(time));
+  return this;
+}
+
+var OverviewChartCanvasController = new JS.Class(ViewController, {
+
+  initialize: function(view, timecards) {
+    this.callSuper();
+    this.timecards = timecards;
+  },
+
+  draw: function() {
+    now = new Date();
+    canvas = {
+      'context' : this.view[0].getContext('2d'),
+      'size' : {
+        'width' : this.view.innerWidth(),
+        'height' : this.view.innerHeight()
+      }
+    }
+    today = {
+      now: now.getTime(),
+      begin: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(),
+      end: (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 24)).getTime()
+    }
+
+    $(this.view).attr('width', canvas.size.width);
+    $(this.view).attr('height', canvas.size.height);
+    canvas.context.fillStyle = this.view.css('color');
+    canvas.context.clearRect(0,0,canvas.size.width,canvas.size.height);
+
+    for(timecard in this.timecards) {
+      begin = (new Date()).setISO8601(this.timecards[timecard].begin).getTime();
+      if(this.timecards[timecard].end != null) {
+        end = (new Date()).setISO8601(this.timecards[timecard].end).getTime();
+      }
+      x = Math.round(((begin - today.begin) / (today.end - today.begin)) * canvas.size.width);
+      width = Math.round(((end - today.begin) / (today.end - today.begin)) * canvas.size.width) - x;
+      console.log(today.end - today.begin);
+      console.log([begin,end,x,width]);
+      canvas.context.fillRect(x,0,width,canvas.size.height);
+    }
+  }
+});
+
+var OverviewChartLineController = new JS.Class(ViewController, {
+
+  initialize: function(view, employee) {
+    this.callSuper();
+    this.canvas = new OverviewChartCanvasController($('canvas', this.view), employee.timecards());
+    this.setName(employee.person());
+  },
+
+  update: function() {
+    this.canvas.draw();
+  },
+
+  setName: function(person) {
+    $('h3', this.view).html(person.first_name + ' ' + person.last_name);
   }
 });
 
@@ -3040,21 +3094,25 @@ var OverviewController = new JS.Class(ViewController, {
     ]);
     this.reset();
 
+    this.overview_section_controller.addObserver(this.updateCanvas, this);
+    this.overview_in_controller.addObserver(this.updateCharts, this);
+    this.overview_out_controller.addObserver(this.updateCharts, this);
     this.clock_in_out_controller.addObserver(this.updateCharts, this);
 
     controller = this;
-    this.updateClock();
     this.clock_interval = window.setInterval(function() {
       controller.updateClock();
     }, 1000);
+    this.canvas_interval = window.setInterval(function() {
+      controller.updateCanvas();
+    }, 60000);
 
     $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
   },
 
   reset: function() {
-    this.overview_in_controller.reset();
-    this.overview_out_controller.reset();
-    this.updateCharts();
+    this.overview_in_controller.clearLines();
+    this.overview_out_controller.clearLines();
     this.showInSection();
   },
 
@@ -3071,15 +3129,66 @@ var OverviewController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
+  findEmployees: function() {
+    today = new Date();
+    date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    timecards = Timecard.where('begin >= ?', date.getTime());
+    employees_in = [];
+    employees_out = [];
+    employees = [];
+    for(timecard in timecards) {
+      timecard_employee = null;
+      for(employee in employees) {
+        if(timecards[timecard].employee_id == employees[employee].id) {
+          timecard_employee = employees[employee];
+        }
+      }
+      if(timecard_employee == null) {
+        timecard_employee = Employee.find(timecards[timecard].employee_id);
+        timecard_employee._timecards_loaded = true;
+        employees.push(timecard_employee);
+      }
+      timecard_employee.addTimecard(timecards[timecard]);
+    }
+    for(employee in employees) {
+      null_found = false;
+      timecards = employees[employee].timecards();
+      for(timecard in timecards) {
+        if(timecards[timecard].end == null) {
+          null_found = true;
+        }
+      }
+      if(null_found) {
+        employees_in.push(employees[employee]);
+      } else {
+        employees_out.push(employees[employee]);
+      }
+    }
+    return { employees_in: employees_in, employees_out: employees_out }
+  },
+
   updateCharts: function() {
-    this.overview_in_controller.refresh();
-    this.overview_out_controller.refresh();
+    employees_in_lines = [];
+    employees_out_lines = [];
+    employees = this.findEmployees();
+    for(employee in employees.employees_in) {
+      employees_in_lines.push(new OverviewChartLineController(this.overview_in_controller.line.clone(), employees.employees_in[employee]));
+    }
+    for(employee in employees.employees_out) {
+      employees_out_lines.push(new OverviewChartLineController(this.overview_out_controller.line.clone(), employees.employees_out[employee]));
+    }
+    this.overview_in_controller.setLines(employees_in_lines);
+    this.overview_out_controller.setLines(employees_out_lines);
+    this.updateCanvas();
+  },
+
+  updateCanvas: function() {
+    this.overview_in_controller.update();
+    this.overview_out_controller.update();
   },
 
   updateClock: function() {
-    date = new Date();
-    this.overview_in_controller.update(date);
-    $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', date);
+    $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', new Date());
   }
 });
 
@@ -3105,6 +3214,10 @@ var TimeclockController = new JS.Class({
       this.admin_controller.view
     ]);
     this.reset();
+
+    this.overview_controller.updateClock();
+    this.overview_controller.updateCanvas();
+    this.overview_controller.updateCharts();
   },
 
   reset: function() {

@@ -1543,7 +1543,7 @@ var CustomerController = new JS.Class(ViewController, {
     } else {
       pattern = 'last_name_starts_with';
     }
-    this.customer_search_results_controller.update(Person.where(pattern, query, page, 10));
+    this.customer_search_results_controller.update(Person.search(pattern, query, page, 10));
   },
 
   showReviewSection: function() {
@@ -2111,7 +2111,7 @@ var CartController = new JS.Class(ViewController, {
     } else {
       pattern = 'title_starts_with';
     }
-    this.cart_search_results_controller.update(Item.where(pattern, query, page, 10));
+    this.cart_search_results_controller.update(Item.search(pattern, query, page, 10));
   },
 
   update: function(transaction) {

@@ -17,7 +17,7 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
     ]);
-    this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+    this.customer_search_controller.addObserver(this.search, this);
     this.customer_search_controller.addObserver(this.showSearchSection, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
@@ -32,6 +32,18 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_results_controller.reset();
     this.customer_section_controller.reset();
     this.showReviewSection();
+  },
+  
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_search_results_controller.update(Person.where(pattern, query, page, 10));
   },
   
   showReviewSection: function() {

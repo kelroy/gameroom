@@ -25,6 +25,14 @@ var SearchController = new JS.Class(ViewController, {
     this.input.val(null);
   },
   
+  showLoading: function() {
+    $('img.loading', this.view).show();
+  },
+  
+  hideLoading: function() {
+    $('img.loading', this.view).hide();
+  },
+  
   onLetter: function(letter) {
     this.input.val(letter);
     this.input.trigger('change');

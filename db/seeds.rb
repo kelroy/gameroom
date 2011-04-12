@@ -23,15 +23,6 @@ unless Rails.env.production?
     customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(2).even?)
     employee = Factory.create(:employee, :person => person, :rate => (rand(19) + 1), :active => true)
     
-    if rand(2).even?
-      timecard_begin = Time.local(Time.now.year, Time.now.month, Time.now.day) + rand(60 * 60 * 24)
-      timecard_end = timecard_begin + rand(60 * 60 * 24)
-      employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_begin, :end => timecard_end)
-      #if rand(2).even?
-      #  employee.timecards << Factory.create(:timecard, :employee => employee, :begin => timecard_end + (60 * 60))
-      #end
-    end
-    
     persons.push(person)
     customers.push(customer)
     employees.push(employee)

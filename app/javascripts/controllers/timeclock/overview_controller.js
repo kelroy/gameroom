@@ -57,9 +57,7 @@ var OverviewController = new JS.Class(ViewController, {
   },
   
   findEmployees: function() {
-    today = new Date();
-    date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    timecards = Timecard.where('begin >= ?', date.getTime());
+    timecards = Timecard.where('begin >= ?', new Date().strftime('%Y-%m-%d 00:00:00'));
     employees_in = [];
     employees_out = [];
     employees = [];
@@ -115,6 +113,6 @@ var OverviewController = new JS.Class(ViewController, {
   },
   
   updateClock: function() {
-    $('h2#overview_datetime', this.view).strftime('%A %B %d %Y %H:%M:%S', new Date());
+    $('h2#overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %H:%M:%S'));
   }
 });

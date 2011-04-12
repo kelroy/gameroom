@@ -15,16 +15,13 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     this.cart_table_controller.reset();
   },
   
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      pattern = 'title_or_description_or_sku_contains_all';
+  update: function(results) {
+    if(results.length > 0) {
+      $('h2#cart_search_results_notice').hide();
     } else {
-      pattern = 'title_starts_with';
+      $('h2#cart_search_results_notice').show();
     }
-    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
+    this.cart_table_controller.update(results);
   },
   
   onItem: function(id) {

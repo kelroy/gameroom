@@ -1092,6 +1092,14 @@ var SearchController = new JS.Class(ViewController, {
     this.input.val(null);
   },
 
+  showLoading: function() {
+    $('img.loading', this.view).show();
+  },
+
+  hideLoading: function() {
+    $('img.loading', this.view).hide();
+  },
+
   onLetter: function(letter) {
     this.input.val(letter);
     this.input.trigger('change');
@@ -1391,56 +1399,61 @@ var CustomerTableController = new JS.Class(TableController, {
   update: function(people) {
     this.reset();
 
-    for(person in people){
-      new_row = $(this.table_row).clone();
-      new_row.attr('data-object-id', people[person].id);
+    if(people.length > 0) {
+      for(person in people){
+        new_row = $(this.table_row).clone();
+        new_row.attr('data-object-id', people[person].id);
 
-      $('td.name', new_row).html([
-        people[person].first_name,
-        people[person].last_name
-      ].join(' '));
-
-      addresses = people[person].addresses();
-      for(address in addresses) {
-        address_string = [
-          addresses[address].first_line,
-          addresses[address].second_line,
-          addresses[address].city + ',',
-          addresses[address].state,
-          addresses[address].province,
-          addresses[address].country,
-          addresses[address].zip
-        ].join(' ');
-        $('td.address', new_row).append($('<address></address>').html(address_string));
-      }
-
-      phones = people[person].phones();
-      for(phone in phones) {
-        if(phones[phone].title != null) {
-          phone_string = phones[phone].title + ' - ' + phones[phone].number;
-        } else {
-          phone_string = phones[phone].number;
-        }
-        $('td.phone', new_row).append($('<p></p>').html(phone_string));
-      }
-
-      emails = people[person].emails();
-      for(email in emails) {
-        email_string = emails[email].address;
-        $('td.email', new_row).append($('<p></p>').html(email_string));
-      }
-
-      customer = people[person].customer();
-      if(customer != undefined) {
-        $('td.credit', new_row).html(Currency.pretty(customer.credit));
-        $('td.drivers_license', new_row).html([
-          customer.drivers_license_number,
-          customer.drivers_license_state
+        $('td.name', new_row).html([
+          people[person].first_name,
+          people[person].last_name
         ].join(' '));
-        $('td.flagged', new_row).html(Boolean.toString(!customer.active));
-        $('td.notes', new_row).html(customer.notes);
-        $('tbody', this.view).append(new_row);
+
+        addresses = people[person].addresses();
+        for(address in addresses) {
+          address_string = [
+            addresses[address].first_line,
+            addresses[address].second_line,
+            addresses[address].city + ',',
+            addresses[address].state,
+            addresses[address].province,
+            addresses[address].country,
+            addresses[address].zip
+          ].join(' ');
+          $('td.address', new_row).append($('<address></address>').html(address_string));
+        }
+
+        phones = people[person].phones();
+        for(phone in phones) {
+          if(phones[phone].title != null) {
+            phone_string = phones[phone].title + ' - ' + phones[phone].number;
+          } else {
+            phone_string = phones[phone].number;
+          }
+          $('td.phone', new_row).append($('<p></p>').html(phone_string));
+        }
+
+        emails = people[person].emails();
+        for(email in emails) {
+          email_string = emails[email].address;
+          $('td.email', new_row).append($('<p></p>').html(email_string));
+        }
+
+        customer = people[person].customer();
+        if(customer != undefined) {
+          $('td.credit', new_row).html(Currency.pretty(customer.credit));
+          $('td.drivers_license', new_row).html([
+            customer.drivers_license_number,
+            customer.drivers_license_state
+          ].join(' '));
+          $('td.flagged', new_row).html(Boolean.toString(!customer.active));
+          $('td.notes', new_row).html(customer.notes);
+          $('tbody', this.view).append(new_row);
+        }
       }
+      this.view.show();
+    } else {
+      this.view.hide();
     }
   }
 });
@@ -1458,16 +1471,13 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
     this.customer_table_controller.reset();
   },
 
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      pattern = 'first_name_or_last_name_contains_any';
+  update: function(results) {
+    if(results.length > 0) {
+      $('h2#customer_search_results_notice').hide();
     } else {
-      pattern = 'last_name_starts_with';
+      $('h2#customer_search_results_notice').show();
     }
-    this.customer_table_controller.update(Person.where(pattern, query, page, 10));
+    this.customer_table_controller.update(results);
   },
 
   onPerson: function(id) {
@@ -1489,7 +1499,7 @@ var CustomerController = new JS.Class(ViewController, {
       this.customer_form_controller.view,
       this.customer_search_results_controller.view
     ]);
-    this.customer_search_controller.addObserver(this.customer_search_results_controller.search, this.customer_search_results_controller);
+    this.customer_search_controller.addObserver(this.search, this);
     this.customer_search_controller.addObserver(this.showSearchSection, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
@@ -1504,6 +1514,18 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_results_controller.reset();
     this.customer_section_controller.reset();
     this.showReviewSection();
+  },
+
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_search_results_controller.update(Person.where(pattern, query, page, 10));
   },
 
   showReviewSection: function() {
@@ -1951,29 +1973,34 @@ var CartTableController = new JS.Class(TableController, {
   update: function(items) {
     this.reset();
 
-    for(item in items){
-      new_row = $(this.table_row).clone();
-      new_row.attr('data-object-id', items[item].id);
+    if(items.length > 0) {
+      for(item in items){
+        new_row = $(this.table_row).clone();
+        new_row.attr('data-object-id', items[item].id);
 
-      if(items[item].description == null || items[item].description == undefined) {
-        items[item].description = '';
+        if(items[item].description == null || items[item].description == undefined) {
+          items[item].description = '';
+        }
+
+        $('td.title', new_row).html(items[item].title);
+        $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
+        $('td.sku', new_row).html(items[item].sku);
+        $('td.price', new_row).html(Currency.pretty(items[item].price));
+        $('td.credit', new_row).html(Currency.pretty(items[item].credit));
+        $('td.cash', new_row).html(Currency.pretty(items[item].cash));
+        $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
+        $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
+
+        properties = items[item].properties();
+        for(property in properties) {
+          processed = this._processProperty(properties[property]);
+          $('td.properties ul', new_row).append('<li><span>' + processed.key + ': </span><span>' + processed.value + '</span></li>');
+        }
+        $('tbody', this.view).append(new_row);
       }
-
-      $('td.title', new_row).html(items[item].title);
-      $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
-      $('td.sku', new_row).html(items[item].sku);
-      $('td.price', new_row).html(Currency.pretty(items[item].price));
-      $('td.credit', new_row).html(Currency.pretty(items[item].credit));
-      $('td.cash', new_row).html(Currency.pretty(items[item].cash));
-      $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
-      $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
-
-      properties = items[item].properties();
-      for(property in properties) {
-        processed = this._processProperty(properties[property]);
-        $('td.properties ul', new_row).append('<li><span>' + processed.key + ': </span><span>' + processed.value + '</span></li>');
-      }
-      $('tbody', this.view).append(new_row);
+      this.view.show();
+    } else {
+      this.view.hide();
     }
   },
 
@@ -1996,16 +2023,13 @@ var CartSearchResultsController = new JS.Class(ViewController, {
     this.cart_table_controller.reset();
   },
 
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      pattern = 'title_or_description_or_sku_contains_all';
+  update: function(results) {
+    if(results.length > 0) {
+      $('h2#cart_search_results_notice').hide();
     } else {
-      pattern = 'title_starts_with';
+      $('h2#cart_search_results_notice').show();
     }
-    this.cart_table_controller.update(Item.where(pattern, query, page, 10));
+    this.cart_table_controller.update(results);
   },
 
   onItem: function(id) {
@@ -2041,7 +2065,7 @@ var CartController = new JS.Class(ViewController, {
       this.cart_form_controller.view,
       this.cart_search_results_controller.view
     ]);
-    this.cart_search_controller.addObserver(this.cart_search_results_controller.search, this.cart_search_results_controller);
+    this.cart_search_controller.addObserver(this.search, this);
     this.cart_search_controller.addObserver(this.showSearchSection, this);
     this.cart_lines_controller.addObserver(this.setLines, this);
     this.cart_search_results_controller.addObserver(this.addLines, this);
@@ -2058,6 +2082,18 @@ var CartController = new JS.Class(ViewController, {
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
     this.showFormSection();
+  },
+
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_all';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.cart_search_results_controller.update(Item.where(pattern, query, page, 10));
   },
 
   update: function(transaction) {

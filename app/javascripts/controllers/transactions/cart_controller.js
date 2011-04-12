@@ -18,7 +18,7 @@ var CartController = new JS.Class(ViewController, {
       this.cart_form_controller.view,
       this.cart_search_results_controller.view
     ]);
-    this.cart_search_controller.addObserver(this.cart_search_results_controller.search, this.cart_search_results_controller);
+    this.cart_search_controller.addObserver(this.search, this);
     this.cart_search_controller.addObserver(this.showSearchSection, this);
     this.cart_lines_controller.addObserver(this.setLines, this);
     this.cart_search_results_controller.addObserver(this.addLines, this);
@@ -35,6 +35,18 @@ var CartController = new JS.Class(ViewController, {
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
     this.showFormSection();
+  },
+  
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_all';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.cart_search_results_controller.update(Item.where(pattern, query, page, 10));
   },
   
   update: function(transaction) {

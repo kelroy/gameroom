@@ -43,7 +43,7 @@ var CustomerController = new JS.Class(ViewController, {
     } else {
       pattern = 'last_name_starts_with';
     }
-    this.customer_search_results_controller.update(Person.where(pattern, query, page, 10));
+    this.customer_search_results_controller.update(Person.search(pattern, query, page, 10));
   },
   
   showReviewSection: function() {

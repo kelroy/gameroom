@@ -307,7 +307,7 @@ var Model = new JS.Class({
       return resources;
     },
 
-    where: function(statement, params, page, per_page) {
+    where: function(statement, params, page, per_page, before, after) {
       resource = this.resource;
       resources = [];
       url = '/api/'+ resource.pluralize() + '/where';
@@ -321,11 +321,11 @@ var Model = new JS.Class({
         for(result in results) {
           resources.push(new window[resource.capitalize()](results[result][resource]));
         }
-      });
+      }, before, after);
       return resources;
     },
 
-    search: function(pattern, query, page, per_page) {
+    search: function(pattern, query, page, per_page, before, after) {
       resource = this.resource;
       resources = [];
       search = new Object();
@@ -340,15 +340,18 @@ var Model = new JS.Class({
         for(result in results) {
           resources.push(new window[resource.capitalize()](results[result][resource]));
         }
-      });
+      }, before, after);
       return resources;
     },
 
-    _ajax: function(url, type, data, callback) {
+    _ajax: function(url, type, data, callback, before, after) {
       if(data != null && data != undefined) {
         data = JSON.stringify(data);
       } else {
         data = undefined;
+      }
+      if(before != null && before != undefined) {
+        before();
       }
       $.ajax({
         url: url,
@@ -361,6 +364,9 @@ var Model = new JS.Class({
         async: false,
         success: function(result) {
           callback(result);
+          if(after != null && after != undefined) {
+            setTimeout(after, 100);
+          }
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.error('Error Status: ' + XMLHttpRequest.status);
@@ -1543,7 +1549,7 @@ var CustomerController = new JS.Class(ViewController, {
     } else {
       pattern = 'last_name_starts_with';
     }
-    this.customer_search_results_controller.update(Person.search(pattern, query, page, 10));
+    this.customer_search_results_controller.update(Person.search(pattern, query.split(' '), page, 10, this.customer_search_controller.showLoading, this.customer_search_controller.hideLoading));
   },
 
   showReviewSection: function() {
@@ -2107,11 +2113,11 @@ var CartController = new JS.Class(ViewController, {
       page = 1;
     }
     if(query.length > 1) {
-      pattern = 'title_or_description_or_sku_contains_all';
+      pattern = 'title_or_description_or_sku_contains_any';
     } else {
       pattern = 'title_starts_with';
     }
-    this.cart_search_results_controller.update(Item.search(pattern, query, page, 10));
+    this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
   },
 
   update: function(transaction) {

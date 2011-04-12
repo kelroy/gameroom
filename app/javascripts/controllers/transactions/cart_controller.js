@@ -42,11 +42,11 @@ var CartController = new JS.Class(ViewController, {
       page = 1;
     }
     if(query.length > 1) {
-      pattern = 'title_or_description_or_sku_contains_all';
+      pattern = 'title_or_description_or_sku_contains_any';
     } else {
       pattern = 'title_starts_with';
     }
-    this.cart_search_results_controller.update(Item.search(pattern, query, page, 10));
+    this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
   },
   
   update: function(transaction) {

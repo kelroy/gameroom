@@ -1,0 +1,22 @@
+%div{:id => 'timecard', :class => 'modal'}
+  %h2 Timecard
+  = form_for :timecard, :method => 'get', :url => '#timecard' do |t|
+    %ul
+      %li
+        = t.label :begin
+        = t.date_select :begin
+      %li
+        = t.time_select :begin, :include_seconds => true
+    %ul
+      %li
+        = t.label :end
+        = t.date_select :end
+      %li
+        = t.time_select :end, :include_seconds => true
+    %ul
+      %li
+        %ul{:id => 'timecard_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#cancel', :class => 'cancel button'} Cancel
+          %li
+            %a{:href => '#save', :class => 'save button'} Save

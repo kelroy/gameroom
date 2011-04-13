@@ -1,0 +1,20 @@
+%div{:id => 'admin_header', :class => 'header_container'}
+  %form{:action => '#employee', :id => 'admin_employee', :method => 'get'}
+    %ul
+      %li= select_tag :employee, options_for_select([['Joe Example', 1]])
+  %form{:action => '#date', :id => 'admin_date', :method => 'get'}
+    %ul
+      %li
+        = select_date Date.today
+      %li
+        %a{:href => '#prev', :class => 'button prev'} <
+      %li
+        %a{:href => '#next', :class => 'button next'} >
+      %li
+        %a{:href => '#today', :class => 'button today'} Today
+%ul{:id => 'admin_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#admin_timecards', :class => 'admin_timecards selected'} Timecards
+%div{:id => 'admin_pages', :class => 'page_container'}
+  %div{:id => 'admin_timecards'}
+    = render :partial => 'admin_timecards'

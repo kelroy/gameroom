@@ -1,14 +1,12 @@
-%ul{:id => 'cart_lines_nav'}
+%ul{:id => 'cart_lines_nav', :class => 'button_nav'}
   %li
-    %ul{:class => 'button_nav'}
-      %li
-        %a{:href => '#remove', :class => 'button remove'} X
-      %li
-        %a{:href => '#info', :class => 'button info'} ?
-      %li
-        %a{:href => '#purchase', :class => 'button purchase'} Purchase From Store
-      %li
-        %a{:href => '#sell', :class => 'button sell'} Sell To Store
+    %a{:href => '#remove', :class => 'button remove'} X
+  %li
+    %a{:href => '#info', :class => 'button info'} ?
+  %li
+    %a{:href => '#purchase', :class => 'button purchase'} Purchase From Store
+  %li
+    %a{:href => '#sell', :class => 'button sell'} Sell To Store
 %h2{:id => 'cart_lines_notice'} No items in cart.
 %ul{:id => 'cart_lines'}
   %li{:class => 'cart_line'}

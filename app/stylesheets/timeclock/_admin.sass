@@ -1,0 +1,62 @@
+section#admin
+
+  div#admin_header
+    form#admin_employee
+      float: left
+      margin: 20px 0px
+      
+    form#admin_date
+      float: right
+      margin: 20px 0px
+    
+    form
+      ul
+        li
+          margin-bottom: 0px
+          
+          select
+            margin-top: 8px
+            font-size: 18px
+            
+          a.button
+            margin-top: 8px
+            padding: 5px 6px 4px
+            
+        li:last-child
+          margin-right: 0px
+          
+  div#admin_timecards
+    ul#timecards_nav
+      height: 24px
+      margin-bottom: 10px
+      
+    h2#timecards_notice
+      clear: both
+      font-size: 20px
+      text-align: center
+      margin: 20px 0px
+      
+    ul#timecards_lines
+      clear: both
+
+      > li.timecards_line
+        height: 24px
+        line-height: 24px
+        margin-bottom: 10px
+        padding: 10px
+        background-color: $lighter_gray
+        @include border-radius(5px)
+
+        &:last-child
+          margin-bottom: 0px
+
+        h3
+          float: left
+          margin-left: 10px
+          margin-right: 10px
+          padding: 0px 20px
+          font-family: LatinModernMonoLight10Bold, Tacoma, serif
+          font-size: 18px
+          background-color: $black
+          color: $white
+          @include border-radius(5px)

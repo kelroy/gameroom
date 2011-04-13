@@ -1,0 +1,12 @@
+%ul{:id => 'timecards_nav', :class => 'button_nav'}
+  %li
+    %a{:href => '#add', :class => 'button add'} Add Timecard
+%h2{:id => 'timecards_notice'} No timecards.
+%ul{:id => 'timecards_lines'}
+  %li{:class => 'timecards_line'}
+    %ul{:class => 'timecards_line_nav button_nav'}
+      %li
+        %a{:href => '#delete', :class => 'button delete'} X
+      %li
+        %a{:href => '#edit', :class => 'button edit'} Edit
+    %h3{:class => 'timecards_line_time'} 12:00p - 6:00p

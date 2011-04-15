@@ -1,18 +1,19 @@
 %div{:id => 'timecard', :class => 'modal'}
   %h2 Timecard
-  = form_for :timecard, :method => 'get', :url => '#timecard' do |t|
+  %form{:action => '#timecard', :id => 'admin_timecard', :method => 'get'}
     %ul
       %li
-        = t.label :begin
-        = t.date_select :begin
+        = label_tag :begin
+        = select_date Date.today, :prefix => 'begin'
       %li
-        = t.time_select :begin, :include_seconds => true
+        = select_time Time.now, :prefix => 'begin'
     %ul
       %li
-        = t.label :end
-        = t.date_select :end
+        = label_tag :end
+        = select_date Date.today, :prefix => 'end'
       %li
-        = t.time_select :end, :include_seconds => true
+        = select_time Time.now, :prefix => 'end'
+        = hidden_field_tag :id
     %ul
       %li
         %ul{:id => 'timecard_nav', :class => 'button_nav'}

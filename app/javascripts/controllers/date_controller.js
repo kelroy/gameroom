@@ -5,7 +5,7 @@ var DateController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.date = new Date();
+    this.reset();
     
     $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
     $('a.next', this.view).bind('click', {instance: this}, this.onNext);
@@ -15,6 +15,9 @@ var DateController = new JS.Class(ViewController, {
   
   update: function(date) {
     this.date = date;
+    $('select#date_year option[value=' + this.date.getFullYear() + ']', this.view).attr('selected', 'selected');
+    $('select#date_month option[value=' + (this.date.getMonth() + 1) + ']', this.view).attr('selected', 'selected');
+    $('select#date_day option[value=' + this.date.getDate() + ']', this.view).attr('selected', 'selected');
   },
 
   reset: function() {
@@ -40,6 +43,10 @@ var DateController = new JS.Class(ViewController, {
   },
   
   onDate: function(event) {
+    year = $('select#date_year', event.data.instance.view).val();
+    month = $('select#date_month', event.data.instance.view).val();
+    day = $('select#date_day', event.data.instance.view).val();
+    event.data.instance.update(new Date(year, month - 1, day));
     event.data.instance.notifyObservers(event.data.instance.date);
     event.preventDefault();
   }

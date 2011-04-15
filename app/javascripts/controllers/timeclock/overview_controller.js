@@ -69,11 +69,15 @@ var OverviewController = new JS.Class(ViewController, {
         }
       }
       if(timecard_employee == null) {
-        timecard_employee = Employee.find(timecards[timecard].employee_id);
-        timecard_employee._timecards_loaded = true;
-        employees.push(timecard_employee);
+        if(timecards[timecard].employee_id != null) {
+          timecard_employee = Employee.find(timecards[timecard].employee_id);
+          timecard_employee._timecards_loaded = true;
+          employees.push(timecard_employee);
+        }
       }
-      timecard_employee.addTimecard(timecards[timecard]);
+      if(timecard_employee != null) {
+        timecard_employee.addTimecard(timecards[timecard]);
+      }
     }
     for(employee in employees) {
       null_found = false;

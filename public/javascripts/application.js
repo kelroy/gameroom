@@ -3891,11 +3891,15 @@ var OverviewController = new JS.Class(ViewController, {
         }
       }
       if(timecard_employee == null) {
-        timecard_employee = Employee.find(timecards[timecard].employee_id);
-        timecard_employee._timecards_loaded = true;
-        employees.push(timecard_employee);
+        if(timecards[timecard].employee_id != null) {
+          timecard_employee = Employee.find(timecards[timecard].employee_id);
+          timecard_employee._timecards_loaded = true;
+          employees.push(timecard_employee);
+        }
       }
-      timecard_employee.addTimecard(timecards[timecard]);
+      if(timecard_employee != null) {
+        timecard_employee.addTimecard(timecards[timecard]);
+      }
     }
     for(employee in employees) {
       null_found = false;
@@ -3944,7 +3948,7 @@ var DateController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.date = new Date();
+    this.reset();
 
     $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
     $('a.next', this.view).bind('click', {instance: this}, this.onNext);
@@ -3954,10 +3958,13 @@ var DateController = new JS.Class(ViewController, {
 
   update: function(date) {
     this.date = date;
+    $('select#date_year option[value=' + this.date.getFullYear() + ']', this.view).attr('selected', 'selected');
+    $('select#date_month option[value=' + (this.date.getMonth() + 1) + ']', this.view).attr('selected', 'selected');
+    $('select#date_day option[value=' + this.date.getDate() + ']', this.view).attr('selected', 'selected');
   },
 
   reset: function() {
-    this.date = new Date();
+    this.update(new Date());
   },
 
   onPrev: function(event) {
@@ -3979,7 +3986,57 @@ var DateController = new JS.Class(ViewController, {
   },
 
   onDate: function(event) {
+    year = $('select#date_year', event.data.instance.view).val();
+    month = $('select#date_month', event.data.instance.view).val();
+    day = $('select#date_day', event.data.instance.view).val();
+    event.data.instance.update(new Date(year, month - 1, day));
     event.data.instance.notifyObservers(event.data.instance.date);
+    event.preventDefault();
+  }
+});
+
+var AdminEmployeeController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('select', this.view).bind('change', {instance: this}, this.onEmployee);
+  },
+
+  onEmployee: function(event) {
+    id = parseInt($('select', this.view).val());
+    if(!isNaN(id)) {
+      event.data.instance.notifyObservers(Employee.find(id));
+    }
+    event.preventDefault();
+  }
+});
+
+var AdminTimecardsTimecardController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.timecard = null;
+
+    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
+    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+  },
+
+  set: function(timecard) {
+    this.timecard = timecard;
+    begin = (new Date()).setISO8601(this.timecard.begin);
+    end = (new Date()).setISO8601(this.timecard.end);
+
+    $('h3.timecards_line_time', this.view).html(begin.toLocaleTimeString() + ' - ' + end.toLocaleTimeString());
+  },
+
+  onDelete: function(event) {
+    event.preventDefault();
+  },
+
+  onEdit: function(event) {
     event.preventDefault();
   }
 });
@@ -3988,14 +4045,68 @@ var AdminTimecardsController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.date = null;
+    this.employee = null;
+    this.timecards = [];
+    this.timecard_controllers = [];
+    this.timecard = $('li.timecards_line', this.view).detach();
+
+    this.timecard_controller = new TimecardController('div#timecard');
+    this.timecard_controller.addObserver(this.loadTimecards, this);
+
+    $('a.add', this.view).bind('click', {instance: this}, this.onAdd);
   },
 
   reset: function() {
-
+    this.date = null;
+    this.employee = null;
+    this.timecards = [];
+    this.timecard_controllers = [];
+    this.clearTimecards();
   },
 
   update: function(date, employee) {
+    this.date = date;
+    this.employee = employee;
+    this.loadTimecards();
+  },
 
+  loadTimecards: function() {
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ?', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
+  },
+
+  clearTimecards: function() {
+    $('ul#timecards_lines > li').remove();
+  },
+
+  setTimecards: function(timecards) {
+    this.clearTimecards();
+    this.timecard_controllers = [];
+    for(timecard in timecards) {
+      new_timecard = new AdminTimecardsTimecardController(this.timecard.clone());
+      new_timecard.set(timecards[timecard]);
+      new_timecard.addObserver(this.loadTimecards, this);
+      this.timecard_controllers.push(new_timecard);
+      $('ul#timecards_lines', this.view).append(new_timecard.view);
+    }
+    if(timecards.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  onAdd: function(event) {
+    event.data.instance.timecard_controller.view.show();
+    event.preventDefault();
+  },
+
+  showNotice: function() {
+    $('h2#timecards_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#timecards_notice', this.view).hide();
   }
 });
 
@@ -4008,12 +4119,11 @@ var AdminController = new JS.Class(ViewController, {
     this.date = new Date();
 
     this.admin_date_controller = new DateController('form#admin_date');
-    this.admin_employee_controller = new SelectController('form#admin_employee');
+    this.admin_employee_controller = new AdminEmployeeController('form#admin_employee');
     this.admin_timecards_controller = new AdminTimecardsController('div#admin_timecards');
     this.admin_section_controller = new SectionController('ul#admin_nav', [
       this.admin_timecards_controller.view
     ]);
-    this.reset();
 
     this.admin_date_controller.addObserver(this.updateDate, this);
     this.admin_employee_controller.addObserver(this.updateEmployee, this);
@@ -4021,23 +4131,21 @@ var AdminController = new JS.Class(ViewController, {
 
   reset: function() {
     this.admin_date_controller.reset();
-    this.admin_employee_controller.reset();
     this.admin_timecards_controller.reset();
+    $('select', this.admin_employee_controller.view).trigger('change');
   },
 
   updateDate: function(date) {
     this.date = date;
-    this.updateTimecards(date, this.employee);
+    this.updateTimecards(this.date, this.employee);
   },
 
   updateEmployee: function(employee) {
     this.employee = employee;
-    this.updateTimecards(this.date, employee);
+    this.updateTimecards(this.date, this.employee);
   },
 
   updateTimecards: function(date, employee) {
-    console.log(date);
-    console.log(employee);
     this.admin_timecards_controller.update(date, employee);
   }
 });
@@ -4127,15 +4235,29 @@ var AlphabetController = new JS.Class(ViewController, {
   }
 });
 
-var SelectController = new JS.Class(ViewController, {
+var TimecardController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  initialize: function() {
+  initialize: function(view) {
     this.callSuper();
+
+    $('a.cancel', this.view).bind('click', {instance: this}, this.hideTimecard);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
-  reset: function() {
+  onSave: function(event) {
+    timecard = Timecard.create({
+      employee_id: 1,
+      begin: new Date(),
+      end: new Date()
+    });
+    event.data.instance.notifyObservers();
+    event.preventDefault();
+  },
 
+  hideTimecard: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
   }
 });
 

@@ -1,6 +1,7 @@
 %ul{:id => 'timecards_nav', :class => 'button_nav'}
   %li
     %a{:href => '#add', :class => 'button add'} Add Timecard
+%h3{:id => 'timecards_total'}
 %h2{:id => 'timecards_notice'} No timecards.
 %ul{:id => 'timecards_lines'}
   %li{:class => 'timecards_line'}
@@ -9,4 +10,6 @@
         %a{:href => '#delete', :class => 'button delete'} X
       %li
         %a{:href => '#edit', :class => 'button edit'} Edit
-    %h3{:class => 'timecards_line_time'}
+    %hgroup{:class => 'timecards_line_information'}
+      %h3{:class => 'timecards_line_total'}
+      %h4{:class => 'timecards_line_time'}

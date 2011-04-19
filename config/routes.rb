@@ -25,6 +25,9 @@ Gameroom::Application.routes.draw do
       end
     end
     resources :employees do
+      member do
+        match 'stamp' => 'employees#stamp', :via => [:get, :post]
+      end
       collection do
         match 'search' => 'employees#search', :via => [:get, :post]
         match 'where' => 'employees#where', :via => [:get, :post]

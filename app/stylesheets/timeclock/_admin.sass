@@ -27,8 +27,20 @@ section#admin
           
   div#admin_timecards
     ul#timecards_nav
+      float: left
       height: 24px
       margin-bottom: 10px
+      
+    h3#timecards_total
+      float: right
+      height: 24px
+      line-height: 24px
+      padding: 0px 20px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 18px
+      background-color: $black
+      color: $white
+      @include border-radius(5px)
       
     h2#timecards_notice
       clear: both
@@ -50,13 +62,20 @@ section#admin
         &:last-child
           margin-bottom: 0px
 
-        h3
+        hgroup.timecards_line_information
           float: left
-          margin-left: 10px
-          margin-right: 10px
-          padding: 0px 20px
-          font-family: LatinModernMonoLight10Bold, Tacoma, serif
-          font-size: 18px
-          background-color: $black
-          color: $white
-          @include border-radius(5px)
+          
+          h3
+            float: left
+            margin: 0px 10px
+            padding: 0px 20px
+            font-family: LatinModernMonoLight10Bold, Tacoma, serif
+            font-size: 18px
+            background-color: $black
+            color: $white
+            @include border-radius(5px)
+            
+          h4
+            float: left
+            font-family: LatinModernMonoLight10Regular, Tacoma, serif
+            font-size: 12px

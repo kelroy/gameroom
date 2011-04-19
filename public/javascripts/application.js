@@ -471,6 +471,14 @@ var Employee = new JS.Class(Model, {
     columns: ['id', 'person_id', 'title', 'rate', 'active'],
     belongs_to: ['person'],
     has_many: ['timecards']
+  },
+
+  stamp: function() {
+    url = '/api/employees/' + this.id + '/stamp';
+    this.klass._ajax(url, 'POST', null, function(result) {
+      return true;
+    });
+    return false;
   }
 });
 
@@ -2105,7 +2113,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
-    this.showFormSection();
+    this.showLinesSection();
   },
 
   search: function(query, page) {
@@ -2948,31 +2956,54 @@ var ClockInOutController = new JS.Class(ViewController, {
   },
 
   doClockInOut: function(event) {
-    id = '';
-    pin = '';
+    id = $('select#employee', event.data.instance.view).val();
+    pin = $('input#pin', event.data.instance.view).val();
+    employee = Employee.find(id);
 
-    event.data.instance.validateUser(id, pin, function(valid) {
+    event.data.instance.validateEmployee(employee, pin, function(valid) {
       if(valid) {
-        event.data.instance.timestampUser(id, function() {
+        event.data.instance.timestampEmployee(employee, function(stamped) {
+          event.data.instance.clearInput();
           event.data.instance.view.hide();
           event.data.instance.notifyObservers();
         });
+      } else {
       }
     });
     event.preventDefault();
   },
 
+  clearInput: function() {
+    $('input#pin', this.view).val(null);
+  },
+
   hideClockInOut: function(event) {
+    event.data.instance.clearInput();
     event.data.instance.view.hide();
     event.preventDefault();
   },
 
-  timestampUser: function(id, callback) {
-    callback();
+  timestampEmployee: function(employee, callback) {
+    if(employee.stamp()) {
+      callback(true);
+    } else {
+      callback(false);
+    }
   },
 
-  validateUser: function(id, pin, callback) {
-    callback(true);
+  validateEmployee: function(employee, pin, callback) {
+    person = employee.person();
+    if(person.user() != undefined) {
+      user = person.user();
+
+      if(user.pin == pin) {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    } else {
+      callback(false);
+    }
   }
 });
 
@@ -3748,30 +3779,36 @@ Date.prototype.strftime=function(fmt)
  * - Initial release with support for a, A, b, B, c, C, d, D, e, H, I, j, m, M, p, r, R, S, t, T, u, w, y, Y, z, Z, and %
  */
 
-Date.prototype.setISO8601 = function(string) {
-  var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
-      "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
-      "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
-  var d = string.match(new RegExp(regexp));
-  var offset = 0;
-  var date = new Date(d[1], 0, 1);
+Date.prototype.setISO8601 = function(dString){
 
-  if (d[3]) { date.setMonth(d[3] - 1); }
-  if (d[5]) { date.setDate(d[5]); }
-  if (d[7]) { date.setHours(d[7]); }
-  if (d[8]) { date.setMinutes(d[8]); }
-  if (d[10]) { date.setSeconds(d[10]); }
-  if (d[12]) { date.setMilliseconds(Number("0." + d[12]) * 1000); }
-  if (d[14]) {
-      offset = (Number(d[16]) * 60) + Number(d[17]);
-      offset *= ((d[15] == '-') ? 1 : -1);
+  var regexp = /(\d\d\d\d)(-)?(\d\d)(-)?(\d\d)(T)?(\d\d)(:)?(\d\d)(:)?(\d\d)(\.\d+)?(Z|([+-])(\d\d)(:)?(\d\d))/;
+
+  if (dString.toString().match(new RegExp(regexp))) {
+    var d = dString.match(new RegExp(regexp));
+    var offset = 0;
+
+    this.setUTCDate(1);
+    this.setUTCFullYear(parseInt(d[1],10));
+    this.setUTCMonth(parseInt(d[3],10) - 1);
+    this.setUTCDate(parseInt(d[5],10));
+    this.setUTCHours(parseInt(d[7],10));
+    this.setUTCMinutes(parseInt(d[9],10));
+    this.setUTCSeconds(parseInt(d[11],10));
+    if (d[12]) {
+      this.setUTCMilliseconds(parseFloat(d[12]) * 1000);
+    } else {
+      this.setUTCMilliseconds(0);
+    }
+    if (d[13] != 'Z') {
+      offset = (d[15] * 60) + parseInt(d[17],10);
+      offset *= ((d[14] == '-') ? -1 : 1);
+      this.setTime(this.getTime() - offset * 60 * 1000);
+    }
+  } else {
+    this.setTime(Date.parse(dString));
   }
-
-  offset -= date.getTimezoneOffset();
-  time = (Number(date) + (offset * 60 * 1000));
-  this.setTime(Number(time));
   return this;
-}
+};
 
 var OverviewChartCanvasController = new JS.Class(ViewController, {
 
@@ -3879,7 +3916,7 @@ var OverviewController = new JS.Class(ViewController, {
   },
 
   findEmployees: function() {
-    timecards = Timecard.where('begin >= ?', new Date().strftime('%Y-%m-%d 00:00:00'));
+    timecards = Timecard.where('begin >= ? AND begin <= ?', [new Date().strftime('%Y-%m-%d 00:00:00'), new Date().strftime('%Y-%m-%d 23:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];
@@ -4028,15 +4065,20 @@ var AdminTimecardsTimecardController = new JS.Class(ViewController, {
     this.timecard = timecard;
     begin = (new Date()).setISO8601(this.timecard.begin);
     end = (new Date()).setISO8601(this.timecard.end);
+    total = Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100;
 
-    $('h3.timecards_line_time', this.view).html(begin.toLocaleTimeString() + ' - ' + end.toLocaleTimeString());
+    $('h3.timecards_line_total', this.view).html(total + ' hours');
+    $('h4.timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
   },
 
   onDelete: function(event) {
+    event.data.instance.timecard.destroy();
+    event.data.instance.notifyObservers(undefined);
     event.preventDefault();
   },
 
   onEdit: function(event) {
+    event.data.instance.notifyObservers(event.data.instance.timecard);
     event.preventDefault();
   }
 });
@@ -4072,7 +4114,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
 
   loadTimecards: function() {
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ?', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
   },
 
   clearTimecards: function() {
@@ -4081,11 +4123,12 @@ var AdminTimecardsController = new JS.Class(ViewController, {
 
   setTimecards: function(timecards) {
     this.clearTimecards();
+    this.setTimecardsTotal(timecards);
     this.timecard_controllers = [];
     for(timecard in timecards) {
       new_timecard = new AdminTimecardsTimecardController(this.timecard.clone());
       new_timecard.set(timecards[timecard]);
-      new_timecard.addObserver(this.loadTimecards, this);
+      new_timecard.addObserver(this.updateTimecard, this);
       this.timecard_controllers.push(new_timecard);
       $('ul#timecards_lines', this.view).append(new_timecard.view);
     }
@@ -4096,7 +4139,29 @@ var AdminTimecardsController = new JS.Class(ViewController, {
     }
   },
 
+  setTimecardsTotal: function(timecards) {
+    total = 0;
+    for(timecard in timecards) {
+      begin = (new Date()).setISO8601(timecards[timecard].begin);
+      end = (new Date()).setISO8601(timecards[timecard].end);
+      total += Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100
+    }
+    $('h3#timecards_total').html(total + ' hours');
+  },
+
+  updateTimecard: function(timecard) {
+    if(timecard != undefined) {
+      this.timecard_controller.setEmployee(this.employee);
+      this.timecard_controller.setTimecard(timecard);
+      this.timecard_controller.view.show();
+    } else {
+      this.loadTimecards();
+    }
+  },
+
   onAdd: function(event) {
+    event.data.instance.timecard_controller.setEmployee(event.data.instance.employee);
+    event.data.instance.timecard_controller.setTimecard(null);
     event.data.instance.timecard_controller.view.show();
     event.preventDefault();
   },
@@ -4240,24 +4305,107 @@ var TimecardController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
+    this.employee = null;
+    this.timecard = null;
 
-    $('a.cancel', this.view).bind('click', {instance: this}, this.hideTimecard);
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
-  onSave: function(event) {
-    timecard = Timecard.create({
-      employee_id: 1,
-      begin: new Date(),
-      end: new Date()
-    });
-    event.data.instance.notifyObservers();
+  setEmployee: function(employee) {
+    this.employee = employee;
+  },
+
+  setTimecard: function(timecard) {
+    this.timecard = timecard;
+    if(timecard != null) {
+      begin = (new Date()).setISO8601(timecard.begin);
+      end = (new Date()).setISO8601(timecard.end);
+      begin_year = begin.getFullYear();
+      begin_month = begin.getMonth() + 1;
+      begin_day = begin.getDate();
+      begin_hour = begin.getHours();
+      begin_minute = begin.getMinutes();
+      begin_second = begin.getSeconds();
+      end_year = end.getFullYear();
+      end_month = end.getMonth() + 1;
+      end_day = end.getDate();
+      end_hour = end.getHours();
+      end_minute = end.getMinutes();
+      end_second = end.getSeconds();
+    } else {
+      now = new Date();
+      begin_year = now.getFullYear();
+      begin_month = now.getMonth() + 1;
+      begin_day = now.getDate();
+      begin_hour = now.getHours();
+      begin_minute = now.getMinutes();
+      begin_second = now.getSeconds();
+      end_year = now.getFullYear();
+      end_month = now.getMonth() + 1;
+      end_day = now.getDate();
+      end_hour = now.getHours();
+      end_minute = now.getMinutes();
+      end_second = now.getSeconds();
+    }
+    $('select#begin_year').val(begin_year);
+    $('select#begin_month').val(begin_month);
+    $('select#begin_day').val(begin_day);
+    $('select#begin_hour').val(this._padNumber(begin_hour));
+    $('select#begin_minute').val(this._padNumber(begin_minute));
+    $('select#begin_second').val(this._padNumber(begin_second));
+    $('select#end_year').val(end_year);
+    $('select#end_month').val(end_month);
+    $('select#end_day').val(end_day);
+    $('select#end_hour').val(this._padNumber(end_hour));
+    $('select#end_minute').val(this._padNumber(end_minute));
+    $('select#end_second').val(this._padNumber(end_second));
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
     event.preventDefault();
   },
 
-  hideTimecard: function(event) {
+  onSave: function(event) {
+    begin_year = $('select#begin_year').val();
+    begin_month = $('select#begin_month').val() - 1;
+    begin_day = $('select#begin_day').val();
+    begin_hour = $('select#begin_hour').val();
+    begin_minute = $('select#begin_minute').val();
+    begin_second = $('select#begin_second').val();
+    end_year = $('select#end_year').val();
+    end_month = $('select#end_month').val() - 1;
+    end_day = $('select#end_day').val();
+    end_hour = $('select#end_hour').val();
+    end_minute = $('select#end_minute').val();
+    end_second = $('select#end_second').val();
+
+    begin = new Date(begin_year, begin_month, begin_day, begin_hour, begin_minute, begin_second);
+    end = new Date(end_year, end_month, end_day, end_hour, end_minute, end_second);
+    if(event.data.instance.timecard == null) {
+      timecard = Timecard.create({
+        employee_id: event.data.instance.employee.id,
+        begin: begin,
+        end: end
+      });
+    } else {
+      timecard = Timecard.find(event.data.instance.timecard.id);
+      timecard.begin = begin;
+      timecard.end = end;
+      timecard.save();
+    }
+    event.data.instance.notifyObservers();
     event.data.instance.view.hide();
     event.preventDefault();
+  },
+
+  _padNumber: function(number) {
+    if(number < 10) {
+      return '0' + number;
+    } else {
+      return number;
+    }
   }
 });
 

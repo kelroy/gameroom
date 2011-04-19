@@ -14,31 +14,54 @@ var ClockInOutController = new JS.Class(ViewController, {
   },
   
   doClockInOut: function(event) {
-    id = '';
-    pin = '';
+    id = $('select#employee', event.data.instance.view).val();
+    pin = $('input#pin', event.data.instance.view).val();
+    employee = Employee.find(id);
     
-    event.data.instance.validateUser(id, pin, function(valid) {
+    event.data.instance.validateEmployee(employee, pin, function(valid) {
       if(valid) {
-        event.data.instance.timestampUser(id, function() {
+        event.data.instance.timestampEmployee(employee, function(stamped) {
+          event.data.instance.clearInput();
           event.data.instance.view.hide();
           event.data.instance.notifyObservers();
         });
+      } else {
+        // Invalid. Do something?
       }
     });
     event.preventDefault();
   },
   
+  clearInput: function() {
+    $('input#pin', this.view).val(null);
+  },
+  
   hideClockInOut: function(event) {
+    event.data.instance.clearInput();
     event.data.instance.view.hide();
     event.preventDefault();
   },
   
-  timestampUser: function(id, callback) {
-    callback();
+  timestampEmployee: function(employee, callback) {
+    if(employee.stamp()) {
+      callback(true);
+    } else {
+      callback(false);
+    }
   },
   
-  validateUser: function(id, pin, callback) {
-    // Do validation
-    callback(true);
+  validateEmployee: function(employee, pin, callback) {
+    person = employee.person();
+    if(person.user() != undefined) {
+      user = person.user();
+
+      if(user.pin == pin) {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    } else {
+      callback(false);
+    }
   }
 });

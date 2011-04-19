@@ -28,14 +28,26 @@ class Api::EmployeesController < ApplicationController
     end
   end
   
-  # GET|POST /employees/search.xml
-  # GET|POST /employees/search.json
+  # GET|POST /employees/1/search.xml
+  # GET|POST /employees/1/search.json
   def search
     @employees = Employee.search(params[:search]).paginate(:page => params[:page], :per_page => params[:per_page])
     
     respond_to do |format|
       format.json { render :json => @employees.to_json }
       format.xml  { render :xml => @employees.to_xml }
+    end
+  end
+  
+  # GET|POST /employees/stamp.xml
+  # GET|POST /employees/stamp.json
+  def stamp
+    @employee = Employee.find(params[:id])
+    @employee.stamp
+
+    respond_to do |format|
+      format.json  { render :json => @employee.to_json, :status => :ok }
+      format.xml  { render :xml => @employee.to_xml, :status => :ok }
     end
   end
   

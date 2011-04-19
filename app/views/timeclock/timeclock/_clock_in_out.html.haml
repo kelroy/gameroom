@@ -1,14 +1,14 @@
 %div{:id => 'clock_in_out', :class => 'modal'}
   %h2 Clock In / Out
-  = form_for :user, :method => 'get', :url => '#users' do |u|
+  %form{:action => '#clock_in_out', :id => 'clock_in_out', :method => 'get'}
     %ul
       %li
-        = u.label :employee
-        = u.select :id, [["Joe Example", 1]]
+        = label_tag :employee
+        = select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
     %ul
       %li
-        = u.label :pin, "PIN"
-        = u.password_field :pin
+        = label_tag :pin, "PIN"
+        = password_field_tag :pin
     %ul
       %li
         %ul{:id => 'clock_in_out_nav', :class => 'button_nav'}

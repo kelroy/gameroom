@@ -6,18 +6,17 @@
         = label_tag :begin
         = select_date Date.today, :prefix => 'begin'
       %li
-        = select_time Time.now, :prefix => 'begin'
+        = select_time Time.now, :prefix => 'begin', :include_seconds => true, :ignore_date => true
     %ul
       %li
         = label_tag :end
         = select_date Date.today, :prefix => 'end'
       %li
-        = select_time Time.now, :prefix => 'end'
-        = hidden_field_tag :id
+        = select_time Time.now, :prefix => 'end', :include_seconds => true, :ignore_date => true
     %ul
       %li
         %ul{:id => 'timecard_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#cancel', :class => 'cancel button'} Cancel
+            %a{:href => '#close', :class => 'close button'} Close
           %li
             %a{:href => '#save', :class => 'save button'} Save

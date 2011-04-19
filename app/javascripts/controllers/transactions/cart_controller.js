@@ -34,7 +34,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
-    this.showFormSection();
+    this.showLinesSection();
   },
   
   search: function(query, page) {

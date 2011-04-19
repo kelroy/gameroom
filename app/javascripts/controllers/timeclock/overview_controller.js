@@ -57,7 +57,7 @@ var OverviewController = new JS.Class(ViewController, {
   },
   
   findEmployees: function() {
-    timecards = Timecard.where('begin >= ?', new Date().strftime('%Y-%m-%d 00:00:00'));
+    timecards = Timecard.where('begin >= ? AND begin <= ?', [new Date().strftime('%Y-%m-%d 00:00:00'), new Date().strftime('%Y-%m-%d 23:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];

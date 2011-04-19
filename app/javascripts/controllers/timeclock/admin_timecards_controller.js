@@ -32,7 +32,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
   
   loadTimecards: function() {
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ?', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
   },
   
   clearTimecards: function() {
@@ -41,11 +41,12 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   
   setTimecards: function(timecards) {
     this.clearTimecards();
+    this.setTimecardsTotal(timecards);
     this.timecard_controllers = [];
     for(timecard in timecards) {
       new_timecard = new AdminTimecardsTimecardController(this.timecard.clone());
       new_timecard.set(timecards[timecard]);
-      new_timecard.addObserver(this.loadTimecards, this);
+      new_timecard.addObserver(this.updateTimecard, this);
       this.timecard_controllers.push(new_timecard);
       $('ul#timecards_lines', this.view).append(new_timecard.view);
     }
@@ -56,7 +57,29 @@ var AdminTimecardsController = new JS.Class(ViewController, {
     }
   },
   
+  setTimecardsTotal: function(timecards) {
+    total = 0;
+    for(timecard in timecards) {
+      begin = (new Date()).setISO8601(timecards[timecard].begin);
+      end = (new Date()).setISO8601(timecards[timecard].end);
+      total += Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100
+    }
+    $('h3#timecards_total').html(total + ' hours');
+  },
+  
+  updateTimecard: function(timecard) {
+    if(timecard != undefined) {
+      this.timecard_controller.setEmployee(this.employee);
+      this.timecard_controller.setTimecard(timecard);
+      this.timecard_controller.view.show();
+    } else {
+      this.loadTimecards();
+    }
+  },
+  
   onAdd: function(event) {
+    event.data.instance.timecard_controller.setEmployee(event.data.instance.employee);
+    event.data.instance.timecard_controller.setTimecard(null);
     event.data.instance.timecard_controller.view.show();
     event.preventDefault();
   },

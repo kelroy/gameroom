@@ -11,6 +11,7 @@ unless Rails.env.production?
   persons = []
   customers = []
   employees = []
+  users = []
   (1..20).each do
     first = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
     middle = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
@@ -22,10 +23,12 @@ unless Rails.env.production?
     
     customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(2).even?)
     employee = Factory.create(:employee, :person => person, :rate => (rand(19) + 1), :active => true)
+    user = Factory.create(:user, :person => person, :pin => 4.times.map{ rand(9) }.join, :email => "#{person.first_name}@example.com", :login => 5.times.map{ ('a'..'z').to_a[rand(26)] }.join, :administrator => rand(2).even?)
     
     persons.push(person)
     customers.push(customer)
     employees.push(employee)
+    users.push(user)
   end
   
   person = Factory.create(:person, :first_name => 'Joe', :middle_name => 'Q', :last_name => 'Example')

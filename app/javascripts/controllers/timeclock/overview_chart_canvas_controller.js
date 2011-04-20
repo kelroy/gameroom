@@ -32,11 +32,11 @@ var OverviewChartCanvasController = new JS.Class(ViewController, {
       begin = (new Date()).setISO8601(this.timecards[timecard].begin).getTime();
       if(this.timecards[timecard].end != null) {
         end = (new Date()).setISO8601(this.timecards[timecard].end).getTime();
+      } else {
+        end = new Date().getTime();
       }
       x = Math.round(((begin - today.begin) / (today.end - today.begin)) * canvas.size.width);
       width = Math.round(((end - today.begin) / (today.end - today.begin)) * canvas.size.width) - x;
-      //console.log(((begin - today.begin) / (today.end - today.begin)));
-      //console.log([begin,end,x,width]);
       canvas.context.fillRect(x,0,width,canvas.size.height);
     }
   }

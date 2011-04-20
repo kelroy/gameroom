@@ -1,4 +1,4 @@
-var Validation = new JS.Module({
+var Validatable = new JS.Module({
   _errors: [],
   
   valid: function() {

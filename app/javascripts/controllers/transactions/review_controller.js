@@ -1,8 +1,10 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "../../currency"
 //= require "../../string"
 
 var ReviewController = new JS.Class(ViewController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();

@@ -1,6 +1,8 @@
+//= require "../../sectionable"
 //= require "../form_controller"
 
 var CustomerFormController = new JS.Class(FormController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();

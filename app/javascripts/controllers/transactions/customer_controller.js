@@ -1,10 +1,11 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "../search_controller"
 //= require "customer_form_controller"
 //= require "customer_search_results_controller"
 
 var CustomerController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
   
   initialize: function(view) {
     this.callSuper();
@@ -13,12 +14,12 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
     this.customer_section_controller = new SectionController('ul#customer_nav', [
-      this.customer_review_controller.view,
-      this.customer_form_controller.view,
-      this.customer_search_results_controller.view
+      this.customer_review_controller,
+      this.customer_form_controller,
+      this.customer_search_results_controller
     ]);
     this.customer_search_controller.addObserver(this.search, this);
-    this.customer_search_controller.addObserver(this.showSearchSection, this);
+    this.customer_search_controller.addObserver(this.showSearchController, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
     
@@ -47,16 +48,16 @@ var CustomerController = new JS.Class(ViewController, {
   },
   
   showReviewSection: function() {
-    this.customer_section_controller.showSection(0);
+    this.customer_section_controller.showController(0);
   },
   
-  showFormSection: function() {
-    this.customer_section_controller.showSection(1);
+  showFormController: function() {
+    this.customer_section_controller.showController(1);
   },
   
-  showSearchSection: function(query) {
+  showSearchController: function(query) {
     if(query) {
-      this.customer_section_controller.showSection(2);
+      this.customer_section_controller.showController(2);
     }
   },
   

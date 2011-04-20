@@ -1,3 +1,4 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "payment_line_controller"
 //= require "payment_cash_controller"
@@ -8,7 +9,7 @@
 //= require "../../models/customer"
 
 var PaymentController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
   
   initialize: function(view) {
     this.callSuper();

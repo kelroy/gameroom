@@ -1,11 +1,12 @@
 //= require "../view_controller"
 //= require "../search_controller"
 //= require "cart_lines_controller"
+//= require "../../sectionable"
 //= require "cart_form_controller"
 //= require "cart_search_results_controller"
 
 var CartController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
   
   initialize: function(view) {
     this.callSuper();
@@ -14,12 +15,12 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
     this.cart_section_controller = new SectionController('ul#cart_nav', [
-      this.cart_lines_controller.view,
-      this.cart_form_controller.view,
-      this.cart_search_results_controller.view
+      this.cart_lines_controller,
+      this.cart_form_controller,
+      this.cart_search_results_controller
     ]);
     this.cart_search_controller.addObserver(this.search, this);
-    this.cart_search_controller.addObserver(this.showSearchSection, this);
+    this.cart_search_controller.addObserver(this.showSearchController, this);
     this.cart_lines_controller.addObserver(this.setLines, this);
     this.cart_search_results_controller.addObserver(this.addLines, this);
     this.cart_form_controller.addObserver(this.addLines, this);
@@ -34,7 +35,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
-    this.showLinesSection();
+    this.showLinesController();
   },
   
   search: function(query, page) {
@@ -53,16 +54,16 @@ var CartController = new JS.Class(ViewController, {
     $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
   
-  showLinesSection: function() {
-    this.cart_section_controller.showSection(0);
+  showLinesController: function() {
+    this.cart_section_controller.showController(0);
   },
   
-  showFormSection: function() {
-    this.cart_section_controller.showSection(1);
+  showFormController: function() {
+    this.cart_section_controller.showController(1);
   },
   
-  showSearchSection: function() {
-    this.cart_section_controller.showSection(2);
+  showSearchController: function() {
+    this.cart_section_controller.showController(2);
   },
   
   addLines: function(lines) {

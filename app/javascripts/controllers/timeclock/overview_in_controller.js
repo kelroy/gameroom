@@ -1,6 +1,8 @@
+//= require "../../sectionable"
 //= require "overview_chart_controller"
 
 var OverviewInController = new JS.Class(OverviewChartController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();

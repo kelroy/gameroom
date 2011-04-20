@@ -1,4 +1,4 @@
-var Association = new JS.Module({
+var Associable = new JS.Module({
   extend: {
     belongs_to: [],
     has_one: [],

@@ -1,8 +1,8 @@
-//= require "association"
-//= require "validation"
+//= require "associable"
+//= require "validatable"
 
 var Model = new JS.Class({
-  include: [Association, Validation],
+  include: [Associable, Validatable],
   
   extend: {
     resource: undefined,

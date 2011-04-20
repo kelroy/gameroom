@@ -1,9 +1,11 @@
+//= require "../../sectionable"
 //= require "../form_controller"
 //= require "../../models/line"
 //= require "../../models/item"
 //= require "../../models/property"
 
 var CartFormController = new JS.Class(FormController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();

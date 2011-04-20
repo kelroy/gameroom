@@ -3,34 +3,34 @@
 var SectionController = new JS.Class(ViewController, {
   include: JS.Observable,
   
-  initialize: function(view, sections) {
+  initialize: function(view, controllers) {
     this.callSuper();
-    this.sections = sections;
+    this._controllers = controllers;
     $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
   
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
-    event.data.instance.showSection(index);
+    event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);
     event.preventDefault();
   },
   
-  showSection: function(index) {
-    this.hideSections();
-    this.sections[index].show();
+  showController: function(index) {
+    this.hideControllers();
+    this._controllers[index].show();
     $('li > a', this.view).removeClass('selected');
     $('li', this.view).eq(index).find('a').addClass('selected');
   },
   
-  hideSections: function() {
-    for(section in this.sections) {
-      $(this.sections[section]).hide();
+  hideControllers: function() {
+    for(controller in this._controllers) {
+      this._controllers[controller].hide();
     }
   },
   
   reset: function() {
     this.view.show();
-    this.showSection(0);
+    this.showController(0);
   }
 });

@@ -1,5 +1,5 @@
 /* Gameroom */
-var Association = new JS.Module({
+var Associable = new JS.Module({
   extend: {
     belongs_to: [],
     has_one: [],
@@ -218,7 +218,7 @@ var Association = new JS.Module({
     }
   }
 });
-var Validation = new JS.Module({
+var Validatable = new JS.Module({
   _errors: [],
 
   valid: function() {
@@ -258,7 +258,7 @@ var Validation = new JS.Module({
 });
 
 var Model = new JS.Class({
-  include: [Association, Validation],
+  include: [Associable, Validatable],
 
   extend: {
     resource: undefined,
@@ -1098,6 +1098,20 @@ var TillController = new JS.Class(ViewController, {
     event.preventDefault();
   }
 });
+var Sectionable = new JS.Module({
+
+  show: function() {
+    if(this.view != null && this.view != undefined) {
+      this.view.show();
+    }
+  },
+
+  hide: function() {
+    if(this.view != null && this.view != undefined) {
+      this.view.hide();
+    }
+  }
+});
 
 var SearchController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -1211,6 +1225,7 @@ var FormController = new JS.Class(ViewController, {
 });
 
 var CustomerFormController = new JS.Class(FormController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -1491,7 +1506,7 @@ var CustomerTableController = new JS.Class(TableController, {
 });
 
 var CustomerSearchResultsController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -1518,7 +1533,7 @@ var CustomerSearchResultsController = new JS.Class(ViewController, {
 });
 
 var CustomerController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -1527,12 +1542,12 @@ var CustomerController = new JS.Class(ViewController, {
     this.customer_search_controller = new SearchController('div#customer_search');
     this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
     this.customer_section_controller = new SectionController('ul#customer_nav', [
-      this.customer_review_controller.view,
-      this.customer_form_controller.view,
-      this.customer_search_results_controller.view
+      this.customer_review_controller,
+      this.customer_form_controller,
+      this.customer_search_results_controller
     ]);
     this.customer_search_controller.addObserver(this.search, this);
-    this.customer_search_controller.addObserver(this.showSearchSection, this);
+    this.customer_search_controller.addObserver(this.showSearchController, this);
     this.customer_search_results_controller.addObserver(this.setCustomer, this);
     this.customer_form_controller.addObserver(this.setCustomer, this);
 
@@ -1561,16 +1576,16 @@ var CustomerController = new JS.Class(ViewController, {
   },
 
   showReviewSection: function() {
-    this.customer_section_controller.showSection(0);
+    this.customer_section_controller.showController(0);
   },
 
-  showFormSection: function() {
-    this.customer_section_controller.showSection(1);
+  showFormController: function() {
+    this.customer_section_controller.showController(1);
   },
 
-  showSearchSection: function(query) {
+  showSearchController: function(query) {
     if(query) {
-      this.customer_section_controller.showSection(2);
+      this.customer_section_controller.showController(2);
     }
   },
 
@@ -1737,7 +1752,7 @@ var CartLineController = new JS.Class(ViewController, {
 });
 
 var CartLinesController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -1868,6 +1883,7 @@ var CartLinesController = new JS.Class(ViewController, {
 });
 
 var CartFormController = new JS.Class(FormController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -2043,7 +2059,7 @@ var CartTableController = new JS.Class(TableController, {
 });
 
 var CartSearchResultsController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -2084,7 +2100,7 @@ var CartSearchResultsController = new JS.Class(ViewController, {
 });
 
 var CartController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -2093,12 +2109,12 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_controller = new SearchController('div#cart_search');
     this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
     this.cart_section_controller = new SectionController('ul#cart_nav', [
-      this.cart_lines_controller.view,
-      this.cart_form_controller.view,
-      this.cart_search_results_controller.view
+      this.cart_lines_controller,
+      this.cart_form_controller,
+      this.cart_search_results_controller
     ]);
     this.cart_search_controller.addObserver(this.search, this);
-    this.cart_search_controller.addObserver(this.showSearchSection, this);
+    this.cart_search_controller.addObserver(this.showSearchController, this);
     this.cart_lines_controller.addObserver(this.setLines, this);
     this.cart_search_results_controller.addObserver(this.addLines, this);
     this.cart_form_controller.addObserver(this.addLines, this);
@@ -2113,7 +2129,7 @@ var CartController = new JS.Class(ViewController, {
     this.cart_search_results_controller.reset();
     this.cart_section_controller.reset();
     $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
-    this.showLinesSection();
+    this.showLinesController();
   },
 
   search: function(query, page) {
@@ -2132,16 +2148,16 @@ var CartController = new JS.Class(ViewController, {
     $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
 
-  showLinesSection: function() {
-    this.cart_section_controller.showSection(0);
+  showLinesController: function() {
+    this.cart_section_controller.showController(0);
   },
 
-  showFormSection: function() {
-    this.cart_section_controller.showSection(1);
+  showFormController: function() {
+    this.cart_section_controller.showController(1);
   },
 
-  showSearchSection: function() {
-    this.cart_section_controller.showSection(2);
+  showSearchController: function() {
+    this.cart_section_controller.showController(2);
   },
 
   addLines: function(lines) {
@@ -2357,7 +2373,7 @@ var PaymentScaleController = new JS.Class(ViewController, {
 });
 
 var PaymentController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -2543,6 +2559,7 @@ String.prototype.truncate = function(length) {
 }
 
 var ReviewController = new JS.Class(ViewController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -2700,35 +2717,35 @@ var TransactionNavController = new JS.Class(ViewController, {
 var SectionController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  initialize: function(view, sections) {
+  initialize: function(view, controllers) {
     this.callSuper();
-    this.sections = sections;
+    this._controllers = controllers;
     $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
   },
 
   doClick: function(event) {
     index = $('li > a', event.data.view).index(this);
-    event.data.instance.showSection(index);
+    event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);
     event.preventDefault();
   },
 
-  showSection: function(index) {
-    this.hideSections();
-    this.sections[index].show();
+  showController: function(index) {
+    this.hideControllers();
+    this._controllers[index].show();
     $('li > a', this.view).removeClass('selected');
     $('li', this.view).eq(index).find('a').addClass('selected');
   },
 
-  hideSections: function() {
-    for(section in this.sections) {
-      $(this.sections[section]).hide();
+  hideControllers: function() {
+    for(controller in this._controllers) {
+      this._controllers[controller].hide();
     }
   },
 
   reset: function() {
     this.view.show();
-    this.showSection(0);
+    this.showController(0);
   }
 });
 
@@ -2747,10 +2764,10 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller = new PaymentController('section#payment');
     this.review_controller = new ReviewController('section#review');
     this.section_controller = new SectionController('ul#transactions_nav', [
-      this.cart_controller.view,
-      this.customer_controller.view,
-      this.payment_controller.view,
-      this.review_controller.view
+      this.cart_controller,
+      this.customer_controller,
+      this.payment_controller,
+      this.review_controller
     ]);
     this.summary_controller = new TransactionSummaryController('ul#summary');
     this.finish_controller = new TransactionFinishController('ul#finish');
@@ -3007,12 +3024,79 @@ var ClockInOutController = new JS.Class(ViewController, {
   }
 });
 
+var OverviewChartHeaderController = new JS.Class(ViewController, {
+
+  draw: function() {
+    canvas = {
+      'context' : this.view[0].getContext('2d'),
+      'size' : {
+        'width' : this.view.innerWidth(),
+        'height' : this.view.innerHeight()
+      }
+    }
+
+    $(this.view).attr('width', canvas.size.width);
+    $(this.view).attr('height', canvas.size.height);
+
+    canvas.context.lineWidth = 1;
+    canvas.context.font = "bold 8px sans-serif";
+    canvas.context.textAlign = "center";
+    canvas.context.textBaseline = "middle";
+
+    canvas.context.clearRect(0, 0, canvas.size.width, canvas.size.height);
+
+    canvas.context.strokeStyle = "#999999";
+    canvas.context.beginPath();
+    canvas.context.moveTo(0, Math.round(canvas.size.height / 2));
+    canvas.context.lineTo(canvas.size.width, Math.round(canvas.size.height / 2));
+    canvas.context.stroke();
+
+    for(i = 0; i <= 48; i++) {
+      x = Math.round((canvas.size.width / 48) * i);
+      hour = null;
+
+      if(i % 2 == 0) {
+        y_begin = 2;
+        if(i != 0 && i != 48) {
+          hour = i / 2;
+          if(hour > 12) {
+            hour -= 12;
+          }
+        }
+      } else {
+        y_begin = 10;
+      }
+      y_end = canvas.size.height - y_begin;
+
+      canvas.context.strokeStyle = "#999999";
+      canvas.context.beginPath();
+      canvas.context.moveTo(x, y_begin);
+      canvas.context.lineTo(x, y_end);
+      canvas.context.stroke();
+
+      if(i % 2 == 0 && i != 0 && i != 48) {
+        canvas.context.fillStyle = "#FFFFFF";
+        canvas.context.beginPath();
+        canvas.context.arc(x, Math.round(canvas.size.height / 2), 7, 0, Math.PI * 2, true);
+        canvas.context.fill();
+      }
+
+      if(hour != null) {
+        canvas.context.fillStyle = "#000000";
+        canvas.context.fillText(hour, x, Math.round(canvas.size.height / 2));
+      }
+    }
+  }
+});
+
 var OverviewChartController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.lines = [];
+
+    this.overview_chart_header_controller = new OverviewChartHeaderController($('canvas.overview_chart_header', this.view));
 
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },
@@ -3021,6 +3105,7 @@ var OverviewChartController = new JS.Class(ViewController, {
     for(line in this.lines) {
       this.lines[line].update();
     }
+    this.overview_chart_header_controller.draw();
   },
 
   doRefresh: function(event) {
@@ -3030,6 +3115,7 @@ var OverviewChartController = new JS.Class(ViewController, {
 });
 
 var OverviewInController = new JS.Class(OverviewChartController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -3051,6 +3137,7 @@ var OverviewInController = new JS.Class(OverviewChartController, {
 });
 
 var OverviewOutController = new JS.Class(OverviewChartController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -3841,6 +3928,8 @@ var OverviewChartCanvasController = new JS.Class(ViewController, {
       begin = (new Date()).setISO8601(this.timecards[timecard].begin).getTime();
       if(this.timecards[timecard].end != null) {
         end = (new Date()).setISO8601(this.timecards[timecard].end).getTime();
+      } else {
+        end = new Date().getTime();
       }
       x = Math.round(((begin - today.begin) / (today.end - today.begin)) * canvas.size.width);
       width = Math.round(((end - today.begin) / (today.end - today.begin)) * canvas.size.width) - x;
@@ -3867,6 +3956,7 @@ var OverviewChartLineController = new JS.Class(ViewController, {
 });
 
 var OverviewController = new JS.Class(ViewController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -3875,8 +3965,8 @@ var OverviewController = new JS.Class(ViewController, {
     this.overview_in_controller = new OverviewInController('div#overview_in');
     this.overview_out_controller = new OverviewOutController('div#overview_out');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_in_controller.view,
-      this.overview_out_controller.view
+      this.overview_in_controller,
+      this.overview_out_controller
     ]);
     this.reset();
 
@@ -3885,7 +3975,7 @@ var OverviewController = new JS.Class(ViewController, {
     this.overview_out_controller.addObserver(this.updateCharts, this);
     this.clock_in_out_controller.addObserver(this.updateCharts, this);
 
-    controller = this;
+    var controller = this;
     this.clock_interval = window.setInterval(function() {
       controller.updateClock();
     }, 1000);
@@ -3899,15 +3989,20 @@ var OverviewController = new JS.Class(ViewController, {
   reset: function() {
     this.overview_in_controller.clearLines();
     this.overview_out_controller.clearLines();
-    this.showInSection();
+    this.showInController();
   },
 
-  showInSection: function() {
-    this.overview_section_controller.showSection(0);
+  show: function() {
+    this.callSuper();
+    this.updateCharts();
   },
 
-  showOutSection: function() {
-    this.overview_section_controller.showSection(1);
+  showInController: function() {
+    this.overview_section_controller.showController(0);
+  },
+
+  showOutController: function() {
+    this.overview_section_controller.showController(1);
   },
 
   showClockInOut: function(event) {
@@ -3916,7 +4011,10 @@ var OverviewController = new JS.Class(ViewController, {
   },
 
   findEmployees: function() {
-    timecards = Timecard.where('begin >= ? AND begin <= ?', [new Date().strftime('%Y-%m-%d 00:00:00'), new Date().strftime('%Y-%m-%d 23:59:59')]);
+    day_begin = new Date();
+    day_end = new Date();
+    day_end.setDate(day_begin.getDate() + 1);
+    timecards = Timecard.where('begin >= ? AND begin <= ?', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];
@@ -4065,7 +4163,7 @@ var AdminTimecardsTimecardController = new JS.Class(ViewController, {
     this.timecard = timecard;
     begin = (new Date()).setISO8601(this.timecard.begin);
     end = (new Date()).setISO8601(this.timecard.end);
-    total = Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100;
+    total = ((end.valueOf() - begin.valueOf()) / 3600000).toFixed(2);
 
     $('h3.timecards_line_total', this.view).html(total + ' hours');
     $('h4.timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
@@ -4084,6 +4182,7 @@ var AdminTimecardsTimecardController = new JS.Class(ViewController, {
 });
 
 var AdminTimecardsController = new JS.Class(ViewController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
@@ -4114,7 +4213,9 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
 
   loadTimecards: function() {
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
+    tomorrow = new Date();
+    tomorrow.setDate(this.date.getDate() + 1);
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
   },
 
   clearTimecards: function() {
@@ -4144,9 +4245,9 @@ var AdminTimecardsController = new JS.Class(ViewController, {
     for(timecard in timecards) {
       begin = (new Date()).setISO8601(timecards[timecard].begin);
       end = (new Date()).setISO8601(timecards[timecard].end);
-      total += Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100
+      total += (end.valueOf() - begin.valueOf()) / 3600000
     }
-    $('h3#timecards_total').html(total + ' hours');
+    $('h3#timecards_total').html(total.toFixed(2) + ' hours');
   },
 
   updateTimecard: function(timecard) {
@@ -4176,7 +4277,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
 });
 
 var AdminController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
@@ -4187,7 +4288,7 @@ var AdminController = new JS.Class(ViewController, {
     this.admin_employee_controller = new AdminEmployeeController('form#admin_employee');
     this.admin_timecards_controller = new AdminTimecardsController('div#admin_timecards');
     this.admin_section_controller = new SectionController('ul#admin_nav', [
-      this.admin_timecards_controller.view
+      this.admin_timecards_controller
     ]);
 
     this.admin_date_controller.addObserver(this.updateDate, this);
@@ -4198,6 +4299,11 @@ var AdminController = new JS.Class(ViewController, {
     this.admin_date_controller.reset();
     this.admin_timecards_controller.reset();
     $('select', this.admin_employee_controller.view).trigger('change');
+  },
+
+  show: function() {
+    this.callSuper();
+    this.updateTimecards(this.date, this.employee);
   },
 
   updateDate: function(date) {
@@ -4221,8 +4327,8 @@ var TimeclockController = new JS.Class({
     this.overview_controller = new OverviewController('section#overview');
     this.admin_controller = new AdminController('section#admin');
     this.section_controller = new SectionController('ul#timeclock_nav', [
-      this.overview_controller.view,
-      this.admin_controller.view
+      this.overview_controller,
+      this.admin_controller
     ]);
     this.reset();
 
@@ -4410,6 +4516,7 @@ var TimecardController = new JS.Class(ViewController, {
 });
 
 var CustomerReviewController = new JS.Class(ViewController, {
+  include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();

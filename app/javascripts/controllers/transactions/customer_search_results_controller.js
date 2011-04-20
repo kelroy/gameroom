@@ -1,8 +1,9 @@
+//= require "../../sectionable"
 //= require "customer_table_controller"
 //= require "../../models/customer"
 
 var CustomerSearchResultsController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
   
   initialize: function(view) {
     this.callSuper();

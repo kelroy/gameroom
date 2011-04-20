@@ -1,3 +1,4 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "../section_controller"
 //= require "../../models/timecard"
@@ -8,6 +9,7 @@
 //= require "overview_chart_line_controller"
 
 var OverviewController = new JS.Class(ViewController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();
@@ -16,8 +18,8 @@ var OverviewController = new JS.Class(ViewController, {
     this.overview_in_controller = new OverviewInController('div#overview_in');
     this.overview_out_controller = new OverviewOutController('div#overview_out');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_in_controller.view,
-      this.overview_out_controller.view
+      this.overview_in_controller,
+      this.overview_out_controller
     ]);
     this.reset();
     
@@ -26,7 +28,7 @@ var OverviewController = new JS.Class(ViewController, {
     this.overview_out_controller.addObserver(this.updateCharts, this);
     this.clock_in_out_controller.addObserver(this.updateCharts, this);
     
-    controller = this;
+    var controller = this;
     this.clock_interval = window.setInterval(function() {
       controller.updateClock();
     }, 1000);
@@ -40,15 +42,20 @@ var OverviewController = new JS.Class(ViewController, {
   reset: function() {
     this.overview_in_controller.clearLines();
     this.overview_out_controller.clearLines();
-    this.showInSection();
+    this.showInController();
   },
   
-  showInSection: function() {
-    this.overview_section_controller.showSection(0);
+  show: function() {
+    this.callSuper();
+    this.updateCharts();
   },
   
-  showOutSection: function() {
-    this.overview_section_controller.showSection(1);
+  showInController: function() {
+    this.overview_section_controller.showController(0);
+  },
+  
+  showOutController: function() {
+    this.overview_section_controller.showController(1);
   },
   
   showClockInOut: function(event) {
@@ -57,7 +64,10 @@ var OverviewController = new JS.Class(ViewController, {
   },
   
   findEmployees: function() {
-    timecards = Timecard.where('begin >= ? AND begin <= ?', [new Date().strftime('%Y-%m-%d 00:00:00'), new Date().strftime('%Y-%m-%d 23:59:59')]);
+    day_begin = new Date();
+    day_end = new Date();
+    day_end.setDate(day_begin.getDate() + 1);
+    timecards = Timecard.where('begin >= ? AND begin <= ?', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];

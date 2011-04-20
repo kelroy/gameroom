@@ -23,7 +23,7 @@ section#overview
   
   div#overview_in,
   div#overview_out
-    ul#overview_chart_list
+    ul.overview_chart_list
       > li
         height: 30px
         margin-bottom: 10px
@@ -54,20 +54,3 @@ section#overview
           background-color: $white
           color: $light_gray
           @include border-radius(5px)
-          
-        ul#overview_chart_header
-          float: right
-          width: 74%
-          
-          li
-            position: absolute
-            width: 50px
-            text-align: middle
-            font-family: LatinModernMonoLight10Bold, Tacoma, serif
-              
-            &:nth-child(2)
-              width: 73%
-              text-align: center
-              
-            &:last-child
-              right: 10px

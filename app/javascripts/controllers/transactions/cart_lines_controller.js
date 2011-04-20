@@ -1,8 +1,9 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "cart_line_controller"
 
 var CartLinesController = new JS.Class(ViewController, {
-  include: JS.Observable,
+  include: [JS.Observable, Sectionable],
   
   initialize: function(view) {
     this.callSuper();

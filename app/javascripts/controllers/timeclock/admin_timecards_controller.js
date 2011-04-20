@@ -1,7 +1,9 @@
+//= require "../../sectionable"
 //= require "../view_controller"
 //= require "admin_timecards_timecard_controller"
 
 var AdminTimecardsController = new JS.Class(ViewController, {
+  include: Sectionable,
   
   initialize: function(view) {
     this.callSuper();
@@ -32,7 +34,9 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
   
   loadTimecards: function() {
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 00:00:00'), this.date.strftime('%Y-%m-%d 23:59:59')]));
+    tomorrow = new Date();
+    tomorrow.setDate(this.date.getDate() + 1);
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
   },
   
   clearTimecards: function() {
@@ -62,9 +66,9 @@ var AdminTimecardsController = new JS.Class(ViewController, {
     for(timecard in timecards) {
       begin = (new Date()).setISO8601(timecards[timecard].begin);
       end = (new Date()).setISO8601(timecards[timecard].end);
-      total += Math.round(((end.valueOf() - begin.valueOf()) / 3600000) *100) / 100
+      total += (end.valueOf() - begin.valueOf()) / 3600000
     }
-    $('h3#timecards_total').html(total + ' hours');
+    $('h3#timecards_total').html(total.toFixed(2) + ' hours');
   },
   
   updateTimecard: function(timecard) {

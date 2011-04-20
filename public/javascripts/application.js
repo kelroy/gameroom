@@ -4344,6 +4344,84 @@ var TimeclockController = new JS.Class({
   }
 });
 
+var EditPersonController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('select', this.view).bind('change', {instance: this}, this.onPerson);
+  },
+
+  onPerson: function(event) {
+    id = parseInt($('select', this.view).val());
+    if(!isNaN(id)) {
+      event.data.instance.notifyObservers(Person.find(id));
+    }
+    event.preventDefault();
+  }
+});
+
+var EditUserController = new JS.Class(ViewController, {
+  include: Sectionable,
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  reset: function() {
+  }
+});
+
+var EditController = new JS.Class(ViewController, {
+  include: Sectionable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.person = null;
+
+    this.edit_person_controller = new EditPersonController('form#edit_person');
+    this.edit_form_controller = new FormController('form#edit_user');
+    this.edit_user_controller = new EditUserController('div#edit_user');
+    this.edit_section_controller = new SectionController('ul#edit_nav', [
+      this.edit_user_controller
+    ]);
+
+    $('a.new', this.view).bind('click', {instance: this}, this.newPerson);
+
+    this.edit_person_controller.addObserver(this.updatePerson, this);
+  },
+
+  reset: function() {
+    this.edit_form_controller.reset();
+  },
+
+  updatePerson: function(person) {
+    this.person = person;
+  },
+
+  newPerson: function(event) {
+    event.data.instance.reset();
+    event.preventDefault();
+  }
+});
+
+var UsersController = new JS.Class({
+
+  initialize: function() {
+    this.edit_controller = new EditController('section#edit');
+    this.section_controller = new SectionController('ul#users_nav', [
+      this.edit_controller
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.edit_controller.reset();
+    this.section_controller.reset();
+  }
+});
+
 var transactions = {
 
   run: function() {
@@ -4387,7 +4465,7 @@ var tills = {
 var users = {
 
   run: function() {
-
+    new UsersController();
   }
 
 };

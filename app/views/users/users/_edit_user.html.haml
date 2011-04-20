@@ -1,0 +1,16 @@
+%form{:action => '#edit_user', :id => 'edit_user', :method => 'get'}
+  %ul
+    %li
+      = label_tag :first_name, "First Name"
+      = text_field_tag :first_name
+    %li
+      = label_tag :last_name, "Last Name"
+      = text_field_tag :last_name
+    %li
+      = label_tag :middle_name, "Middle Name"
+      = text_field_tag :middle_name
+  %ul
+    %li
+      %ul{:class => 'button_nav'}
+        %li
+          %a{:href => '#save', :class => 'button save'} Save

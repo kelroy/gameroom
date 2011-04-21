@@ -123,6 +123,14 @@ Gameroom::Application.routes.draw do
     root :to => 'dashboard#index'
   end
   
+  namespace 'inventory' do
+    root :to => 'inventory#index'
+  end
+  
+  namespace 'repairs' do
+    root :to => 'repairs#index'
+  end
+  
   namespace 'reports' do
     root :to => 'reports#index'
   end
@@ -137,6 +145,10 @@ Gameroom::Application.routes.draw do
   
   namespace 'transactions' do
     root :to => 'transactions#index'
+  end
+  
+  namespace 'support' do
+    root :to => 'support#index'
   end
   
   namespace 'users' do

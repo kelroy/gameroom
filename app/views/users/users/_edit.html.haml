@@ -1,13 +1,13 @@
 %div{:id => 'edit_header', :class => 'header_container'}
-  %form{:action => '#person', :id => 'edit_person', :method => 'get'}
+  %form{:action => '#select', :id => 'edit_select', :method => 'get'}
     %ul
-      %li= select_tag :person, options_for_select(@people.map { |person| ["#{person.first_name} #{person.last_name}", person.id] })
+      %li= select_tag :user, options_for_select([[]].push(*@users.map { |user| ["#{user.person.first_name} #{user.person.last_name}", user.id] }))
   %ul{:class => 'edit_action_nav button_nav'}
     %li
       %a{:href => '#new', :class => 'button new'} New User
 %ul{:id => 'edit_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#edit_user', :class => 'edit_user selected'} User
+    %a{:href => '#edit_form', :class => 'edit_form selected'} User
 %div{:id => 'edit_pages', :class => 'page_container'}
-  %div{:id => 'edit_user'}
-    = render :partial => 'edit_user'
+  %div{:id => 'edit_form'}
+    = render :partial => 'edit_form'

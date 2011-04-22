@@ -1,61 +1,58 @@
-= form_for :customer, :method => 'get', :url => root_path do |c|
-  %ul
-    = c.fields_for :person do |p|
-      %li
-        = p.label :first_name, "First Name"
-        = p.text_field :first_name, :required => true
-      %li
-        = p.label :last_name, "Last Name"
-        = p.text_field :last_name, :required => true
-      %li
-        = p.label :middle_name, "Middle Name"
-        = p.text_field :middle_name
-  %ul
-    = c.fields_for :person do |p|
-      = p.fields_for :address do |a|
-        %li
-          = a.label :first_line, "Address First Line"
-          = a.text_field :first_line
-        %li
-          = a.label :second_line, "Address Second Line"
-          = a.text_field :second_line
-        %li
-          = a.label :city
-          = a.text_field :city
-        %li
-          = a.label :state
-          = a.text_field :state
-        %li
-          = a.label :zip
-          = a.text_field :zip
-  %ul
-    = c.fields_for :person do |p|
-      = p.fields_for :phone do |h|
-        %li
-          = h.label :number, "Phone Number"
-          = h.text_field :number, :required => true
-      = p.fields_for :email do |e|
-        %li
-          = e.label :address, "Email Address"
-          = e.email_field :address, :required => true
-    %li
-      = c.label :drivers_license_number, "Drivers License No."
-      = c.text_field :drivers_license_number, :required => true
-    %li
-      = c.label :drivers_license_state, "Drivers License State"
-      = c.text_field :drivers_license_state, :required => true
+%form{:action => '#customer', :method => 'get'}
   %ul
     %li
-      = c.label :credit, "Store Credit"
-      = c.text_field :credit, :disabled => true
+      = label_tag :first_name, "First Name"
+      = text_field_tag :first_name, :required => true
     %li
-      = c.label :flagged
+      = label_tag :last_name, "Last Name"
+      = text_field_tag :last_name, :required => true
+    %li
+      = label_tag :middle_name, "Middle Name"
+      = text_field_tag :middle_name
+    %li
+      = label_tag :date_of_birth, "Date of Birth"
+      = select_date Date.today, :prefix => :date_of_birth, :start_year => Time.now.year - 100, :end_year => Time.now.year
+  %ul
+    %li
+      = label_tag :first_line, "Address First Line"
+      = text_field_tag :first_line
+    %li
+      = label_tag :second_line, "Address Second Line"
+      = text_field_tag :second_line
+    %li
+      = label_tag :city
+      = text_field_tag :city
+    %li
+      = label_tag :state
+      = text_field_tag :state
+    %li
+      = label_tag :zip
+      = text_field_tag :zip
+  %ul
+    %li
+      = label_tag :number, "Phone Number"
+      = text_field_tag :number, nil, :required => true
+    %li
+      = label_tag :address, "Email Address"
+      = email_field_tag :address, nil, :required => true
+    %li
+      = label_tag :drivers_license_number, "Drivers License No."
+      = text_field_tag :drivers_license_number, nil, :required => true
+    %li
+      = label_tag :drivers_license_state, "Drivers License State"
+      = text_field_tag :drivers_license_state, nil, :required => true
+  %ul
+    %li
+      = label_tag :credit, "Store Credit"
+      = text_field_tag :credit, nil, :disabled => true
+    %li
+      = label_tag :flagged
       = check_box_tag :customer_flagged, 1
   %ul
     %li
-      = c.label :notes
-      = c.text_area :notes, :rows => 4, :cols => 100
-      = c.hidden_field :id, :value => 0
+      = label_tag :notes
+      = text_area_tag :notes, nil, :rows => 4, :cols => 100
+      = hidden_field_tag :id, 0
   %ul
     %li
       %ul{:class => 'button_nav'}

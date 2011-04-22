@@ -30,31 +30,31 @@ var CartFormController = new JS.Class(FormController, {
   saveLine: function(index) {
     new_line = $('ul.line_elements', this.view).eq(index);
     
-    base_price = parseInt(Currency.toPennies($('input#line_price', new_line).val()));
+    base_price = parseInt(Currency.toPennies($('input#price', new_line).val()));
     if(base_price <= 0) {
       base_price = 0;
     }
-    credit_price = parseInt(Currency.toPennies($('input#line_credit', new_line).val()));
+    credit_price = parseInt(Currency.toPennies($('input#credit', new_line).val()));
     if(credit_price <= 0) {
       credit_price = 0;
     }
-    cash_price = parseInt(Currency.toPennies($('input#line_cash', new_line).val()));
+    cash_price = parseInt(Currency.toPennies($('input#cash', new_line).val()));
     if(cash_price <= 0) {
       cash_price = 0;
     }
     
     line = new Line({
-      title: $('input#line_title', new_line).val(),
-      description: $('input#line_description', new_line).val(),
-      quantity: parseInt(Math.abs($('input#line_quantity', new_line).val())),
+      title: $('input#title', new_line).val(),
+      description: $('input#description', new_line).val(),
+      quantity: parseInt(Math.abs($('input#quantity', new_line).val())),
       condition: 1,
       discount: 1,
       price: base_price,
       credit: credit_price,
       cash: cash_price,
       purchase: true,
-      taxable: $('input#line_taxable', new_line).attr('checked'),
-      discountable: $('input#line_discountable', new_line).attr('checked')
+      taxable: $('input#taxable', new_line).attr('checked'),
+      discountable: $('input#discountable', new_line).attr('checked')
     });
     
     if(this.valid([line])) {
@@ -78,9 +78,9 @@ var CartFormController = new JS.Class(FormController, {
   
   reset: function() {
     this.callSuper();
-    $('input#line_quantity', this.view).val(1);
-    $('input#line_taxable', this.view).attr('checked', true);
-    $('input#line_discountable', this.view).attr('checked', true);
+    $('input#quantity', this.view).val(1);
+    $('input#taxable', this.view).attr('checked', true);
+    $('input#discountable', this.view).attr('checked', true);
   },
   
   onPrice: function(event) {
@@ -122,13 +122,13 @@ var CartFormController = new JS.Class(FormController, {
       .removeAttr('selected')
     $(this)
       .closest('ul')
-      .find('input#line_quantity').val(1);
+      .find('input#quantity').val(1);
     $(this)
       .closest('ul')
-      .find('input#line_taxable').attr('checked', true);
+      .find('input#taxable').attr('checked', true);
     $(this)
       .closest('ul')
-      .find('input#line_discountable').attr('checked', true);
+      .find('input#discountable').attr('checked', true);
     event.preventDefault();
   },
   

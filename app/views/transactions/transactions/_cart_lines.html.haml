@@ -17,9 +17,9 @@
         %li
           %a{:href => '#minus', :class => 'button minus'} -
         %li
-          = form_for :quantity, :method => 'get', :url => root_path do |f|
+          %form{:action => '#quantity', :method => 'get'}
             %div
-              = f.text_field :amount, :value => 1, :class => 'quantity'
+              = text_field_tag :amount, 1, :class => 'quantity'
         %li
           %a{:href => '#plus', :class => 'button plus'} +
         %li

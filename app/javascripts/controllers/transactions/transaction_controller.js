@@ -161,7 +161,7 @@ var TransactionController = new JS.Class(ViewController, {
       if(credit_adjustment != 0) {
         customer = this.transaction.customer();
         if(customer != undefined) {
-          customer.credit = customer.credit - credit_adjustment,
+          customer.credit = customer.credit - credit_adjustment;
           if(!customer.save()) {
             console.error('Customer not saved.');
           }

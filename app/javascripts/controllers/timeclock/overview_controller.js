@@ -67,7 +67,7 @@ var OverviewController = new JS.Class(ViewController, {
     day_begin = new Date();
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
-    timecards = Timecard.where('begin >= ? AND begin <= ?', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
+    timecards = Timecard.where('(begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?)', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];

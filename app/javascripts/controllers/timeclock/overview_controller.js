@@ -127,6 +127,6 @@ var OverviewController = new JS.Class(ViewController, {
   },
   
   updateClock: function() {
-    $('h2#overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %H:%M:%S'));
+    $('h2#overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %I:%M:%S %P'));
   }
 });

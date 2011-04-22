@@ -8,6 +8,7 @@ var EditFormController = new JS.Class(FormController, {
     $('input#id', this.view).val(user.id);
     $('input#login', this.view).val(user.login);
     $('input#pin', this.view).val(user.pin);
+    $('input#address', this.view).val(user.email);
     $('input#administrator', this.view).attr('checked', user.administrator);
     $('input#active', this.view).attr('checked', user.active);
     
@@ -35,11 +36,6 @@ var EditFormController = new JS.Class(FormController, {
       phones = person.phones();
       if(phones.length > 0){
         $('input#number', this.view).val(phones[0].number);
-      }
-
-      emails = person.emails();
-      if(emails.length > 0){
-        $('input#address', this.view).val(emails[0].address);
       }
       
       employee = person.employee();
@@ -124,18 +120,6 @@ var EditFormController = new JS.Class(FormController, {
               phone.save();
             }
             
-            emails = person.emails();
-            if(emails.length > 0) {
-              emails[0].address =  $('input#address', this.view).val();
-              emails[0].save();
-            } else {
-              email = new Email({
-                address: $('input#address', this.view).val()
-              });
-              email.setPerson(person);
-              email.save();
-            }
-            
             user.setPerson(person);
           }
         }        
@@ -174,12 +158,6 @@ var EditFormController = new JS.Class(FormController, {
           });
           phone.setPerson(person);
           phone.save();
-
-          email = new Email({
-            address: $('input#address', this.view).val()
-          });
-          email.setPerson(person);
-          email.save();
         }
 
         user = new User({

@@ -4015,7 +4015,7 @@ var OverviewController = new JS.Class(ViewController, {
     day_begin = new Date();
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
-    timecards = Timecard.where('(begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?)', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
+    timecards = Timecard.where('(begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL)', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
     employees_in = [];
     employees_out = [];
     employees = [];
@@ -4353,6 +4353,7 @@ var EditFormController = new JS.Class(FormController, {
     $('input#id', this.view).val(user.id);
     $('input#login', this.view).val(user.login);
     $('input#pin', this.view).val(user.pin);
+    $('input#address', this.view).val(user.email);
     $('input#administrator', this.view).attr('checked', user.administrator);
     $('input#active', this.view).attr('checked', user.active);
 
@@ -4380,11 +4381,6 @@ var EditFormController = new JS.Class(FormController, {
       phones = person.phones();
       if(phones.length > 0){
         $('input#number', this.view).val(phones[0].number);
-      }
-
-      emails = person.emails();
-      if(emails.length > 0){
-        $('input#address', this.view).val(emails[0].address);
       }
 
       employee = person.employee();
@@ -4469,18 +4465,6 @@ var EditFormController = new JS.Class(FormController, {
               phone.save();
             }
 
-            emails = person.emails();
-            if(emails.length > 0) {
-              emails[0].address =  $('input#address', this.view).val();
-              emails[0].save();
-            } else {
-              email = new Email({
-                address: $('input#address', this.view).val()
-              });
-              email.setPerson(person);
-              email.save();
-            }
-
             user.setPerson(person);
           }
         }
@@ -4519,12 +4503,6 @@ var EditFormController = new JS.Class(FormController, {
           });
           phone.setPerson(person);
           phone.save();
-
-          email = new Email({
-            address: $('input#address', this.view).val()
-          });
-          email.setPerson(person);
-          email.save();
         }
 
         user = new User({

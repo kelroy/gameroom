@@ -1,6 +1,6 @@
 //= require "../view_controller"
 
-var EditSelectController = new JS.Class(ViewController, {
+var OverviewSelectController = new JS.Class(ViewController, {
   include: JS.Observable,
   
   initialize: function(view) {

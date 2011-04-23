@@ -1,6 +1,6 @@
 //= require "../form_controller"
 
-var EditFormController = new JS.Class(FormController, {
+var OverviewFormController = new JS.Class(FormController, {
   
   update: function(user) {
     this.reset();

@@ -19,11 +19,11 @@
     %a{:href => "#{support_root_path}"}
       %img{:src => '/images/support.png', :alt => 'Support'}
       %span Support
-  %li
-    %a{:href => "#{inventory_root_path}"}
-      %img{:src => '/images/inventory.png', :alt => 'Inventory'}
-      %span Inventory
   - if current_user.admin?
+    %li
+      %a{:href => "#{inventory_root_path}"}
+        %img{:src => '/images/inventory.png', :alt => 'Inventory'}
+        %span Inventory
     %li
       %a{:href => "#{reports_root_path}"}
         %img{:src => '/images/reports.png', :alt => 'Reports'}

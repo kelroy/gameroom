@@ -4345,7 +4345,7 @@ var TimeclockController = new JS.Class({
   }
 });
 
-var EditFormController = new JS.Class(FormController, {
+var OverviewFormController = new JS.Class(FormController, {
 
   update: function(user) {
     this.reset();
@@ -4580,7 +4580,7 @@ var EditFormController = new JS.Class(FormController, {
   }
 });
 
-var EditSelectController = new JS.Class(ViewController, {
+var OverviewSelectController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -4598,7 +4598,7 @@ var EditSelectController = new JS.Class(ViewController, {
   }
 });
 
-var EditUserController = new JS.Class(ViewController, {
+var OverviewUserController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -4609,32 +4609,32 @@ var EditUserController = new JS.Class(ViewController, {
   }
 });
 
-var EditController = new JS.Class(ViewController, {
+var OverviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
     this.user = null;
 
-    this.edit_select_controller = new EditSelectController('form#edit_select');
-    this.edit_form_controller = new EditFormController('form#edit_user');
-    this.edit_user_controller = new EditUserController('div#edit_user');
-    this.edit_section_controller = new SectionController('ul#edit_nav', [
-      this.edit_user_controller
+    this.overview_select_controller = new OverviewSelectController('form#overview_select');
+    this.overview_form_controller = new OverviewFormController('form#overview_user');
+    this.overview_user_controller = new OverviewUserController('div#overview_user');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_user_controller
     ]);
 
     $('a.new', this.view).bind('click', {instance: this}, this.newUser);
 
-    this.edit_select_controller.addObserver(this.updateUser, this);
+    this.overview_select_controller.addObserver(this.updateUser, this);
   },
 
   reset: function() {
-    this.edit_form_controller.reset();
+    this.overview_form_controller.reset();
   },
 
   updateUser: function(user) {
     this.user = user;
-    this.edit_form_controller.update(user);
+    this.overview_form_controller.update(user);
   },
 
   newUser: function(event) {
@@ -4646,15 +4646,15 @@ var EditController = new JS.Class(ViewController, {
 var UsersController = new JS.Class({
 
   initialize: function() {
-    this.edit_controller = new EditController('section#edit');
+    this.overview_controller = new OverviewController('section#overview');
     this.section_controller = new SectionController('ul#users_nav', [
-      this.edit_controller
+      this.overview_controller
     ]);
     this.reset();
   },
 
   reset: function() {
-    this.edit_controller.reset();
+    this.overview_controller.reset();
     this.section_controller.reset();
   }
 });

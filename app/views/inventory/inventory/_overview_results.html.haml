@@ -1,0 +1,14 @@
+%h2{:id => 'items_notice'} No items.
+%ul{:id => 'items_lines'}
+  %li{:class => 'items_line'}
+    %ul{:class => 'items_line_nav button_nav'}
+      %li
+        %a{:href => '#delete', :class => 'button delete'} X
+      %li
+        %a{:href => '#edit', :class => 'button edit'} Edit
+    %hgroup{:class => 'items_line_information'}
+      %h3{:class => 'items_line_title'}
+      %h4{:class => 'items_line_description'}
+    %hgroup{:class => 'items_line_properties'}
+      %h3{:class => 'items_line_sku'}
+      %h3{:class => 'items_line_price'}

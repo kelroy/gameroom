@@ -52,8 +52,14 @@ class Api::PropertiesController < ApplicationController
   
   # POST /properties.xml
   # POST /properties.json
+  # POST /items/:item_id/properties.xml
+  # POST /items/:item_id/properties.json
   def create
-    @property = Property.create(params[:property])
+    if params[:item_id]
+      @property = Item.find(params[:item_id]).properties.create(params[:property])
+    else
+      @property = Property.create(params[:property])
+    end
 
     respond_to do |format|
       if @property.save

@@ -32,10 +32,10 @@
         = text_field_tag :cash, nil, :placeholder => '0.00', :class => 'price'
       %li
         = label_tag :taxable
-        = check_box_tag :line_taxable, 1, true
+        = check_box_tag :taxable, 1, true
       %li
         = label_tag :discountable
-        = check_box_tag :line_discountable, 1, true
+        = check_box_tag :discountable, 1, true
       %li
         = label_tag :clear
         %a{:href => '#clear_row', :class => 'button clear_row'} Clear

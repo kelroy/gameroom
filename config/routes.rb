@@ -46,7 +46,7 @@ Gameroom::Application.routes.draw do
         match 'where' => 'items#where', :via => [:get, :post]
       end
       resources :lines,       :only => [:index]
-      resources :properties,  :only => [:index]
+      resources :properties,  :only => [:index, :create]
     end
     resources :lines do
       collection do

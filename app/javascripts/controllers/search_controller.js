@@ -8,8 +8,8 @@ var SearchController = new JS.Class(ViewController, {
     this.page = 1;
     this.query = null;
     
-    this.input = $('input.query', this.view);
-    this.input.bind('change', {instance: this}, this.onChange);
+    this.input = $('input', this.view);
+    this.input.bind('change', {instance: this}, this.onChanged);
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
@@ -63,10 +63,10 @@ var SearchController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  onChange: function(event) {
+  onChanged: function(event) {
     event.data.instance.page = 1;
     event.data.instance.query = event.data.instance.input.val();
-    if(query.length > 0) {
+    if(event.data.instance.query.length > 0) {
       event.data.instance.notifyObservers(event.data.instance.query, 1);
     }
     event.preventDefault();

@@ -146,7 +146,9 @@ var Associable = new JS.Module({
 
   _create_collection: function(collection, attributes) {
     collective = this._build_collection(collection, attributes);
-    collective.save();
+    for(item in collective) {
+      collective[item].save();
+    }
     return collective;
   },
 
@@ -550,6 +552,7 @@ var Property = new JS.Class(Model, {
   extend: {
     resource: 'property',
     columns: ['id', 'key', 'value'],
+    has_many: ['items']
   }
 });
 
@@ -1122,8 +1125,8 @@ var SearchController = new JS.Class(ViewController, {
     this.page = 1;
     this.query = null;
 
-    this.input = $('input.query', this.view);
-    this.input.bind('change', {instance: this}, this.onChange);
+    this.input = $('input', this.view);
+    this.input.bind('change', {instance: this}, this.onChanged);
     this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
     this.alphabet_controller.addObserver(this.onLetter, this);
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
@@ -1177,10 +1180,10 @@ var SearchController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  onChange: function(event) {
+  onChanged: function(event) {
     event.data.instance.page = 1;
     event.data.instance.query = event.data.instance.input.val();
-    if(query.length > 0) {
+    if(event.data.instance.query.length > 0) {
       event.data.instance.notifyObservers(event.data.instance.query, 1);
     }
     event.preventDefault();
@@ -4597,7 +4600,7 @@ var OverviewUserController = new JS.Class(ViewController, {
   }
 });
 
-var OverviewController = new JS.Class(ViewController, {
+var UsersOverviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -4634,7 +4637,7 @@ var OverviewController = new JS.Class(ViewController, {
 var UsersController = new JS.Class({
 
   initialize: function() {
-    this.overview_controller = new OverviewController('section#overview');
+    this.overview_controller = new UsersOverviewController('section#overview');
     this.section_controller = new SectionController('ul#users_nav', [
       this.overview_controller
     ]);
@@ -4659,6 +4662,14 @@ var dashboard = {
 
   run: function() {
 
+  }
+
+};
+
+var inventory = {
+
+  run: function() {
+    new InventoryController();
   }
 
 };
@@ -4706,6 +4717,309 @@ var AlphabetController = new JS.Class(ViewController, {
   onSelect: function(event) {
     event.data.instance.notifyObservers($(this).html());
     event.preventDefault();
+  }
+});
+
+var InventoryItemController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.item = null;
+
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $('input#taxable', this.view).attr('checked', true);
+    $('input#discountable', this.view).attr('checked', true);
+    $('input#active', this.view).attr('checked', true);
+  },
+
+  setItem: function(item) {
+    this.item = item;
+
+    if(item != null) {
+      property_list = [];
+      properties = item.properties();
+      for(property in properties) {
+        property_list.push(properties[property].key + ':' + properties[property].value);
+      }
+
+      $('input#title', this.view).val(item.title);
+      $('textarea#description', this.view).val(item.description);
+      $('textarea#properties', this.view).val(property_list.join(','));
+      $('input#sku', this.view).val(item.sku);
+      $('input#price', this.view).val(Currency.format(item.price));
+      $('input#credit', this.view).val(Currency.format(item.credit));
+      $('input#cash', this.view).val(Currency.format(item.cash));
+      $('input#taxable', this.view).attr('checked', item.taxable);
+      $('input#discountable', this.view).attr('checked', item.discountable);
+      $('input#active', this.view).attr('checked', item.active);
+    } else {
+      this.reset();
+    }
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    title = $('input#title', this.view).val();
+    description = $('textarea#description', this.view).val();
+    properties = $('textarea#properties', this.view).val().split(',');
+    sku = $('input#sku', this.view).val();
+    price = parseInt(Currency.toPennies($('input#price', this.view).val()));
+    credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
+    cash = parseInt(Currency.toPennies($('input#cash', this.view).val()));
+    taxable = $('input#taxable', this.view).attr('checked');
+    discountable = $('input#discountable', this.view).attr('checked');
+    active = $('input#active', this.view).attr('checked');
+
+    if(event.data.instance.item == null) {
+      item = Item.create({
+        title: title,
+        description: description,
+        sku: sku,
+        price: price,
+        credit: credit,
+        cash: cash,
+        taxable: taxable,
+        discountable: discountable,
+        active: active
+      });
+    } else {
+      item = Item.find(event.data.instance.item.id);
+      item.title = title;
+      item.description = description;
+      item.sku = sku;
+      item.price = price;
+      item.credit = credit;
+      item.cash = cash;
+      item.taxable = taxable;
+      item.discountable = discountable;
+      item.active = active;
+      item.save();
+
+      item_properties = item.properties();
+      for(property in item_properties) {
+        item_properties[property].destroy();
+      }
+    }
+
+    for(property in properties) {
+      set = properties[property].split(':');
+      property = new Property({
+        key: set[0],
+        value: set[1]
+      });
+      $.ajax({
+        url: '/api/items/' + item.id + '/properties',
+        data: JSON.stringify({property: {key: property.key, value: property.value}}),
+        type: 'POST',
+        accept: 'application/json',
+        contentType: 'application/json',
+        dataType: 'json',
+        processData: false,
+        async: false,
+        success: function(result) {
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          console.error('Error Status: ' + XMLHttpRequest.status);
+          console.error('Error Text: ' + textStatus);
+          console.error('Error Thrown: ' + errorThrown);
+          console.log(XMLHttpRequest);
+        },
+        username: 'x',
+        password: 'x'
+      });
+    }
+
+    event.data.instance.setItem(item);
+    event.data.instance.notifyObservers(event.data.instance.item.sku, 1);
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.item = null;
+
+    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
+    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+  },
+
+  set: function(item) {
+    this.item = item;
+    $('h3.items_line_title', this.view).html(item.title);
+    $('h4.items_line_description', this.view).html(item.description.truncate(30));
+    $('h3.items_line_sku', this.view).html(item.sku);
+    $('h3.items_line_price', this.view).html(Currency.pretty(item.price));
+  },
+
+  onDelete: function(event) {
+    event.data.instance.item.destroy();
+    event.data.instance.notifyObservers('delete', event.data.instance.item);
+    event.preventDefault();
+  },
+
+  onEdit: function(event) {
+    event.data.instance.notifyObservers('edit', event.data.instance.item);
+    event.preventDefault();
+  }
+});
+
+var InventoryOverviewResultsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.items = [];
+    this.item_controllers = [];
+    this.item = $('li.items_line', this.view).detach();
+  },
+
+  reset: function() {
+    this.items = [];
+    this.item_controllers = [];
+    this.clearItems();
+  },
+
+  update: function(items) {
+    this.setItems(items);
+  },
+
+  clearItems: function() {
+    $('ul#items_lines > li').remove();
+  },
+
+  setItems: function(items) {
+    this.clearItems();
+    this.items = items;
+    this.item_controllers = [];
+    for(item in items) {
+      new_item = new InventoryOverviewResultsItemController(this.item.clone());
+      new_item.set(items[item]);
+      new_item.addObserver(this.updateItem, this);
+      this.item_controllers.push(new_item);
+      $('ul#items_lines', this.view).append(new_item.view);
+    }
+    if(items.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  updateItem: function(action, item) {
+    switch(action) {
+      case 'edit':
+        this.notifyObservers(item);
+        break;
+      case 'delete':
+        this.removeItem(item);
+        break;
+    }
+  },
+
+  removeItem: function(remove_item) {
+    for(item in this.items) {
+      if(remove_item.id == this.items[item].id) {
+        this.items.splice(item, 1);
+      }
+    }
+    this.setItems(this.items);
+  },
+
+  showNotice: function() {
+    $('h2#items_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#items_notice', this.view).hide();
+  }
+});
+
+var InventoryOverviewController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.query = null;
+    this.page = null;
+
+    this.item_controller = new InventoryItemController('div#item');
+    this.overview_search_controller = new SearchController('div#overview_search');
+    this.overview_results_controller = new InventoryOverviewResultsController('div#overview_results');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_results_controller
+    ]);
+
+    this.item_controller.addObserver(this.search, this);
+    this.overview_results_controller.addObserver(this.edit, this);
+    this.overview_search_controller.addObserver(this.search, this);
+
+    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+  },
+
+  reset: function() {
+    this.query = null;
+    this.page = null;
+    this.overview_results_controller.reset();
+  },
+
+  search: function(query, page) {
+    this.query = query;
+    this.page = page;
+
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'title_or_description_or_sku_contains_any';
+    } else {
+      pattern = 'title_starts_with';
+    }
+    this.overview_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.overview_search_controller.showLoading, this.overview_search_controller.hideLoading));
+  },
+
+  edit: function(item) {
+    this.item_controller.setItem(item);
+    this.item_controller.view.show();
+  },
+
+  onNew: function(event) {
+    event.data.instance.item_controller.setItem(null);
+    event.data.instance.item_controller.view.show();
+    event.preventDefault();
+  }
+});
+
+var InventoryController = new JS.Class({
+
+  initialize: function() {
+    this.overview_controller = new InventoryOverviewController('section#overview');
+    this.section_controller = new SectionController('ul#inventory_nav', [
+      this.overview_controller
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_controller.reset();
+    this.section_controller.reset();
   }
 });
 

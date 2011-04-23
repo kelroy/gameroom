@@ -4,7 +4,7 @@
 //= require "overview_select_controller"
 //= require "overview_user_controller"
 
-var OverviewController = new JS.Class(ViewController, {
+var UsersOverviewController = new JS.Class(ViewController, {
   include: Sectionable,
   
   initialize: function(view) {

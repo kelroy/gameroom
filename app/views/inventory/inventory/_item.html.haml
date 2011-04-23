@@ -1,0 +1,46 @@
+%div{:id => 'item', :class => 'modal'}
+  %h2 Item
+  %form{:action => '#item', :id => 'item', :method => 'get'}
+    %ul
+      %li
+        = label_tag :title
+        = text_field_tag :title
+    %ul
+      %li
+        = label_tag :description
+        = text_area_tag :description
+    %ul
+      %li
+        = label_tag :properties
+        = text_area_tag :properties
+    %ul
+      %li
+        = label_tag :sku
+        = text_field_tag :sku
+    %ul{:class => 'prices'}
+      %li
+        = label_tag :price
+        = text_field_tag :price, nil, :placeholder => '0.00'
+      %li
+        = label_tag :credit
+        = text_field_tag :credit, nil, :placeholder => '0.00'
+      %li
+        = label_tag :cash
+        = text_field_tag :cash, nil, :placeholder => '0.00'
+    %ul{:class => 'checkboxes'}
+      %li
+        = label_tag :taxable
+        = check_box_tag :taxable, 1, true
+      %li
+        = label_tag :discountable
+        = check_box_tag :discountable, 1, true
+      %li
+        = label_tag :active
+        = check_box_tag :active, 1, true
+    %ul
+      %li
+        %ul{:id => 'item_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#close', :class => 'close button'} Close
+          %li
+            %a{:href => '#save', :class => 'save button'} Save

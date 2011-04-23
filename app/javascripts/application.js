@@ -20,6 +20,14 @@ var dashboard = {
   
 };
 
+var inventory = {
+  
+  run: function() {
+    new InventoryController();
+  }
+  
+};
+
 var reports = {
   
   run: function() {

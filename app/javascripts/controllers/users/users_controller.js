@@ -3,7 +3,7 @@
 var UsersController = new JS.Class({
   
   initialize: function() {
-    this.overview_controller = new OverviewController('section#overview');
+    this.overview_controller = new UsersOverviewController('section#overview');
     this.section_controller = new SectionController('ul#users_nav', [
       this.overview_controller
     ]);

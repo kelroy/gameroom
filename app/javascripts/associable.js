@@ -147,7 +147,9 @@ var Associable = new JS.Module({
   
   _create_collection: function(collection, attributes) {
     collective = this._build_collection(collection, attributes);
-    collective.save();
+    for(item in collective) {
+      collective[item].save();
+    }
     return collective;
   },
   

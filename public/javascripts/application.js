@@ -4674,6 +4674,14 @@ var inventory = {
 
 };
 
+var repairs = {
+
+  run: function() {
+    new RepairsController();
+  }
+
+};
+
 var reports = {
 
   run: function() {
@@ -5023,6 +5031,417 @@ var InventoryController = new JS.Class({
   }
 });
 
+var RepairsRepairController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.repair = null;
+
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $('input#contacted', this.view).attr('checked', false);
+    $('input#active', this.view).attr('checked', true);
+
+    now = new Date();
+    started_year = now.getFullYear();
+    started_month = now.getMonth() + 1;
+    started_day = now.getDate();
+    started_hour = now.getHours();
+    started_minute = now.getMinutes();
+    started_second = now.getSeconds();
+    finished_year = now.getFullYear();
+    finished_month = now.getMonth() + 1;
+    finished_day = now.getDate();
+    finished_hour = now.getHours();
+    finished_minute = now.getMinutes();
+    finished_second = now.getSeconds();
+
+    $('select#started_year').val(started_year);
+    $('select#started_month').val(started_month);
+    $('select#started_day').val(started_day);
+    $('select#started_hour').val(this._padNumber(started_hour));
+    $('select#started_minute').val(this._padNumber(started_minute));
+    $('select#started_second').val(this._padNumber(started_second));
+    $('select#finished_year').val(finished_year);
+    $('select#finished_month').val(finished_month);
+    $('select#finished_day').val(finished_day);
+    $('select#finished_hour').val(this._padNumber(finished_hour));
+    $('select#finished_minute').val(this._padNumber(finished_minute));
+    $('select#finished_second').val(this._padNumber(finished_second));
+  },
+
+  setRepair: function(repair) {
+    this.repair = repair;
+
+    if(repair != null) {
+      started = (new Date()).setISO8601(repair.started);
+      finished = (new Date()).setISO8601(repair.finished);
+      started_year = started.getFullYear();
+      started_month = started.getMonth() + 1;
+      started_day = started.getDate();
+      started_hour = started.getHours();
+      started_minute = started.getMinutes();
+      started_second = started.getSeconds();
+      finished_year = finished.getFullYear();
+      finished_month = finished.getMonth() + 1;
+      finished_day = finished.getDate();
+      finished_hour = finished.getHours();
+      finished_minute = finished.getMinutes();
+      finished_second = finished.getSeconds();
+
+      $('input#name', this.view).val(repair.name);
+      $('input#phone', this.view).val(repair.phone);
+      $('input#title', this.view).val(repair.title);
+      $('input#serial', this.view).val(repair.serial);
+      $('textarea#description', this.view).val(repair.description);
+      $('textarea#symptoms', this.view).val(repair.symptoms);
+      $('textarea#notes', this.view).val(repair.notes);
+      $('input#warranty', this.view).val(repair.warranty);
+      $('input#cost', this.view).val(Currency.format(repair.cost));
+      $('input#receiver', this.view).val(repair.receiver);
+      $('input#technician', this.view).val(repair.technician);
+      $('input#status', this.view).val(repair.status);
+      $('input#contacted', this.view).attr('checked', repair.contacted);
+      $('input#active', this.view).attr('checked', repair.active);
+
+      $('select#started_year').val(started_year);
+      $('select#started_month').val(started_month);
+      $('select#started_day').val(started_day);
+      $('select#started_hour').val(this._padNumber(started_hour));
+      $('select#started_minute').val(this._padNumber(started_minute));
+      $('select#started_second').val(this._padNumber(started_second));
+      $('select#finished_year').val(finished_year);
+      $('select#finished_month').val(finished_month);
+      $('select#finished_day').val(finished_day);
+      $('select#finished_hour').val(this._padNumber(finished_hour));
+      $('select#finished_minute').val(this._padNumber(finished_minute));
+      $('select#finished_second').val(this._padNumber(finished_second));
+    } else {
+      this.reset();
+    }
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    started_year = $('select#started_year').val();
+    started_month = $('select#started_month').val() - 1;
+    started_day = $('select#started_day').val();
+    started_hour = $('select#started_hour').val();
+    started_minute = $('select#started_minute').val();
+    started_second = $('select#started_second').val();
+    finished_year = $('select#finished_year').val();
+    finished_month = $('select#finished_month').val() - 1;
+    finished_day = $('select#finished_day').val();
+    finished_hour = $('select#finished_hour').val();
+    finished_minute = $('select#finished_minute').val();
+    finished_second = $('select#finished_second').val();
+
+    started = new Date(started_year, started_month, started_day, started_hour, started_minute, started_second);
+    finished = new Date(finished_year, finished_month, finished_day, finished_hour, finished_minute, finished_second);
+
+    name = $('input#name', this.view).val();
+    phone = $('input#phone', this.view).val();
+    title = $('input#title', this.view).val();
+    serial = $('input#serial', this.view).val();
+    description = $('textarea#description', this.view).val();
+    symptoms = $('textarea#symptoms', this.view).val();
+    notes = $('textarea#notes', this.view).val();
+    warranty = $('input#warranty', this.view).val();
+    cost = parseInt(Currency.toPennies($('input#cost', this.view).val()));
+    receiver = $('input#receiver', this.view).val();
+    technician = $('input#technician', this.view).val();
+    status = $('input#status', this.view).val();
+    contacted = $('input#contacted', this.view).attr('checked');
+    active = $('input#active', this.view).attr('checked');
+
+    if(event.data.instance.repair == null) {
+      repair = Repair.create({
+        name: name,
+        phone: phone,
+        title: title,
+        serial: serial,
+        description: description,
+        symptoms: symptoms,
+        notes: notes,
+        warranty: warranty,
+        cost: cost,
+        receiver: receiver,
+        technician: technician,
+        started: started,
+        finished: finished,
+        contacted: contacted,
+        active: active
+      });
+    } else {
+      repair = Repair.find(event.data.instance.repair.id);
+      repair.name = name;
+      repair.phone = phone;
+      repair.title = title;
+      repair.serial = serial;
+      repair.description = description;
+      repair.symptoms = symptoms;
+      repair.notes = notes;
+      repair.warranty = warranty;
+      repair.cost = cost;
+      repair.receiver = receiver;
+      repair.technician = technician;
+      repair.started = started;
+      repair.finished = finished;
+      repair.contacted = contacted;
+      repair.active = active;
+      repair.save();
+    }
+
+    event.data.instance.setRepair(repair);
+    event.data.instance.notifyObservers(event.data.instance.repair.name, 1);
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  _padNumber: function(number) {
+    if(number < 10) {
+      return '0' + number;
+    } else {
+      return number;
+    }
+  }
+});
+
+var RepairsOverviewResultsRepairController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.repair = null;
+
+    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.print', this.view).bind('click', {instance: this}, this.onPrint);
+  },
+
+  set: function(repair) {
+    this.repair = repair;
+
+    $('td.name', this.view).html(repair.name);
+    $('td.phone', this.view).html(repair.phone);
+    $('td.title', this.view).html(repair.title);
+    $('td.serial', this.view).html(repair.serial);
+    $('td.description', this.view).html(repair.description);
+    $('td.symptoms', this.view).html(repair.symptoms);
+    $('td.notes', this.view).html(repair.notes);
+    $('td.warranty', this.view).html(repair.warranty);
+    $('td.cost', this.view).html(Currency.pretty(repair.cost));
+  },
+
+  onEdit: function(event) {
+    event.data.instance.notifyObservers('edit', event.data.instance.repair);
+    event.preventDefault();
+  },
+
+  onPrint: function(event) {
+    event.data.instance.notifyObservers('print', event.data.instance.repair);
+    event.preventDefault();
+  }
+});
+
+var RepairsOverviewResultsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.repairs = [];
+    this.repair_controllers = [];
+    this.repair = $('tr.repair_line', this.view).detach();
+  },
+
+  reset: function() {
+    this.repairs = [];
+    this.repair_controllers = [];
+    this.clearRepairs();
+  },
+
+  update: function(repairs) {
+    this.setRepairs(repairs);
+  },
+
+  clearRepairs: function() {
+    $('table#repair_lines > tbody > tr.repair_line').remove();
+  },
+
+  setRepairs: function(repairs) {
+    this.clearRepairs();
+    this.repairs = repairs;
+    this.repair_controllers = [];
+    for(repair in repairs) {
+      new_repair = new RepairsOverviewResultsRepairController(this.repair.clone());
+      new_repair.set(repairs[repair]);
+      new_repair.addObserver(this.updateRepair, this);
+      this.repair_controllers.push(new_repair);
+      $('table#repair_lines tbody', this.view).append(new_repair.view);
+    }
+    if(repairs.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  updateRepair: function(action, repair) {
+    switch(action) {
+      case 'edit':
+        this.notifyObservers('edit', repair);
+        break;
+      case 'print':
+        this.notifyObservers('print', repair);
+        break;
+    }
+  },
+
+  showNotice: function() {
+    $('h2#repair_notice', this.view).show();
+    $('table#repair_lines', this.view).hide();
+  },
+
+  hideNotice: function() {
+    $('h2#repair_notice', this.view).hide();
+    $('table#repair_lines', this.view).show();
+  }
+});
+
+var RepairsOverviewController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.query = null;
+    this.page = null;
+
+    this.repair_controller = new RepairsRepairController('div#repair');
+    this.receipt_controller = new RepairsReceiptController('div#receipt');
+    this.overview_search_controller = new SearchController('div#overview_search');
+    this.overview_results_controller = new RepairsOverviewResultsController('div#overview_results');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_results_controller
+    ]);
+
+    this.repair_controller.addObserver(this.search, this);
+    this.overview_results_controller.addObserver(this.handle, this);
+    this.overview_search_controller.addObserver(this.search, this);
+
+    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+  },
+
+  reset: function() {
+    this.query = null;
+    this.page = null;
+    this.overview_results_controller.reset();
+  },
+
+  search: function(query, page) {
+    this.query = query;
+    this.page = page;
+
+    if(isNaN(query)) {
+      if(page == undefined || page == null) {
+        page = 1;
+      }
+      if(query.length > 1) {
+        pattern = 'name_or_serial_or_phone_contains_any';
+      } else {
+        pattern = 'name_starts_with';
+      }
+      this.overview_results_controller.update(Repair.search(pattern, query.toString().split(' '), page, 10, this.overview_search_controller.showLoading, this.overview_search_controller.hideLoading));
+    } else {
+      repair = Repair.find(query);
+      if(repair != undefined) {
+        this.overview_results_controller.update([repair]);
+      } else {
+        this.overview_results_controller.update([]);
+      }
+    }
+  },
+
+  handle: function(action, repair) {
+    switch(action) {
+      case 'edit':
+        this.edit(repair);
+        break;
+      case 'print':
+        this.print(repair);
+        break;
+    }
+  },
+
+  edit: function(repair) {
+    this.repair_controller.setRepair(repair);
+    this.repair_controller.view.show();
+  },
+
+  print: function(repair) {
+    this.receipt_controller.update('/api/repairs/' + repair.id + '/receipt');
+    this.receipt_controller.view.show();
+  },
+
+  onNew: function(event) {
+    event.data.instance.repair_controller.setRepair(null);
+    event.data.instance.repair_controller.view.show();
+    event.preventDefault();
+  }
+});
+
+var RepairsController = new JS.Class({
+
+  initialize: function() {
+    this.overview_controller = new RepairsOverviewController('section#overview');
+    this.section_controller = new SectionController('ul#repairs_nav', [
+      this.overview_controller
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_controller.reset();
+    this.section_controller.reset();
+  }
+});
+
+var RepairsReceiptController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('ul#receipt_nav a.close', this.view).bind('click', {instance: this}, this.doClose);
+    $('ul#receipt_nav a.print', this.view).bind('click', {instance: this}, this.doPrint);
+  },
+
+  update: function(url) {
+    $('object#receipt_window', this.view).attr('data', url);
+  },
+
+  doClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  doPrint: function(event) {
+    window.frames['receipt_window'].print();
+    event.preventDefault();
+  }
+});
+
 var TimecardController = new JS.Class(ViewController, {
   include: JS.Observable,
 
@@ -5224,5 +5643,12 @@ var ReceiptController = new JS.Class(ViewController, {
   doPrint: function(event) {
     window.frames['receipt_window'].print();
     event.preventDefault();
+  }
+});
+
+var Repair = new JS.Class(Model, {
+  extend: {
+    resource: 'repair',
+    columns: ['id', 'name', 'phone', 'title', 'description', 'serial', 'symptoms', 'notes', 'warranty', 'cost', 'receiver', 'technician', 'started', 'finished', 'status', 'contacted', 'active']
   }
 });

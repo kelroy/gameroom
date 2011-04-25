@@ -1,0 +1,62 @@
+div#repairs
+  section#overview
+
+    div#overview_header
+      div#overview_search
+        float: left
+        margin: 20px 0px
+        padding: 10px
+        background-color: $light_gray
+        border: 2px $black solid
+        @include border-radius(10px)
+      
+        form
+          div
+            background-color: $white
+            border: 2px $black solid
+            @include border-radius(5px)
+          
+            a.prev,
+            a.next,
+            a.clear
+              float: right
+              margin-top: 8px
+              margin-right: 8px
+            
+            img.loading
+              display: none
+              float: right
+              margin-top: 12px
+              margin-right: 8px
+
+            input
+              width: 476px
+              font-size: 20px
+              border: none
+      
+      ul.overview_action_nav
+        float: right
+        margin: 20px 0px
+      
+        li
+          a.button
+            padding: 10px
+            font-size: 22px
+          
+    div#overview_results
+  
+      h2#repair_notice
+        clear: both
+        font-size: 20px
+        text-align: center
+        margin: 20px 0px
+
+      table#repair_lines
+        display: none
+        font-size: 12px
+        
+        tr
+          cursor: default
+          
+        tr:hover
+          background-color: $white

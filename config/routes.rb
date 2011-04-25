@@ -84,6 +84,15 @@ Gameroom::Application.routes.draw do
         match 'where' => 'properties#where', :via => [:get, :post]
       end
     end
+    resources :repairs do
+      collection do
+        match 'search' => 'repairs#search', :via => [:get, :post]
+        match 'where' => 'repairs#where', :via => [:get, :post]
+      end
+      member do
+        match 'receipt' => 'repairs#receipt', :via => [:get]
+      end
+    end
     resources :timecards do
       collection do
         match 'search' => 'timecards#search', :via => [:get, :post]
@@ -145,10 +154,6 @@ Gameroom::Application.routes.draw do
   
   namespace 'transactions' do
     root :to => 'transactions#index'
-  end
-  
-  namespace 'support' do
-    root :to => 'support#index'
   end
   
   namespace 'users' do

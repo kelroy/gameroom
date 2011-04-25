@@ -15,10 +15,6 @@
     %a{:href => "#{repairs_root_path}"}
       %img{:src => '/images/repairs.png', :alt => 'Repairs'}
       %span Repairs
-  %li
-    %a{:href => "#{support_root_path}"}
-      %img{:src => '/images/support.png', :alt => 'Support'}
-      %span Support
   - if current_user.admin?
     %li
       %a{:href => "#{inventory_root_path}"}

@@ -31,6 +31,27 @@ unless Rails.env.production?
     users.push(user)
   end
   
+  (1..20).each do
+    Factory.create(
+      :repair, 
+      :name => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :phone => '555-555-5555',
+      :title => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :description => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
+      :serial => (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase,
+      :symptoms => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
+      :notes => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
+      :warranty => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :cost => rand(10000),
+      :receiver => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :technician => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :started => Time.now,
+      :finished => Time.now,
+      :status => rand(3),
+      :contacted => rand(2).even?,
+      :active => rand(2).even?)
+  end
+  
   person = Factory.create(:person, :first_name => 'Joe', :middle_name => 'Q', :last_name => 'Example')
   person.emails << Factory.create(:email, :person => person)
   person.addresses << Factory.create(:address, :person => person)

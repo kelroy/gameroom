@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110401003649) do
+ActiveRecord::Schema.define(:version => 20110425124904) do
 
   create_table "addresses", :force => true do |t|
     t.integer  "person_id"
@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
     t.integer  "till_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-04-05 01:41:38', :null => false
+    t.datetime "time",        :default => '2011-04-25 17:06:45', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -131,6 +131,27 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
     t.datetime "updated_at"
   end
 
+  create_table "repairs", :force => true do |t|
+    t.string   "name"
+    t.string   "phone"
+    t.string   "title"
+    t.string   "description"
+    t.string   "serial"
+    t.string   "symptoms"
+    t.string   "notes"
+    t.string   "warranty"
+    t.integer  "cost",        :default => 0,                     :null => false
+    t.string   "receiver"
+    t.string   "technician"
+    t.datetime "started",     :default => '2011-04-25 17:06:45', :null => false
+    t.datetime "finished",    :default => '2011-04-25 17:06:45', :null => false
+    t.integer  "status",      :default => 0,                     :null => false
+    t.boolean  "contacted",   :default => false,                 :null => false
+    t.boolean  "active",      :default => true,                  :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "tills", :force => true do |t|
     t.string   "title"
     t.string   "description"
@@ -149,7 +170,7 @@ ActiveRecord::Schema.define(:version => 20110401003649) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "employee_id"
-    t.datetime "begin",       :default => '2011-04-05 01:41:39', :null => false
+    t.datetime "begin",       :default => '2011-04-25 17:06:45', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"

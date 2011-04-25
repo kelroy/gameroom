@@ -28,6 +28,14 @@ var inventory = {
   
 };
 
+var repairs = {
+  
+  run: function() {
+    new RepairsController();
+  }
+  
+};
+
 var reports = {
   
   run: function() {

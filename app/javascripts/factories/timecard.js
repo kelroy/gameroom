@@ -4,8 +4,8 @@ Factory.define('Timecard', {
   id: {
     sequence: 'id'
   },
-  employee: {
-    factory: 'Employee'
+  user: {
+    factory: 'User'
   },
   begin: new Date(),
   end: new Date()

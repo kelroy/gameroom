@@ -1,7 +1,7 @@
 %div{:id => 'admin_header', :class => 'header_container'}
-  %form{:action => '#employee', :id => 'admin_employee', :method => 'get'}
+  %form{:action => '#user', :id => 'admin_user', :method => 'get'}
     %ul
-      %li= select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
+      %li= select_tag :user, options_for_select(@users.map { |user| ["#{user.person.first_name} #{user.person.last_name}", user.id] })
   %form{:action => '#date', :id => 'admin_date', :method => 'get'}
     %ul
       %li

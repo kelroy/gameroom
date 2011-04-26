@@ -3,10 +3,10 @@
 
 var OverviewChartLineController = new JS.Class(ViewController, {
   
-  initialize: function(view, employee) {
+  initialize: function(view, user) {
     this.callSuper();
-    this.canvas = new OverviewChartCanvasController($('canvas', this.view), employee.timecards());
-    this.setName(employee.person());
+    this.canvas = new OverviewChartCanvasController($('canvas', this.view), user.timecards());
+    this.setName(user.person());
   },
   
   update: function() {

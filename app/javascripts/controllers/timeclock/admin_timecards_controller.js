@@ -8,7 +8,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.date = null;
-    this.employee = null;
+    this.user = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.timecard = $('li.timecards_line', this.view).detach();
@@ -21,22 +21,22 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   
   reset: function() {
     this.date = null;
-    this.employee = null;
+    this.user = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.clearTimecards();
   },
   
-  update: function(date, employee) {
+  update: function(date, user) {
     this.date = date;
-    this.employee = employee;
+    this.user = user;
     this.loadTimecards();
   },
   
   loadTimecards: function() {
     tomorrow = new Date();
     tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
+    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
   },
   
   clearTimecards: function() {
@@ -73,7 +73,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   
   updateTimecard: function(timecard) {
     if(timecard != undefined) {
-      this.timecard_controller.setEmployee(this.employee);
+      this.timecard_controller.setUser(this.user);
       this.timecard_controller.setTimecard(timecard);
       this.timecard_controller.view.show();
     } else {
@@ -82,7 +82,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
   
   onAdd: function(event) {
-    event.data.instance.timecard_controller.setEmployee(event.data.instance.employee);
+    event.data.instance.timecard_controller.setUser(event.data.instance.user);
     event.data.instance.timecard_controller.setTimecard(null);
     event.data.instance.timecard_controller.view.show();
     event.preventDefault();

@@ -3,8 +3,8 @@
   %form{:action => '#clock_in_out', :id => 'clock_in_out', :method => 'get'}
     %ul
       %li
-        = label_tag :employee
-        = select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
+        = label_tag :user
+        = select_tag :user, options_for_select(@users.map { |user| ["#{user.person.first_name} #{user.person.last_name}", user.id] })
     %ul
       %li
         = label_tag :pin, "PIN"

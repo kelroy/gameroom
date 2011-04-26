@@ -1,6 +1,6 @@
 //= require "../factory"
 
-Factory.define('Employee', {
+Factory.define('User', {
   id: {
     sequence: 'id'
   },

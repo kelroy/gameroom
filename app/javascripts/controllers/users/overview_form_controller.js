@@ -11,6 +11,8 @@ var OverviewFormController = new JS.Class(FormController, {
     $('input#address', this.view).val(user.email);
     $('input#administrator', this.view).attr('checked', user.administrator);
     $('input#active', this.view).attr('checked', user.active);
+    $('input#job_title', this.view).val(user.title);
+    $('input#rate', this.view).val(Currency.format(user.rate));
     
     person = user.person();
     if(person != undefined) {
@@ -37,12 +39,6 @@ var OverviewFormController = new JS.Class(FormController, {
       if(phones.length > 0){
         $('input#number', this.view).val(phones[0].number);
       }
-      
-      employee = person.employee();
-      if(employee != undefined) {
-        $('input#job_title', this.view).val(employee.title);
-        $('input#rate', this.view).val(Currency.format(employee.rate));
-      }
     }
   },
   
@@ -53,6 +49,8 @@ var OverviewFormController = new JS.Class(FormController, {
         user.login = $('input#login', this.view).val();
         user.pin = $('input#pin', this.view).val();
         user.email = $('input#address', this.view).val();
+        user.title = $('input#job_title', this.view).val();
+        user.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
         if($('input#password', this.view).val() != '') {
           user.password = $('input#password', this.view).val();
           user.password_confirmation = $('input#password_confirmation', this.view).val();
@@ -74,19 +72,6 @@ var OverviewFormController = new JS.Class(FormController, {
             person.last_name = $('input#last_name', this.view).val();
             person.date_of_birth = date_of_birth;
             person.save();
-            
-            employee = person.employee();
-            if(employee != undefined) {
-              employee.title = $('input#job_title', this.view).val();
-              employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
-            } else {
-              employee = new Employee({
-                title: $('input#title', this.view).val(),
-                rate: parseInt(Currency.toPennies($('input#rate', this.view).val()))
-              });
-              employee.setPerson(person);
-              employee.save();
-            }
             
             addresses = person.addresses();
             if(addresses.length > 0) {
@@ -136,13 +121,6 @@ var OverviewFormController = new JS.Class(FormController, {
           date_of_birth: date_of_birth
         });
         if(person.save()) {
-          employee = new Employee({
-            title: $('input#job_title', this.view).val(),
-            rate: parseInt(Currency.toPennies($('input#rate', this.view).val()))
-          });
-          employee.setPerson(person);
-          employee.save();
-          
           address = new Address({
             first_line: $('input#first_line', this.view).val(),
             second_line: $('input#second_line', this.view).val(),
@@ -165,6 +143,8 @@ var OverviewFormController = new JS.Class(FormController, {
           email: $('input#address', this.view).val(),
           password: $('input#password', this.view).val(),
           password_confirmation: $('input#password_confirmation', this.view).val(),
+          title: $('input#job_title', this.view).val(),
+          rate: parseInt(Currency.toPennies($('input#rate', this.view).val())),
           pin: $('input#pin', this.view).val(),
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')

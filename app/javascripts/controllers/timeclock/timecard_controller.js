@@ -5,15 +5,15 @@ var TimecardController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.employee = null;
+    this.user = null;
     this.timecard = null;
     
     $('a.close', this.view).bind('click', {instance: this}, this.onClose);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
   
-  setEmployee: function(employee) {
-    this.employee = employee;
+  setUser: function(user) {
+    this.user = user;
   },
   
   setTimecard: function(timecard) {
@@ -85,7 +85,7 @@ var TimecardController = new JS.Class(ViewController, {
     end = new Date(end_year, end_month, end_day, end_hour, end_minute, end_second);
     if(event.data.instance.timecard == null) {
       timecard = Timecard.create({
-        employee_id: event.data.instance.employee.id,
+        user_id: event.data.instance.user.id,
         begin: begin,
         end: end
       });

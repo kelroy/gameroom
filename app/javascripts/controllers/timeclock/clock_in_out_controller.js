@@ -14,13 +14,13 @@ var ClockInOutController = new JS.Class(ViewController, {
   },
   
   doClockInOut: function(event) {
-    id = $('select#employee', event.data.instance.view).val();
+    id = $('select#user', event.data.instance.view).val();
     pin = $('input#pin', event.data.instance.view).val();
-    employee = Employee.find(id);
+    user = User.find(id);
     
-    event.data.instance.validateEmployee(employee, pin, function(valid) {
+    event.data.instance.validateUser(user, pin, function(valid) {
       if(valid) {
-        event.data.instance.timestampEmployee(employee, function(stamped) {
+        event.data.instance.timestampUser(user, function(stamped) {
           event.data.instance.clearInput();
           event.data.instance.view.hide();
           event.data.instance.notifyObservers();
@@ -42,16 +42,16 @@ var ClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  timestampEmployee: function(employee, callback) {
-    if(employee.stamp()) {
+  timestampUser: function(user, callback) {
+    if(user.stamp()) {
       callback(true);
     } else {
       callback(false);
     }
   },
   
-  validateEmployee: function(employee, pin, callback) {
-    person = employee.person();
+  validateUser: function(user, pin, callback) {
+    person = user.person();
     if(person.user() != undefined) {
       user = person.user();
 

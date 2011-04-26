@@ -24,16 +24,6 @@ Gameroom::Application.routes.draw do
         match 'where' => 'emails#where', :via => [:get, :post]
       end
     end
-    resources :employees do
-      member do
-        match 'stamp' => 'employees#stamp', :via => [:get, :post]
-      end
-      collection do
-        match 'search' => 'employees#search', :via => [:get, :post]
-        match 'where' => 'employees#where', :via => [:get, :post]
-      end
-      resources :timecards, :only => [:index]
-    end
     resources :entries do
       collection do
         match 'search' => 'entries#search', :via => [:get, :post]
@@ -66,7 +56,6 @@ Gameroom::Application.routes.draw do
         match 'where' => 'people#where', :via => [:get, :post]
       end
       resource  :customer,  :only => [:show]
-      resource  :employee,  :only => [:show]
       resource  :user,      :only => [:show]
       resources :addresses, :only => [:index]
       resources :emails,    :only => [:index]
@@ -120,11 +109,15 @@ Gameroom::Application.routes.draw do
       resources :users,         :only => [:index]
     end
     resources :users do
+      member do
+        match 'stamp' => 'users#stamp', :via => [:get, :post]
+      end
       collection do
         match 'search' => 'users#search', :via => [:get, :post]
         match 'where' => 'users#where', :via => [:get, :post]
       end
       resources :tills,         :only => [:index]
+      resources :timecards, :only => [:index]
     end
   end
   

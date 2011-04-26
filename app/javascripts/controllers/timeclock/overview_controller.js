@@ -2,7 +2,7 @@
 //= require "../view_controller"
 //= require "../section_controller"
 //= require "../../models/timecard"
-//= require "../../models/employee"
+//= require "../../models/user"
 //= require "clock_in_out_controller"
 //= require "overview_in_controller"
 //= require "overview_out_controller"
@@ -63,61 +63,61 @@ var OverviewController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  findEmployees: function() {
+  findUsers: function() {
     day_begin = new Date();
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
     timecards = Timecard.where('(begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL)', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')]);
-    employees_in = [];
-    employees_out = [];
-    employees = [];
+    users_in = [];
+    users_out = [];
+    users = [];
     for(timecard in timecards) {
-      timecard_employee = null;
-      for(employee in employees) {
-        if(timecards[timecard].employee_id == employees[employee].id) {
-          timecard_employee = employees[employee];
+      timecard_user = null;
+      for(user in users) {
+        if(timecards[timecard].user_id == users[user].id) {
+          timecard_user = users[user];
         }
       }
-      if(timecard_employee == null) {
-        if(timecards[timecard].employee_id != null) {
-          timecard_employee = Employee.find(timecards[timecard].employee_id);
-          timecard_employee._timecards_loaded = true;
-          employees.push(timecard_employee);
+      if(timecard_user == null) {
+        if(timecards[timecard].user_id != null) {
+          timecard_user = User.find(timecards[timecard].user_id);
+          timecard_user._timecards_loaded = true;
+          users.push(timecard_user);
         }
       }
-      if(timecard_employee != null) {
-        timecard_employee.addTimecard(timecards[timecard]);
+      if(timecard_user != null) {
+        timecard_user.addTimecard(timecards[timecard]);
       }
     }
-    for(employee in employees) {
+    for(user in users) {
       null_found = false;
-      timecards = employees[employee].timecards();
+      timecards = users[user].timecards();
       for(timecard in timecards) {
         if(timecards[timecard].end == null) {
           null_found = true;
         }
       }
       if(null_found) {
-        employees_in.push(employees[employee]);
+        users_in.push(users[user]);
       } else {
-        employees_out.push(employees[employee]);
+        users_out.push(users[user]);
       }
     }
-    return { employees_in: employees_in, employees_out: employees_out }
+    return { users_in: users_in, users_out: users_out }
   },
   
   updateCharts: function() {
-    employees_in_lines = [];
-    employees_out_lines = [];
-    employees = this.findEmployees();
-    for(employee in employees.employees_in) {
-      employees_in_lines.push(new OverviewChartLineController(this.overview_in_controller.line.clone(), employees.employees_in[employee]));
+    users_in_lines = [];
+    users_out_lines = [];
+    users = this.findUsers();
+    for(user in users.users_in) {
+      users_in_lines.push(new OverviewChartLineController(this.overview_in_controller.line.clone(), users.users_in[user]));
     }
-    for(employee in employees.employees_out) {
-      employees_out_lines.push(new OverviewChartLineController(this.overview_out_controller.line.clone(), employees.employees_out[employee]));
+    for(user in users.users_out) {
+      users_out_lines.push(new OverviewChartLineController(this.overview_out_controller.line.clone(), users.users_out[user]));
     }
-    this.overview_in_controller.setLines(employees_in_lines);
-    this.overview_out_controller.setLines(employees_out_lines);
+    this.overview_in_controller.setLines(users_in_lines);
+    this.overview_out_controller.setLines(users_out_lines);
     this.updateCanvas();
   },
   

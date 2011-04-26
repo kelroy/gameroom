@@ -8,7 +8,7 @@ describe Timecard do
   context "when given valid timecard data" do
     it "should be valid" do
       valid_data = {
-        :employee_id => 1,
+        :user_id => 1,
         :begin => Time.now,
         :end => Time.now
       }

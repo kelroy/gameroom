@@ -69,7 +69,7 @@ var RepairsRepairController = new JS.Class(ViewController, {
       
       $('input#name', this.view).val(repair.name);
       $('input#phone', this.view).val(repair.phone);
-      $('input#title', this.view).val(repair.title);
+      $('input#item', this.view).val(repair.item);
       $('input#serial', this.view).val(repair.serial);
       $('textarea#description', this.view).val(repair.description);
       $('textarea#symptoms', this.view).val(repair.symptoms);
@@ -123,7 +123,7 @@ var RepairsRepairController = new JS.Class(ViewController, {
     
     name = $('input#name', this.view).val();
     phone = $('input#phone', this.view).val();
-    title = $('input#title', this.view).val();
+    item = $('input#item', this.view).val();
     serial = $('input#serial', this.view).val();
     description = $('textarea#description', this.view).val();
     symptoms = $('textarea#symptoms', this.view).val();
@@ -140,7 +140,7 @@ var RepairsRepairController = new JS.Class(ViewController, {
       repair = Repair.create({
         name: name,
         phone: phone,
-        title: title,
+        item: item,
         serial: serial,
         description: description,
         symptoms: symptoms,
@@ -158,7 +158,7 @@ var RepairsRepairController = new JS.Class(ViewController, {
       repair = Repair.find(event.data.instance.repair.id);
       repair.name = name;
       repair.phone = phone;
-      repair.title = title;
+      repair.item = item;
       repair.serial = serial;
       repair.description = description;
       repair.symptoms = symptoms;

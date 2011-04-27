@@ -3,7 +3,7 @@ class CreateRepairs < ActiveRecord::Migration
     create_table :repairs do |t|
       t.string    :name
       t.string    :phone
-      t.string    :title
+      t.string    :item
       t.string    :description
       t.string    :serial
       t.string    :symptoms

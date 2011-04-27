@@ -14,9 +14,10 @@ var RepairsOverviewResultsRepairController = new JS.Class(ViewController, {
   set: function(repair) {
     this.repair = repair;
     
+    $('td.id', this.view).html(repair.id);
     $('td.name', this.view).html(repair.name);
     $('td.phone', this.view).html(repair.phone);
-    $('td.title', this.view).html(repair.title);
+    $('td.item', this.view).html(repair.item);
     $('td.serial', this.view).html(repair.serial);
     $('td.description', this.view).html(repair.description);
     $('td.symptoms', this.view).html(repair.symptoms);

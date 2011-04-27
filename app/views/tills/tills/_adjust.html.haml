@@ -1,0 +1,18 @@
+%div{:id => 'adjust', :class => 'modal'}
+  %h2 Adjust
+  %form{:action => '#adjust', :id => 'adjust', :method => 'get'}
+    %ul
+      %li
+        = label_tag :amount, "Credit / Debit Amount"
+        = text_field_tag :amount, nil, :placeholder => '0.00'
+    %ul
+      %li
+        = label_tag :description
+        = text_area_tag :description
+    %ul
+      %li
+        %ul{:id => 'adjust_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#close', :class => 'close button'} Close
+          %li
+            %a{:href => '#save', :class => 'save button'} Save

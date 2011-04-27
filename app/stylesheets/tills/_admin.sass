@@ -1,0 +1,63 @@
+div#tills
+  section#admin
+    ul#admin_nav
+      margin-top: 20px
+      
+    ul#admin_tills_nav
+      float: left
+      height: 24px
+      margin-bottom: 10px
+
+    h3#admin_tills_total
+      float: right
+      height: 24px
+      line-height: 24px
+      padding: 0px 20px
+      font-family: LatinModernMonoLight10Bold, Tacoma, serif
+      font-size: 18px
+      background-color: $black
+      color: $white
+      @include border-radius(5px)
+
+    h2#admin_tills_notice
+      clear: both
+      font-size: 20px
+      text-align: center
+      margin: 20px 0px
+
+    ul#admin_tills_lines
+      clear: both
+
+      > li.admin_tills_line
+        height: 24px
+        line-height: 24px
+        margin-bottom: 10px
+        padding: 10px
+        background-color: $lighter_gray
+        @include border-radius(5px)
+
+        &:last-child
+          margin-bottom: 0px
+        
+        hgroup.admin_tills_line_balance,
+        hgroup.admin_tills_line_information
+          h3
+            float: left
+            margin: 0px 10px
+            padding: 0px 20px
+            font-family: LatinModernMonoLight10Bold, Tacoma, serif
+            font-size: 18px
+            background-color: $black
+            color: $white
+            @include border-radius(5px)
+
+          h4
+            float: left
+            font-family: LatinModernMonoLight10Regular, Tacoma, serif
+            font-size: 12px
+            
+        hgroup.admin_tills_line_balance
+          float: right
+          
+          h3
+            margin-right: 0px

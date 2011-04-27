@@ -6,5 +6,14 @@ var Till = new JS.Class(Model, {
     resource: 'till',
     columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
     has_many: ['entries', 'transactions', 'users']
+  },
+  
+  balance: function() {
+    balance = 0;
+    this.klass._ajax('/api/' + this.klass.resource.pluralize() + '/' + this.id + '/balance', 'GET', null, function(result) {
+      balance = result.balance;
+    });
+    
+    return balance;
   }
 });

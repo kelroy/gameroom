@@ -4,7 +4,7 @@ class User < ActiveRecord::Base
   belongs_to  :person
   has_many    :transactions
   has_many    :timecards
-  has_and_belongs_to_many :tills
+  has_many    :entries
   
   accepts_nested_attributes_for :person
   

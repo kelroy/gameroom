@@ -2,6 +2,6 @@ class Transactions::TransactionsController < ApplicationController
   before_filter :authenticate
   
   def index
-    render
+    @tills = Till.where('active = ?', true)
   end
 end

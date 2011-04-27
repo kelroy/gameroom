@@ -2,14 +2,8 @@ class Api::UsersController < ApplicationController
   
   # GET /users.json
   # GET /users.xml
-  # GET /tills/:till_id/users.xml
-  # GET /tills/:till_id/users.json
   def index
-    if params[:till_id]
-      @users = User.all(:include => :tills, :conditions => ["tills.id = ?", params[:till_id]])
-    else
-      @users = User.all
-    end
+    @users = User.all
     
     respond_to do |format|
       format.json { render :json => @users.to_json(:except => [:password_hash, :password_salt, :perishable_token, :persistence_token]) }

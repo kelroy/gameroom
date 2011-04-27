@@ -3,7 +3,7 @@
   = form_for :till, :method => 'get', :url => '#tills' do |t|
     %ul
       %li
-        = t.select :id, current_user.tills.all.map { |till| [till.title, till.id] }
+        = t.select :id, @tills.map { |till| [till.title, till.id] }
     %ul
       %li
         %ul{:id => 'till_nav', :class => 'button_nav'}

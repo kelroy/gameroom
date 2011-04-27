@@ -44,9 +44,10 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
 
   create_table "entries", :force => true do |t|
     t.integer  "till_id"
+    t.integer  "user_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-04-26 10:37:49', :null => false
+    t.datetime "time",        :default => '2011-04-27 19:34:10', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -134,8 +135,8 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
     t.integer  "cost",        :default => 0,                     :null => false
     t.string   "receiver"
     t.string   "technician"
-    t.datetime "started",     :default => '2011-04-26 10:37:49', :null => false
-    t.datetime "finished",    :default => '2011-04-26 10:37:49', :null => false
+    t.datetime "started",     :default => '2011-04-27 19:34:10', :null => false
+    t.datetime "finished",    :default => '2011-04-27 19:34:10', :null => false
     t.integer  "status",      :default => 0,                     :null => false
     t.boolean  "contacted",   :default => false,                 :null => false
     t.boolean  "active",      :default => true,                  :null => false
@@ -154,14 +155,9 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
     t.datetime "updated_at"
   end
 
-  create_table "tills_users", :id => false, :force => true do |t|
-    t.integer "till_id"
-    t.integer "user_id"
-  end
-
   create_table "timecards", :force => true do |t|
     t.integer  "user_id"
-    t.datetime "begin",      :default => '2011-04-26 10:37:49', :null => false
+    t.datetime "begin",      :default => '2011-04-27 19:34:10', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"

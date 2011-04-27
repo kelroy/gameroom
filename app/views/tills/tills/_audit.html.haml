@@ -1,0 +1,62 @@
+%div{:id => 'audit', :class => 'modal'}
+  %h2 Audit
+  %form{:action => '#audit', :id => 'audit', :method => 'get'}
+    %ul
+      %li
+        = label_tag :pennies
+        = text_field_tag :pennies, nil, :value => 0
+      %li
+        = label_tag :nickels
+        = text_field_tag :nickels, nil, :value => 0
+      %li
+        = label_tag :dimes
+        = text_field_tag :dimes, nil, :value => 0
+      %li
+        = label_tag :quarters
+        = text_field_tag :quarters, nil, :value => 0
+    %ul
+      %li
+        = label_tag :ones
+        = text_field_tag :ones, nil, :value => 0
+      %li
+        = label_tag :fives
+        = text_field_tag :fives, nil, :value => 0
+      %li
+        = label_tag :tens
+        = text_field_tag :tens, nil, :value => 0
+      %li
+        = label_tag :twenties
+        = text_field_tag :twenties, nil, :value => 0
+    %ul
+      %li
+        = label_tag :fifties
+        = text_field_tag :fifties, nil, :value => 0
+      %li
+        = label_tag :hundreds
+        = text_field_tag :hundreds, nil, :value => 0
+      %li
+        = label_tag :penny_rolls, "Penny Rolls"
+        = text_field_tag :penny_rolls, nil, :value => 0
+      %li
+        = label_tag :nickel_rolls, "Nickel Rolls"
+        = text_field_tag :nickel_rolls, nil, :value => 0
+    %ul
+      %li
+        = label_tag :dime_rolls, "Dime Rolls"
+        = text_field_tag :dime_rolls, nil, :value => 0
+      %li
+        = label_tag :quarter_rolls, "Quarter Rolls"
+        = text_field_tag :quarter_rolls, nil, :value => 0
+    %ul
+      %li
+        = label_tag :balance, "Till Balance"
+        = text_field_tag :balance, nil, :placeholder => '0.00'
+    %ul
+      %li
+        %ul{:id => 'audit_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#calculate', :class => 'calculate button'} Calculate
+          %li
+            %a{:href => '#close', :class => 'close button'} Close
+          %li
+            %a{:href => '#save', :class => 'save button'} Save

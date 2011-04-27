@@ -13,7 +13,7 @@ var RepairsOverviewController = new JS.Class(ViewController, {
     this.page = null;
     
     this.repair_controller = new RepairsRepairController('div#repair');
-    this.receipt_controller = new RepairsReceiptController('div#receipt');
+    this.order_controller = new RepairsOrderController('div#order');
     this.overview_search_controller = new SearchController('div#overview_search');
     this.overview_results_controller = new RepairsOverviewResultsController('div#overview_results');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
@@ -74,8 +74,8 @@ var RepairsOverviewController = new JS.Class(ViewController, {
   },
   
   print: function(repair) {
-    this.receipt_controller.update('/api/repairs/' + repair.id + '/receipt');
-    this.receipt_controller.view.show();
+    this.order_controller.update('/api/repairs/' + repair.id + '/receipt');
+    this.order_controller.view.show();
   },
   
   onNew: function(event) {

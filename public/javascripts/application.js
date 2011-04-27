@@ -603,6 +603,15 @@ var Till = new JS.Class(Model, {
     resource: 'till',
     columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
     has_many: ['entries', 'transactions', 'users']
+  },
+
+  balance: function() {
+    balance = 0;
+    this.klass._ajax('/api/' + this.klass.resource.pluralize() + '/' + this.id + '/balance', 'GET', null, function(result) {
+      balance = result.balance;
+    });
+
+    return balance;
   }
 });
 
@@ -2898,7 +2907,8 @@ var TransactionController = new JS.Class(ViewController, {
       }
       if(till_adjustment != 0) {
         entry = new Entry({
-          till_id: this.transaction.id,
+          till_id: this.till_id,
+          user_id: this.user_id,
           title: 'Transaction: ' + this.transaction.id,
           amount: till_adjustment
         });
@@ -4653,7 +4663,7 @@ var timeclock = {
 var tills = {
 
   run: function() {
-
+    new TillsController();
   }
 
 };
@@ -5281,7 +5291,7 @@ var RepairsOverviewController = new JS.Class(ViewController, {
     this.page = null;
 
     this.repair_controller = new RepairsRepairController('div#repair');
-    this.receipt_controller = new RepairsReceiptController('div#receipt');
+    this.order_controller = new RepairsOrderController('div#order');
     this.overview_search_controller = new SearchController('div#overview_search');
     this.overview_results_controller = new RepairsOverviewResultsController('div#overview_results');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
@@ -5342,8 +5352,8 @@ var RepairsOverviewController = new JS.Class(ViewController, {
   },
 
   print: function(repair) {
-    this.receipt_controller.update('/api/repairs/' + repair.id + '/receipt');
-    this.receipt_controller.view.show();
+    this.order_controller.update('/api/repairs/' + repair.id + '/receipt');
+    this.order_controller.view.show();
   },
 
   onNew: function(event) {
@@ -5369,18 +5379,18 @@ var RepairsController = new JS.Class({
   }
 });
 
-var RepairsReceiptController = new JS.Class(ViewController, {
+var RepairsOrderController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    $('ul#receipt_nav a.close', this.view).bind('click', {instance: this}, this.doClose);
-    $('ul#receipt_nav a.print', this.view).bind('click', {instance: this}, this.doPrint);
+    $('ul#order_nav a.close', this.view).bind('click', {instance: this}, this.doClose);
+    $('ul#order_nav a.print', this.view).bind('click', {instance: this}, this.doPrint);
   },
 
   update: function(url) {
-    $('object#receipt_window', this.view).attr('data', url);
+    $('object#order_window', this.view).attr('data', url);
   },
 
   doClose: function(event) {
@@ -5389,8 +5399,498 @@ var RepairsReceiptController = new JS.Class(ViewController, {
   },
 
   doPrint: function(event) {
-    window.frames['receipt_window'].print();
+    window.frames['order_window'].print();
     event.preventDefault();
+  }
+});
+
+var TillsAdjustController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    this.update(null);
+  },
+
+  update: function(till) {
+    this.till = till;
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    amount = Currency.toPennies($('input#amount', event.data.instance.view).val());
+
+    if(amount != 0) {
+      Entry.create({
+        till_id: event.data.instance.till.id,
+        user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
+        title: 'Adjustment - ' + new Date(),
+        description: $('textarea#description', event.data.instance.view).val(),
+        amount: amount
+      });
+
+      event.data.instance.notifyObservers();
+      event.data.instance.view.hide();
+    }
+    event.preventDefault();
+  }
+});
+
+var TillsAdminController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.admin_tills_controller = new TillsAdminTillsController('div#admin_tills');
+    this.admin_section_controller = new SectionController('ul#admin_nav', [
+      this.admin_tills_controller
+    ]);
+
+    this.admin_tills_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.admin_section_controller.reset();
+    this.admin_tills_controller.reset();
+    this.update();
+  },
+
+  update: function() {
+    this.admin_tills_controller.loadTills();
+  },
+
+  auditTill: function(till) {
+    this.notifyObservers(till);
+  }
+});
+
+var TillsTillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $('input#active', this.view).attr('checked', true);
+  },
+
+  update: function(till) {
+    this.till = till;
+
+    if(till != null) {
+      $('input#title', this.view).val(till.title);
+      $('textarea#description', this.view).val(till.description);
+      $('input#active', this.view).attr('checked', till.active);
+    } else {
+      this.reset();
+    }
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    title = $('input#title', event.data.instance.view).val();
+    description = $('textarea#description', event.data.instance.view).val();
+    active = $('input#active', event.data.instance.view).attr('checked');
+
+    if(event.data.instance.till != null) {
+      till = event.data.instance.till;
+      till.title = title;
+      till.description = description;
+      till.active = active;
+      till.save();
+    } else {
+      Till.create({
+        title: description,
+        description: description,
+        minimum_transfer: 0,
+        minimum_balance: 0,
+        active: active
+      });
+    }
+
+    event.data.instance.notifyObservers();
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var TillsAdminTillsTillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+
+    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
+    $('a.adjust', this.view).bind('click', {instance: this}, this.onAdjust);
+    $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
+  },
+
+  set: function(till) {
+    this.till = till;
+
+    $('h3.admin_tills_line_title', this.view).html(till.title);
+    $('h4.admin_tills_line_description', this.view).html(till.description);
+    $('h3.admin_tills_line_balance', this.view).html(Currency.pretty(till.balance()));
+  },
+
+  onEdit: function(event) {
+    event.data.instance.notifyObservers('edit', event.data.instance.till);
+    event.preventDefault();
+  },
+
+  onAudit: function(event) {
+    event.data.instance.notifyObservers('audit', event.data.instance.till);
+    event.preventDefault();
+  },
+
+  onAdjust: function(event) {
+    event.data.instance.notifyObservers('adjust', event.data.instance.till);
+    event.preventDefault();
+  },
+
+  onUsers: function(event) {
+    event.data.instance.notifyObservers('users', event.data.instance.till);
+    event.preventDefault();
+  }
+});
+
+var TillsAdminTillsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.tills = [];
+    this.till_controllers = [];
+    this.till = $('li.admin_tills_line', this.view).detach();
+
+    this.adjust_controller = new TillsAdjustController('div#adjust');
+    this.adjust_controller.addObserver(this.loadTills, this);
+
+    this.till_controller = new TillsTillController('div#tills_till');
+    this.till_controller.addObserver(this.loadTills, this);
+
+    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+  },
+
+  reset: function() {
+    this.tills = [];
+    this.till_controllers = [];
+    this.clearTills();
+  },
+
+  loadTills: function() {
+    this.setTills(Till.all());
+  },
+
+  clearTills: function() {
+    $('ul#admin_tills_lines > li.admin_tills_line').remove();
+  },
+
+  setTills: function(tills) {
+    this.clearTills();
+    this.till_controllers = [];
+    for(till in tills) {
+      new_till = new TillsAdminTillsTillController(this.till.clone());
+      new_till.set(tills[till]);
+      new_till.addObserver(this.actionTill, this);
+      this.till_controllers.push(new_till);
+      $('ul#admin_tills_lines', this.view).append(new_till.view);
+    }
+    if(tills.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  actionTill: function(action, till) {
+    switch(action) {
+      case 'audit':
+        this.notifyObservers(till);
+        break;
+      case 'adjust':
+        this.adjust_controller.update(till);
+        this.adjust_controller.view.show();
+        break;
+      case 'edit':
+        this.till_controller.update(till);
+        this.till_controller.view.show();
+        break;
+    }
+  },
+
+  onNew: function(event) {
+    event.data.instance.till_controller.update(null);
+    event.data.instance.till_controller.view.show();
+    event.preventDefault();
+  },
+
+  onRefresh: function(event) {
+    event.data.instance.loadTills();
+    event.preventDefault();
+  },
+
+  showNotice: function() {
+    $('h2#admin_tills_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#admin_tills_notice', this.view).hide();
+  }
+});
+
+var TillsAuditController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+    this.reset();
+
+    $('a.calculate', this.view).bind('click', {instance: this}, this.onCalculate);
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $(':input', this.view).val(0);
+    $('input#balance', this.view).val(null);
+  },
+
+  update: function(till) {
+    this.till = till;
+  },
+
+  onCalculate: function(event) {
+    pennies = $('input#pennies', event.data.instance.view).val();
+    nickels = $('input#nickels', event.data.instance.view).val();
+    dimes = $('input#dimes', event.data.instance.view).val();
+    quarters = $('input#quarters', event.data.instance.view).val();
+    ones = $('input#ones', event.data.instance.view).val();
+    fives = $('input#fives', event.data.instance.view).val();
+    tens = $('input#tens', event.data.instance.view).val();
+    twenties = $('input#twenties', event.data.instance.view).val();
+    fifties = $('input#fifties', event.data.instance.view).val();
+    hundreds = $('input#hundreds', event.data.instance.view).val();
+    penny_rolls = $('input#penny_rolls', event.data.instance.view).val();
+    nickel_rolls = $('input#nickel_rolls', event.data.instance.view).val();
+    dime_rolls = $('input#dime_rolls', event.data.instance.view).val();
+    quarter_rolls = $('input#quarter_rolls', event.data.instance.view).val();
+    total = (pennies * 0.01) + (nickels * 0.05) + (dimes * 0.1) + (quarters * 0.25) + (ones * 1) + (fives * 5) + (tens * 10) +
+      (twenties * 20) + (fifties * 50) + (hundreds * 100) + (penny_rolls * 0.50) + (nickel_rolls * 2) + (dime_rolls * 5) + (quarter_rolls * 10);
+
+    $('input#balance', event.data.instance.view).val(total);
+    event.preventDefault();
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    till_balance = event.data.instance.till.balance();
+    new_balance = Currency.toPennies($('input#balance', event.data.instance.view).val());
+    amount = new_balance - till_balance;
+
+    Entry.create({
+      till_id: event.data.instance.till.id,
+      user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
+      title: 'Audit - ' + new Date(),
+      description: '',
+      amount: amount
+    });
+
+    event.data.instance.notifyObservers();
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var TillsOverviewTillsTillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+
+    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
+  },
+
+  set: function(till) {
+    this.till = till;
+
+    $('h3.overview_tills_line_title', this.view).html(till.title);
+    $('h4.overview_tills_line_description', this.view).html(till.description);
+  },
+
+  onAudit: function(event) {
+    event.data.instance.notifyObservers('audit', event.data.instance.till);
+    event.preventDefault();
+  }
+});
+
+var TillsOverviewTillsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.tills = [];
+    this.till_controllers = [];
+    this.till = $('li.overview_tills_line', this.view).detach();
+
+    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+  },
+
+  reset: function() {
+    this.tills = [];
+    this.till_controllers = [];
+    this.clearTills();
+  },
+
+  loadTills: function() {
+    this.setTills(Till.all());
+  },
+
+  clearTills: function() {
+    $('ul#overview_tills_lines > li.overview_tills_line').remove();
+  },
+
+  setTills: function(tills) {
+    this.clearTills();
+    this.till_controllers = [];
+    for(till in tills) {
+      new_till = new TillsOverviewTillsTillController(this.till.clone());
+      new_till.set(tills[till]);
+      new_till.addObserver(this.actionTill, this);
+      this.till_controllers.push(new_till);
+      $('ul#overview_tills_lines', this.view).append(new_till.view);
+    }
+    if(tills.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  actionTill: function(action, till) {
+    switch(action) {
+      case 'audit':
+        this.notifyObservers(till);
+        break;
+    }
+  },
+
+  onRefresh: function(event) {
+    event.data.instance.loadTills();
+    event.preventDefault();
+  },
+
+  showNotice: function() {
+    $('h2#overview_tills_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#overview_tills_notice', this.view).hide();
+  }
+});
+
+var TillsOverviewController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.overview_tills_controller = new TillsOverviewTillsController('div#overview_tills');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_tills_controller
+    ]);
+
+    this.overview_tills_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.overview_section_controller.reset();
+    this.overview_tills_controller.reset();
+    this.update();
+  },
+
+  update: function() {
+    this.overview_tills_controller.loadTills();
+  },
+
+  auditTill: function(till) {
+    this.notifyObservers(till);
+  }
+});
+
+var TillsController = new JS.Class({
+
+  initialize: function() {
+    this.audit_controller = new TillsAuditController('div#audit');
+    this.overview_controller = new TillsOverviewController('section#overview');
+    this.admin_controller = new TillsAdminController('section#admin');
+    this.section_controller = new SectionController('ul#tills_nav', [
+      this.overview_controller,
+      this.admin_controller
+    ]);
+    this.reset();
+
+    this.audit_controller.addObserver(this.loadTills, this);
+    this.overview_controller.addObserver(this.auditTill, this);
+    this.admin_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.audit_controller.reset();
+    this.overview_controller.reset();
+    this.admin_controller.reset();
+    this.section_controller.reset();
+  },
+
+  loadTills: function() {
+    this.overview_controller.update();
+    this.admin_controller.update();
+  },
+
+  auditTill: function(till) {
+    this.audit_controller.update(till);
+    this.audit_controller.reset();
+    this.audit_controller.view.show();
   }
 });
 

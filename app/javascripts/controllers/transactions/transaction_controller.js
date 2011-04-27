@@ -173,7 +173,8 @@ var TransactionController = new JS.Class(ViewController, {
       }
       if(till_adjustment != 0) {
         entry = new Entry({
-          till_id: this.transaction.id,
+          till_id: this.till_id,
+          user_id: this.user_id,
           title: 'Transaction: ' + this.transaction.id,
           amount: till_adjustment
         });

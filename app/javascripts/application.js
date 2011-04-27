@@ -55,7 +55,7 @@ var timeclock = {
 var tills = {
   
   run: function() {
-
+    new TillsController();
   }
   
 };

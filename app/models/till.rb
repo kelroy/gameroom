@@ -3,5 +3,4 @@ class Till < ActiveRecord::Base
   
   has_many :entries
   has_many :transactions
-  has_and_belongs_to_many :users
 end

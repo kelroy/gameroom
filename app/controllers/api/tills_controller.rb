@@ -2,14 +2,8 @@ class Api::TillsController < ApplicationController
   
   # GET /tills.xml
   # GET /tills.json
-  # GET /users/:user_id/tills.xml
-  # GET /users/:user_id/tills.json
   def index
-    if params[:user_id]
-      @tills = Till.all(:include => :users, :conditions => ["users.id = ?", params[:user_id]])
-    else
-      @tills = Till.all
-    end
+    @tills = Till.all
     
     respond_to do |format|
       format.json { render :json => @tills.to_json }
@@ -47,6 +41,17 @@ class Api::TillsController < ApplicationController
     respond_to do |format|
       format.json { render :json => @tills.to_json }
       format.xml  { render :xml => @tills.to_xml }
+    end
+  end
+  
+  # GET /tills/1/balance.xml
+  # GET /tills/1/balance.json
+  def balance
+    @balance = {:balance => Till.find(params[:id]).entries.sum(:amount)}
+    
+    respond_to do |format|
+      format.json { render :json => @balance.to_json }
+      format.xml  { render :xml => @balance.to_xml }
     end
   end
   

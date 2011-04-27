@@ -1,0 +1,22 @@
+%div{:id => 'tills_till', :class => 'modal'}
+  %h2 Till
+  %form{:action => '#till', :id => 'till', :method => 'get'}
+    %ul
+      %li
+        = label_tag :title
+        = text_field_tag :title
+    %ul
+      %li
+        = label_tag :description
+        = text_area_tag :description
+    %ul
+      %li
+        = label_tag :active
+        = check_box_tag :active, 1, true
+    %ul
+      %li
+        %ul{:id => 'till_nav', :class => 'button_nav'}
+          %li
+            %a{:href => '#close', :class => 'close button'} Close
+          %li
+            %a{:href => '#save', :class => 'save button'} Save

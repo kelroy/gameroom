@@ -1,0 +1,6 @@
+%ul{:id => 'admin_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#admin_tills', :class => 'admin_tills selected'} Tills
+%div{:id => 'admin_pages', :class => 'page_container'}
+  %div{:id => 'admin_tills'}
+    = render :partial => 'admin_tills'

@@ -104,9 +104,11 @@ Gameroom::Application.routes.draw do
         match 'search' => 'tills#search', :via => [:get, :post]
         match 'where' => 'tills#where', :via => [:get, :post]
       end
+      member do
+        match 'balance' => 'tills#balance', :via => [:get]
+      end
       resources :entries,       :only => [:index]
       resources :transactions,  :only => [:index]
-      resources :users,         :only => [:index]
     end
     resources :users do
       member do
@@ -116,7 +118,7 @@ Gameroom::Application.routes.draw do
         match 'search' => 'users#search', :via => [:get, :post]
         match 'where' => 'users#where', :via => [:get, :post]
       end
-      resources :tills,         :only => [:index]
+      resources :entries,       :only => [:index]
       resources :timecards, :only => [:index]
     end
   end

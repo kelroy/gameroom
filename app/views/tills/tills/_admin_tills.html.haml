@@ -1,0 +1,20 @@
+%ul{:id => 'admin_tills_nav', :class => 'button_nav'}
+  %li
+    %a{:href => '#refresh', :class => 'button refresh'} Refresh
+  %li
+    %a{:href => '#new', :class => 'button new'} New Till
+%h2{:id => 'admin_tills_notice'} No Tills.
+%ul{:id => 'admin_tills_lines'}
+  %li{:class => 'admin_tills_line'}
+    %ul{:class => 'admin_tills_line_nav button_nav'}
+      %li
+        %a{:href => '#edit', :class => 'button edit'} Edit
+      %li
+        %a{:href => '#audit', :class => 'button audit'} Audit
+      %li
+        %a{:href => '#adjust', :class => 'button adjust'} Adjust
+    %hgroup{:class => 'admin_tills_line_information'}
+      %h3{:class => 'admin_tills_line_title'}
+      %h4{:class => 'admin_tills_line_description'}
+    %hgroup{:class => 'admin_tills_line_balance'}  
+      %h3{:class => 'admin_tills_line_balance'}

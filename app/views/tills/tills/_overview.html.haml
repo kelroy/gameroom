@@ -1,0 +1,6 @@
+%ul{:id => 'overview_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#overview_tills', :class => 'overview_tills selected'} Tills
+%div{:id => 'overview_pages', :class => 'page_container'}
+  %div{:id => 'overview_tills'}
+    = render :partial => 'overview_tills'

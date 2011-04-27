@@ -9,6 +9,7 @@ describe Entry do
     it "should be valid" do
       valid_data = {
         :till_id => 1,
+        :user_id => 1,
         :title => 'Title',
         :description => 'Lorem Ipsum...',
         :time => Time.now,

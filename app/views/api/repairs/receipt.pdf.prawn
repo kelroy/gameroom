@@ -13,6 +13,8 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
     ['Phone', @repair.phone],
     ['Item', @repair.item],
     ['Serial', @repair.serial],
+    ['Cost', number_to_currency @repair.cost.to_f / 100],
+    ['Symptoms', @repair.symptoms],
     ['Receiver', @repair.receiver],
     ['Date', @repair.created_at.strftime('%m/%d/%Y %I:%M:%S %p')]
   ]

@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+# Migrate the old POS data
+# Inside rails root: rails runner -e production script/migrate_one
+
+PASSWORD = ''
+
+mediaenc = Mysql2::Client.new(:host => 'localhost', :username => 'root', :password => PASSWORD, :database => 'mediaenc_MediaE')
+
+Repair.destroy_all
+repairs = mediaenc.query("SELECT * FROM repair_orders")
+repairs.each do |repair|
+  case repair["repair_status"]
+  when 0
+    status = 'In Process'
+  when 1
+    status = 'Repaired'
+  when 2
+    status = 'Unrepairable'
+  else
+    status = ''
+  end
+  
+  case repair["contact_status"]
+  when 0
+    contacted = 'Not Contacted'
+  when 1
+    contacted = 'Contacted'
+  when 2
+    contacted = 'Unreachable'
+  else
+    contacted = ''
+  end
+  
+  Repair.create({
+    :name => repair["name"],
+    :phone => repair["phone_number"],
+    :item => repair["console_type"],
+    :description => repair["incomming_notes"],
+    :serial => repair["serial_number"],
+    :symptoms => repair["symptoms"],
+    :notes => repair["repair_notes"],
+    :warranty => repair["warranty"],
+    :cost => repair["price"] * 100,
+    :receiver => repair["order_taken_by"],
+    :technician => repair["repaired_by"],
+    :started => repair["start_repair_timestamp"] ||= Time.now,
+    :finished => repair["finish_repair_timestamp"] ||= Time.now,
+    :status => status,
+    :contacted => contacted,
+    :active => true
+  })
+end

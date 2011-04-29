@@ -21,6 +21,12 @@
         %td Serial
         %td= @repair.serial
       %tr
+        %td Cost
+        %td= number_to_currency @repair.cost.to_f / 100
+      %tr
+        %td Symptoms
+        %td= @repair.symptoms
+      %tr
         %td Receiver
         %td= @repair.receiver
       %tr

@@ -43,6 +43,10 @@ var ReviewController = new JS.Class(ViewController, {
     lines = transaction.lines();
     for(line in lines) {
       var new_line = this.line.clone();
+      if(lines[line].description == null || lines[line].description == undefined) {
+        lines[line].description = '';
+      }
+      
       $('td.quantity', new_line).html(lines[line].quantity);
       $('td.title', new_line).html(lines[line].title);
       $('td.description', new_line).html(lines[line].description.truncate(50));

@@ -47,7 +47,7 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
     t.integer  "user_id"
     t.string   "title"
     t.string   "description"
-    t.datetime "time",        :default => '2011-04-29 14:30:28', :null => false
+    t.datetime "time",        :default => '2011-04-29 14:50:41', :null => false
     t.integer  "amount"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -77,17 +77,17 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
   create_table "lines", :force => true do |t|
     t.integer  "transaction_id"
     t.integer  "item_id"
-    t.string   "title",                            :null => false
-    t.string   "description",                      :null => false
-    t.integer  "quantity",       :default => 0,    :null => false
-    t.decimal  "condition",      :default => 1.0,  :null => false
-    t.decimal  "discount",       :default => 1.0,  :null => false
-    t.integer  "price",          :default => 0,    :null => false
-    t.integer  "credit",         :default => 0,    :null => false
-    t.integer  "cash",           :default => 0,    :null => false
-    t.boolean  "purchase",       :default => true, :null => false
-    t.boolean  "taxable",        :default => true, :null => false
-    t.boolean  "discountable",   :default => true, :null => false
+    t.string   "title",                                                           :null => false
+    t.string   "description",                                                     :null => false
+    t.integer  "quantity",                                      :default => 0,    :null => false
+    t.decimal  "condition",      :precision => 10, :scale => 0, :default => 1,    :null => false
+    t.decimal  "discount",       :precision => 10, :scale => 0, :default => 1,    :null => false
+    t.integer  "price",                                         :default => 0,    :null => false
+    t.integer  "credit",                                        :default => 0,    :null => false
+    t.integer  "cash",                                          :default => 0,    :null => false
+    t.boolean  "purchase",                                      :default => true, :null => false
+    t.boolean  "taxable",                                       :default => true, :null => false
+    t.boolean  "discountable",                                  :default => true, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -136,8 +136,8 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
     t.integer  "cost",        :default => 0,                     :null => false
     t.string   "receiver"
     t.string   "technician"
-    t.datetime "started",     :default => '2011-04-29 14:30:28', :null => false
-    t.datetime "finished",    :default => '2011-04-29 14:30:28', :null => false
+    t.datetime "started",     :default => '2011-04-29 14:50:42', :null => false
+    t.datetime "finished",    :default => '2011-04-29 14:50:42', :null => false
     t.integer  "status",      :default => 0,                     :null => false
     t.boolean  "contacted",   :default => false,                 :null => false
     t.boolean  "active",      :default => true,                  :null => false
@@ -158,7 +158,7 @@ ActiveRecord::Schema.define(:version => 20110425124904) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "user_id"
-    t.datetime "begin",      :default => '2011-04-29 14:30:28', :null => false
+    t.datetime "begin",      :default => '2011-04-29 14:50:42', :null => false
     t.datetime "end"
     t.datetime "created_at"
     t.datetime "updated_at"

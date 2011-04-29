@@ -50,6 +50,18 @@ class Api::UsersController < ApplicationController
     end
   end
   
+  # GET|POST /users/stamp.xml
+  # GET|POST /users/stamp.json
+  def stamp
+    @user = User.find(params[:id])
+    @user.stamp
+
+    respond_to do |format|
+      format.json  { render :json => @user.to_json, :status => :ok }
+      format.xml  { render :xml => @user.to_xml, :status => :ok }
+    end
+  end
+  
   # POST /users.xml
   # POST /users.json
   def create

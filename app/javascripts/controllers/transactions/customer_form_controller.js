@@ -23,6 +23,9 @@ var CustomerFormController = new JS.Class(FormController, {
       $('input#first_name', this.view).val(person.first_name);
       $('input#middle_name', this.view).val(person.middle_name);
       $('input#last_name', this.view).val(person.last_name);
+      if(person.date_of_birth == null || person.date_of_birth == undefined) {
+        person.date_of_birth = new Date();
+      }
       date_of_birth = (new Date()).setISO8601(person.date_of_birth);
       $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
       $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);

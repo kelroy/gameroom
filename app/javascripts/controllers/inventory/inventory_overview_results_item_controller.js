@@ -13,6 +13,11 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
   
   set: function(item) {
     this.item = item;
+    
+    if(item.description == null || item.description == undefined) {
+      item.description = '';
+    }
+    
     $('h3.items_line_title', this.view).html(item.title);
     $('h4.items_line_description', this.view).html(item.description.truncate(30));
     $('h3.items_line_sku', this.view).html(item.sku);

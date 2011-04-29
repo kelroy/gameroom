@@ -19,7 +19,7 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   lines = @transaction.lines.map do |line|
     [
       line.quantity,
-      truncate(line.item.title.upcase, :length => 10, :seperator => ''),
+      truncate(line.title.upcase, :length => 10, :seperator => ''),
       number_to_currency(line.subtotal.to_f / 100)
     ]
   end

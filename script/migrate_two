@@ -8,124 +8,113 @@ gameroom_old = Mysql2::Client.new(:host => 'localhost', :username => 'root', :pa
 
 Till.destroy_all
 tills = gameroom_old.query("SELECT * FROM tills")
-tills.each do |row|
+tills.each do |till|
   till = Till.create({
-    :title => row["title"],
-    :description => row["description"],
-    :minimum_balance => row["minimum_balance"],
-    :minimum_transfer => row["minimum_transfer"],
-    :retainable => row["retainable"],
-    :active => row["active"]
-  })
-end
-
-Address.destroy_all
-addresses = gameroom_old.query("SELECT * FROM addresses")
-addresses.each do |row|
-  address = Address.create({
-    #:person_id => row["person_id"],
-    :first_line => row["first_line"],
-    :second_line => row["second_line"],
-    :city => row["city"],
-    :state => row["state"],
-    :country => row["country"],
-    :zip => row["zip"]
-  })
-end
-
-Phone.destroy_all
-phones = gameroom_old.query("SELECT * FROM phones")
-phones.each do |row|
-  phone = Phone.create({
-    #:person_id => row["person_id"],
-    :title => row["title"],
-    :number => row["number"]
-  })
-end
-
-Customer.destroy_all
-customers = gameroom_old.query("SELECT * FROM customers")
-customers.each do |row|
-  customer = Customer.create({
-    :credit => row["credit"],
-    :drivers_license_number => row["drivers_license_number"],
-    :drivers_license_state => row["drivers_license_state"],
-    :notes => row["notes"],
-    :active => row["active"]
-  })
-end
-
-User.destroy_all
-users = gameroom_old.query("SELECT * FROM users")
-users.each do |row|
-  user = User.create({
-    :rate => 0,
-    :pin => '0000',
-    :login => row["login"],
-    :email => row["email"],
-    :password => 'password',
-    :password_confirmation => 'password',
-    :administrator => row["administrator"],
-    :active => row["active"]
+    :title => till["title"],
+    :description => till["description"],
+    :minimum_balance => till["minimum_balance"],
+    :minimum_transfer => till["minimum_transfer"],
+    :retainable => till["retainable"],
+    :active => till["active"]
   })
 end
 
 Person.destroy_all
+User.destroy_all
+Customer.destroy_all
+Phone.destroy_all
+Address.destroy_all
 people = gameroom_old.query("SELECT * FROM people")
-people.each do |row|
-  person = Person.create({
-    :first_name => row["first_name"],
-    :middle_name => row["middle_name"],
-    :last_name => row["last_name"],
-    :date_of_birth => row["date_of_birth"]
+people.each do |person|
+  new_person = Person.create({
+    :first_name => person["first_name"],
+    :middle_name => person["middle_name"],
+    :last_name => person["last_name"],
+    :date_of_birth => person["date_of_birth"]
   })
-  if row["user_id"] != nil && User.exists?(row["user_id"])
-    user = User.find(row["user_id"])
-    user.person = person
-    user.save()
+  addresses = gameroom_old.query("SELECT * FROM addresses WHERE person_id = #{person["id"]}")
+  addresses.each do |address|
+    Address.create({
+      :person_id => new_person.id,
+      :first_line => address["first_line"],
+      :second_line => address["second_line"],
+      :city => address["city"],
+      :state => address["state"],
+      :country => address["country"],
+      :zip => address["zip"]
+    })
   end
-  if row["customer_id"] != nil && Customer.exists?(row["customer_id"])
-    customer = Customer.find(row["customer_id"])
-    customer.person = person
-    customer.save()
+  phones = gameroom_old.query("SELECT * FROM phones WHERE person_id = #{person["id"]}")
+  phones.each do |phone|
+    Phone.create({
+      :person_id => new_person.id,
+      :title => phone["title"],
+      :number => phone["number"]
+    })
+  end
+  if person["user_id"] != nil
+    users = gameroom_old.query("SELECT * FROM users WHERE id = #{person["user_id"]}")
+    users.each do |user|
+      User.create({
+        :person_id => new_person.id,
+        :rate => 0,
+        :pin => '0000',
+        :login => user["login"],
+        :email => user["email"],
+        :password => 'password',
+        :password_confirmation => 'password',
+        :administrator => user["administrator"],
+        :active => user["active"]
+      })
+    end
+  end
+  if person["customer_id"] != nil
+    customers = gameroom_old.query("SELECT * FROM customers WHERE id = #{person["customer_id"]}")
+    customers.each do |customer|
+      Customer.create({
+        :person_id => new_person.id,
+        :credit => customer["credit"],
+        :drivers_license_number => customer["drivers_license_number"],
+        :drivers_license_state => customer["drivers_license_state"],
+        :notes => customer["notes"],
+        :active => customer["active"]
+      })
+    end
   end
 end
 
 Item.destroy_all
 Property.destroy_all
 items = gameroom_old.query("SELECT * FROM items")
-items.each do |row|
-  if row["sku"] != nil
+items.each do |item|
+  if item["sku"] != nil
     credit = 0
     cash = 0
-    new_properties = []
-    properties = gameroom_old.query("SELECT * FROM properties WHERE item_id = #{row["id"]}")
+    tags = []
+    properties = gameroom_old.query("SELECT * FROM properties WHERE item_id = #{item["id"]}")
     properties.each do |property|
       if property["key"] == 'credit_price'
         credit = property["value"]
       elsif property["key"] == 'cash_price'
         cash = property["value"]
+      elsif property["key"] == 'type'
+        tags.push(property["value"].downcase.capitalize)
       else
-        new_properties.push(Property.create({
-          :key => property["key"],
-          :value => property["value"]
-        }))
+        tags.push(property["value"])
       end
     end
     item = Item.create({
-      :title => row["title"],
-      :description => row["description"],
-      :sku => row["sku"],
-      :price => row["price"],
+      :title => item["title"],
+      :description => item["description"],
+      :tags => tags.join(','),
+      :sku => item["sku"],
+      :price => item["price"],
       :credit => credit,
       :cash => cash,
-      :taxable => row["taxable"],
+      :taxable => item["taxable"],
       :discountable => true,
-      :locked => row["locked"],
-      :active => row["active"]
+      :locked => item["locked"],
+      :active => item["active"]
     })
-    new_properties.each do |property|
-      item.properties << property
-    end
   end
 end

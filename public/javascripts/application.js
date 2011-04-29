@@ -456,6 +456,14 @@ var User = new JS.Class(Model, {
     columns: ['id', 'person_id', 'login', 'pin', 'email', 'password', 'password_confirmation', 'administrator', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards']
+  },
+
+  stamp: function() {
+    url = '/api/users/' + this.id + '/stamp';
+    this.klass._ajax(url, 'POST', null, function(result) {
+      return true;
+    });
+    return false;
   }
 });
 
@@ -1231,6 +1239,9 @@ var CustomerFormController = new JS.Class(FormController, {
       $('input#first_name', this.view).val(person.first_name);
       $('input#middle_name', this.view).val(person.middle_name);
       $('input#last_name', this.view).val(person.last_name);
+      if(person.date_of_birth == null || person.date_of_birth == undefined) {
+        person.date_of_birth = new Date();
+      }
       date_of_birth = (new Date()).setISO8601(person.date_of_birth);
       $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
       $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
@@ -2588,6 +2599,10 @@ var ReviewController = new JS.Class(ViewController, {
     lines = transaction.lines();
     for(line in lines) {
       var new_line = this.line.clone();
+      if(lines[line].description == null || lines[line].description == undefined) {
+        lines[line].description = '';
+      }
+
       $('td.quantity', new_line).html(lines[line].quantity);
       $('td.title', new_line).html(lines[line].title);
       $('td.description', new_line).html(lines[line].description.truncate(50));
@@ -4791,6 +4806,11 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
 
   set: function(item) {
     this.item = item;
+
+    if(item.description == null || item.description == undefined) {
+      item.description = '';
+    }
+
     $('h3.items_line_title', this.view).html(item.title);
     $('h4.items_line_description', this.view).html(item.description.truncate(30));
     $('h3.items_line_sku', this.view).html(item.sku);

@@ -17,7 +17,7 @@
       - @transaction.lines.each do |line|
         %tr
           %td{:class => 'quantity'}= line.quantity
-          %td{:class => 'title'}= truncate line.item.title.upcase, :length => 10, :seperator => ''
+          %td{:class => 'title'}= truncate line.title.upcase, :length => 10, :seperator => ''
           %td{:class => 'subtotal'}= number_to_currency line.subtotal.to_f / 100
   %table{:class => 'summary'}
     %tbody

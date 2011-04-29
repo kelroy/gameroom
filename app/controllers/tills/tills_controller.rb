@@ -1,5 +1,5 @@
 class Tills::TillsController < ApplicationController
-  before_filter :super_authenticate
+  before_filter :authenticate
   
   def index
     render

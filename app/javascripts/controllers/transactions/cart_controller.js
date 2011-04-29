@@ -43,11 +43,33 @@ var CartController = new JS.Class(ViewController, {
       page = 1;
     }
     if(query.length > 1) {
-      pattern = 'title_or_description_or_sku_contains_any';
+      keywords = query.split('|');
+      if(keywords.length > 1) {
+        pairs = [];
+        for(keyword in keywords) {
+          pair = keywords[keyword].split('~');
+          if(pair.length > 1) {
+            pairs.push(pair);
+          }
+        }
+        statement = '';
+        match_statements = [];
+        params = [];
+        for(pair in pairs) {
+          match_statements.push(pairs[pair][0] + ' LIKE ?');
+          params.push('%' + pairs[pair][1] + '%');
+        }
+        statement = match_statements.join(' AND ');
+        console.log(statement);
+        this.cart_search_results_controller.update(Item.where(statement, params, page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
+      } else {
+        pattern = 'title_or_description_or_sku_contains_all';
+        this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
+      }
     } else {
       pattern = 'title_starts_with';
+      this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
     }
-    this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
   },
   
   update: function(transaction) {

@@ -67,11 +67,12 @@ unless Rails.env.production?
   (1..100).each do |n|
     title = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
     description = (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize
+    tags = 'Foo, Bar'
     sku = (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase
     price = (rand(9999) + 1)
     credit_price = (price * 0.8).round
     cash_price = (credit_price / 2).round
-    item = Factory.create(:item, :title => title, :description => description, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
+    item = Factory.create(:item, :title => title, :description => description, :tags => tags, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
     item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
     items.push(item)
   end

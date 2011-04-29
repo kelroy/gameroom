@@ -577,7 +577,7 @@ var Line = new JS.Class(Model, {
 var Item = new JS.Class(Model, {
   extend: {
     resource: 'item',
-    columns: ['id', 'title', 'description', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
+    columns: ['id', 'title', 'description', 'tags', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
     has_many: ['properties'],
     validations: {
       'title': {
@@ -2027,18 +2027,13 @@ var CartTableController = new JS.Class(TableController, {
 
         $('td.title', new_row).html(items[item].title);
         $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
+        $('td.tags', new_row).html(items[item].tags);
         $('td.sku', new_row).html(items[item].sku);
         $('td.price', new_row).html(Currency.pretty(items[item].price));
         $('td.credit', new_row).html(Currency.pretty(items[item].credit));
         $('td.cash', new_row).html(Currency.pretty(items[item].cash));
         $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
         $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
-
-        properties = items[item].properties();
-        for(property in properties) {
-          processed = this._processProperty(properties[property]);
-          $('td.properties ul', new_row).append('<li><span>' + processed.key + ': </span><span>' + processed.value + '</span></li>');
-        }
         $('tbody', this.view).append(new_row);
       }
       this.view.show();
@@ -4716,15 +4711,9 @@ var InventoryItemController = new JS.Class(ViewController, {
     this.item = item;
 
     if(item != null) {
-      property_list = [];
-      properties = item.properties();
-      for(property in properties) {
-        property_list.push(properties[property].key + ':' + properties[property].value);
-      }
-
       $('input#title', this.view).val(item.title);
       $('textarea#description', this.view).val(item.description);
-      $('textarea#properties', this.view).val(property_list.join(','));
+      $('textarea#tags', this.view).val(item.tags);
       $('input#sku', this.view).val(item.sku);
       $('input#price', this.view).val(Currency.format(item.price));
       $('input#credit', this.view).val(Currency.format(item.credit));
@@ -4745,7 +4734,7 @@ var InventoryItemController = new JS.Class(ViewController, {
   onSave: function(event) {
     title = $('input#title', this.view).val();
     description = $('textarea#description', this.view).val();
-    properties = $('textarea#properties', this.view).val().split(',');
+    tags = $('textarea#tags', this.view).val();
     sku = $('input#sku', this.view).val();
     price = parseInt(Currency.toPennies($('input#price', this.view).val()));
     credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
@@ -4758,6 +4747,7 @@ var InventoryItemController = new JS.Class(ViewController, {
       item = Item.create({
         title: title,
         description: description,
+        tags: tags,
         sku: sku,
         price: price,
         credit: credit,
@@ -4770,6 +4760,7 @@ var InventoryItemController = new JS.Class(ViewController, {
       item = Item.find(event.data.instance.item.id);
       item.title = title;
       item.description = description;
+      item.tags = tags;
       item.sku = sku;
       item.price = price;
       item.credit = credit;
@@ -4778,39 +4769,6 @@ var InventoryItemController = new JS.Class(ViewController, {
       item.discountable = discountable;
       item.active = active;
       item.save();
-
-      item_properties = item.properties();
-      for(property in item_properties) {
-        item_properties[property].destroy();
-      }
-    }
-
-    for(property in properties) {
-      set = properties[property].split(':');
-      property = new Property({
-        key: set[0],
-        value: set[1]
-      });
-      $.ajax({
-        url: '/api/items/' + item.id + '/properties',
-        data: JSON.stringify({property: {key: property.key, value: property.value}}),
-        type: 'POST',
-        accept: 'application/json',
-        contentType: 'application/json',
-        dataType: 'json',
-        processData: false,
-        async: false,
-        success: function(result) {
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          console.error('Error Status: ' + XMLHttpRequest.status);
-          console.error('Error Text: ' + textStatus);
-          console.error('Error Thrown: ' + errorThrown);
-          console.log(XMLHttpRequest);
-        },
-        username: 'x',
-        password: 'x'
-      });
     }
 
     event.data.instance.setItem(item);

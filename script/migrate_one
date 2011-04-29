@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # Migrate the old POS data
-# Inside rails root: rails runner -e production script/migrate
+# Inside rails root: rails runner -e production script/migrate_one
 
 PASSWORD = ''
 

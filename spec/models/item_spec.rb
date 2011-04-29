@@ -10,6 +10,7 @@ describe Item do
       valid_data = {
         :title => 'Title',
         :description => 'Lorem Ipsum...',
+        :tags => 'Foo, Bar'
         :sku => 0001,
         :price => 0,
         :credit => 0,

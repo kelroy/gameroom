@@ -1,0 +1,131 @@
+#!/usr/bin/env ruby
+# Migrate from DB version one to version two
+# Inside rails root: rails runner -e production script/migrate_two
+
+PASSWORD = ''
+
+gameroom_old = Mysql2::Client.new(:host => 'localhost', :username => 'root', :password => PASSWORD, :database => 'gameroom_old')
+
+Till.destroy_all
+tills = gameroom_old.query("SELECT * FROM tills")
+tills.each do |row|
+  till = Till.create({
+    :title => row["title"],
+    :description => row["description"],
+    :minimum_balance => row["minimum_balance"],
+    :minimum_transfer => row["minimum_transfer"],
+    :retainable => row["retainable"],
+    :active => row["active"]
+  })
+end
+
+Address.destroy_all
+addresses = gameroom_old.query("SELECT * FROM addresses")
+addresses.each do |row|
+  address = Address.create({
+    #:person_id => row["person_id"],
+    :first_line => row["first_line"],
+    :second_line => row["second_line"],
+    :city => row["city"],
+    :state => row["state"],
+    :country => row["country"],
+    :zip => row["zip"]
+  })
+end
+
+Phone.destroy_all
+phones = gameroom_old.query("SELECT * FROM phones")
+phones.each do |row|
+  phone = Phone.create({
+    #:person_id => row["person_id"],
+    :title => row["title"],
+    :number => row["number"]
+  })
+end
+
+Customer.destroy_all
+customers = gameroom_old.query("SELECT * FROM customers")
+customers.each do |row|
+  customer = Customer.create({
+    :credit => row["credit"],
+    :drivers_license_number => row["drivers_license_number"],
+    :drivers_license_state => row["drivers_license_state"],
+    :notes => row["notes"],
+    :active => row["active"]
+  })
+end
+
+User.destroy_all
+users = gameroom_old.query("SELECT * FROM users")
+users.each do |row|
+  user = User.create({
+    :rate => 0,
+    :pin => '0000',
+    :login => row["login"],
+    :email => row["email"],
+    :password => 'password',
+    :password_confirmation => 'password',
+    :administrator => row["administrator"],
+    :active => row["active"]
+  })
+end
+
+Person.destroy_all
+people = gameroom_old.query("SELECT * FROM people")
+people.each do |row|
+  person = Person.create({
+    :first_name => row["first_name"],
+    :middle_name => row["middle_name"],
+    :last_name => row["last_name"],
+    :date_of_birth => row["date_of_birth"]
+  })
+  if row["user_id"] != nil && User.exists?(row["user_id"])
+    user = User.find(row["user_id"])
+    user.person = person
+    user.save()
+  end
+  if row["customer_id"] != nil && Customer.exists?(row["customer_id"])
+    customer = Customer.find(row["customer_id"])
+    customer.person = person
+    customer.save()
+  end
+end
+
+Item.destroy_all
+Property.destroy_all
+items = gameroom_old.query("SELECT * FROM items")
+items.each do |row|
+  if row["sku"] != nil
+    credit = 0
+    cash = 0
+    new_properties = []
+    properties = gameroom_old.query("SELECT * FROM properties WHERE item_id = #{row["id"]}")
+    properties.each do |property|
+      if property["key"] == 'credit_price'
+        credit = property["value"]
+      elsif property["key"] == 'cash_price'
+        cash = property["value"]
+      else
+        new_properties.push(Property.create({
+          :key => property["key"],
+          :value => property["value"]
+        }))
+      end
+    end
+    item = Item.create({
+      :title => row["title"],
+      :description => row["description"],
+      :sku => row["sku"],
+      :price => row["price"],
+      :credit => credit,
+      :cash => cash,
+      :taxable => row["taxable"],
+      :discountable => true,
+      :locked => row["locked"],
+      :active => row["active"]
+    })
+    new_properties.each do |property|
+      item.properties << property
+    end
+  end
+end

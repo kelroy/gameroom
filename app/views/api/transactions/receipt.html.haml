@@ -44,5 +44,8 @@
       %tr{:id => 'change'}
         %td Change
         %td= number_to_currency @transaction.change.to_f / 100
+  - unless @transaction.customer.nil?
+    %p= "#{@transaction.customer.person.first_name} #{@transaction.customer.person.last_name}"
+    %p= "Store Credit: #{number_to_currency @transaction.customer.credit.to_f / 100}"
   %p Open 10a-10p 7 Days
   %p www.gameroomlincoln.com

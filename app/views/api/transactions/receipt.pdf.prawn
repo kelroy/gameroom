@@ -55,8 +55,14 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
     :align => :right,
     :padding => 1,
     :border_width => 0
-    
+  
   pdf.move_down 20
+  unless @transaction.customer.nil?
+    pdf.text "#{@transaction.customer.person.first_name} #{@transaction.customer.person.last_name}", :align => :center
+    pdf.move_down 10
+    pdf.text "Store Credit: #{number_to_currency @transaction.customer.credit.to_f / 100}", :align => :center
+    pdf.move_down 10
+  end
   pdf.text "Open 10a-10p 7 Days", :align => :center
   pdf.move_down 10
   pdf.text "www.gameroomlincoln.com", :align => :center

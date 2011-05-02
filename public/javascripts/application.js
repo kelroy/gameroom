@@ -4467,6 +4467,7 @@ var OverviewFormController = new JS.Class(FormController, {
                 zip: $('input#zip', this.view).val()
               });
               address.setPerson(person);
+              address.save();
             }
 
             phones = person.phones();

@@ -95,6 +95,7 @@ var OverviewFormController = new JS.Class(FormController, {
                 zip: $('input#zip', this.view).val()
               });
               address.setPerson(person);
+              address.save();
             }
             
             phones = person.phones();
@@ -108,7 +109,7 @@ var OverviewFormController = new JS.Class(FormController, {
               phone.setPerson(person);
               phone.save();
             }
-  
+            
             user.setPerson(person);
           }
         }

@@ -71,6 +71,7 @@ var OverviewController = new JS.Class(ViewController, {
     users_in = [];
     users_out = [];
     users = [];
+    console.log(timecards.length);
     for(timecard in timecards) {
       timecard_user = null;
       for(user in users) {

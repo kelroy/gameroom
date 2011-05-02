@@ -24,6 +24,11 @@ var OverviewFormController = new JS.Class(FormController, {
         $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
         $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
         $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
+      } else {
+        date_of_birth = new Date();
+        $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
+        $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
+        $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
       }
 
       addresses = person.addresses();
@@ -87,10 +92,9 @@ var OverviewFormController = new JS.Class(FormController, {
                 second_line: $('input#second_line', this.view).val(),
                 city: $('input#city', this.view).val(),
                 state: $('input#state', this.view).val(),
-                zip: $('input#zip', this.view).val(),
+                zip: $('input#zip', this.view).val()
               });
               address.setPerson(person);
-              address.save();
             }
             
             phones = person.phones();
@@ -104,10 +108,10 @@ var OverviewFormController = new JS.Class(FormController, {
               phone.setPerson(person);
               phone.save();
             }
-            
+  
             user.setPerson(person);
           }
-        }        
+        }
       } else {
         date_of_birth_year = $('select#date_of_birth_year').val();
         date_of_birth_month = $('select#date_of_birth_month').val() - 1;
@@ -167,6 +171,21 @@ var OverviewFormController = new JS.Class(FormController, {
     if($('input#last_name', this.view).val() == '') {
       return false;
     }
+    if($('input#first_line', this.view).val() == '') {
+      return false;
+    }
+    if($('input#city', this.view).val() == '') {
+      return false;
+    }
+    if($('input#state', this.view).val() == '') {
+      return false;
+    }
+    if($('input#zip', this.view).val() == '') {
+      return false;
+    }
+    if($('input#number', this.view).val() == '') {
+      return false;
+    }
     if($('input#address', this.view).val() == '') {
       return false;
     }
@@ -190,5 +209,11 @@ var OverviewFormController = new JS.Class(FormController, {
     this.callSuper();
     $('input#id', this.view).val(0);
     $(':required', this.view).removeClass('error');
+    date_of_birth = new Date();
+    $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
+    $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
+    $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
+    $('input#administrator', this.view).attr('checked', false);
+    $('input#active', this.view).attr('checked', true);
   }
 });

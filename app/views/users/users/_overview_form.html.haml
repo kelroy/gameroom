@@ -15,23 +15,23 @@
   %ul
     %li
       = label_tag :first_line, "Address First Line"
-      = text_field_tag :first_line
+      = text_field_tag :first_line, nil, :required => true
     %li
       = label_tag :second_line, "Address Second Line"
       = text_field_tag :second_line
     %li
       = label_tag :city
-      = text_field_tag :city
+      = text_field_tag :city, nil, :required => true
     %li
       = label_tag :state
-      = text_field_tag :state
+      = text_field_tag :state, nil, :required => true
     %li
       = label_tag :zip
-      = text_field_tag :zip
+      = text_field_tag :zip, nil, :required => true
   %ul
     %li
       = label_tag :number, "Phone Number"
-      = text_field_tag :number
+      = text_field_tag :number, nil, :required => true
     %li
       = label_tag :address, "Email Address"
       = text_field_tag :address, nil, :required => true

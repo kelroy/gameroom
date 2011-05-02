@@ -4,7 +4,7 @@ class CreatePeople < ActiveRecord::Migration
       t.string    :first_name
       t.string    :middle_name
       t.string    :last_name
-      t.datetime  :date_of_birth
+      t.datetime  :date_of_birth,           :null => false, :default => Time.now
 
       t.timestamps
     end

@@ -96,6 +96,7 @@ var OverviewFormController = new JS.Class(FormController, {
               });
               address.setPerson(person);
               address.save();
+              person._addresses.push(address);
             }
             
             phones = person.phones();
@@ -108,6 +109,7 @@ var OverviewFormController = new JS.Class(FormController, {
               });
               phone.setPerson(person);
               phone.save();
+              person._phones.push(phone);
             }
             
             user.setPerson(person);

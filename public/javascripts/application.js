@@ -3976,9 +3976,12 @@ Date.prototype.setISO8601 = function(dString){
 
 var OverviewChartCanvasController = new JS.Class(ViewController, {
 
-  initialize: function(view, timecards) {
+  initialize: function(view, user) {
     this.callSuper();
-    this.timecards = timecards;
+    this.user = user;
+    this.timecards = [];
+
+    $(this.view).bind('click', {instance: this}, this.onClick);
   },
 
   draw: function() {
@@ -4012,23 +4015,11 @@ var OverviewChartCanvasController = new JS.Class(ViewController, {
       width = Math.round(((end - today.begin) / (today.end - today.begin)) * canvas.size.width) - x;
       canvas.context.fillRect(x,0,width,canvas.size.height);
     }
-  }
-});
-
-var OverviewChartLineController = new JS.Class(ViewController, {
-
-  initialize: function(view, user) {
-    this.callSuper();
-    this.canvas = new OverviewChartCanvasController($('canvas', this.view), this._findTimecards(user));
-    this.setName(user.person());
   },
 
-  update: function() {
-    this.canvas.draw();
-  },
-
-  setName: function(person) {
-    $('h3', this.view).html(person.first_name + ' ' + person.last_name);
+  onClick: function(event) {
+    event.data.instance.timecards = event.data.instance._findTimecards(event.data.instance.user);
+    event.data.instance.draw();
   },
 
   _findTimecards: function(user) {
@@ -4036,6 +4027,23 @@ var OverviewChartLineController = new JS.Class(ViewController, {
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
     return Timecard.where('user_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [user.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
+  }
+});
+
+var OverviewChartLineController = new JS.Class(ViewController, {
+
+  initialize: function(view, user) {
+    this.callSuper();
+    this.canvas = new OverviewChartCanvasController($('canvas', this.view), user);
+    this.setName(user);
+  },
+
+  update: function() {
+    this.canvas.draw();
+  },
+
+  setName: function(user) {
+    $('h3', this.view).html(user.login);
   }
 });
 

@@ -50,6 +50,28 @@ class Api::UsersController < ApplicationController
     end
   end
   
+  # GET /users/in.xml
+  # GET /users/in.json
+  def in
+    @users = User.in
+
+    respond_to do |format|
+      format.json  { render :json => @users.to_json }
+      format.xml  { render :xml => @users.to_xml }
+    end
+  end
+  
+  # GET /users/out.xml
+  # GET /users/out.json
+  def out
+    @users = User.out
+
+    respond_to do |format|
+      format.json  { render :json => @users.to_json }
+      format.xml  { render :xml => @users.to_xml }
+    end
+  end
+  
   # GET|POST /users/stamp.xml
   # GET|POST /users/stamp.json
   def stamp

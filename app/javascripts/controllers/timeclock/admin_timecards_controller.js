@@ -36,7 +36,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   loadTimecards: function() {
     tomorrow = new Date();
     tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
+    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
   },
   
   clearTimecards: function() {

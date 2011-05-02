@@ -12,6 +12,30 @@ class User < ActiveRecord::Base
      find_by_login(login) || find_by_email(login)
   end
   
+  # Find users who are clocked in
+  def self.in
+    users = []
+    all_users = self.all
+    all_users.each do |user|
+      if user.in?
+        users.push(user)
+      end
+    end
+    users
+  end
+  
+  # Find users who are clocked out
+  def self.out
+    users = []
+    all_users = self.all
+    all_users.each do |user|
+      if user.out?
+        users.push(user)
+      end
+    end
+    users
+  end
+  
   # Is user active?
   def active?
     self.active
@@ -39,5 +63,23 @@ class User < ActiveRecord::Base
     else
       Timecard.create(:user => self, :begin => Time.now)
     end
+  end
+  
+  # Is user clocked in?
+  def in?
+    active_timecards = self.timecards.where('end IS NULL')
+    if active_timecards.length > 0
+      return true
+    end
+    return false
+  end
+  
+  # Is user not clocked in?
+  def out?
+    active_timecards = self.timecards.where('end IS NULL')
+    if active_timecards.length == 0
+      return true
+    end
+    return false
   end
 end

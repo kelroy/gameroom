@@ -455,15 +455,41 @@ var User = new JS.Class(Model, {
     resource: 'user',
     columns: ['id', 'person_id', 'login', 'pin', 'email', 'password', 'password_confirmation', 'administrator', 'active'],
     belongs_to: ['person'],
-    has_many: ['tills', 'timecards']
+    has_many: ['tills', 'timecards'],
+
+    _in: function() {
+      resource = this.resource;
+      resources = [];
+      url = '/api/' + this.resource.pluralize() + '/in';
+      this._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    },
+
+    _out: function() {
+      resource = this.resource;
+      resources = [];
+      url = '/api/' + this.resource.pluralize() + '/out';
+      this._ajax(url, 'GET', null, function(results) {
+        for(result in results) {
+          resources.push(new window[resource.capitalize()](results[result][resource]));
+        }
+      });
+      return resources;
+    }
   },
 
   stamp: function() {
-    url = '/api/users/' + this.id + '/stamp';
+    resource = this.klass.resource;
+    klass = undefined;
+    url = '/api/' + this.klass.resource.pluralize() + '/' + this.id + '/stamp';
     this.klass._ajax(url, 'POST', null, function(result) {
-      return true;
+      klass = new window[resource.capitalize()](result[resource]);
     });
-    return false;
+    return klass;
   }
 });
 
@@ -3993,7 +4019,7 @@ var OverviewChartLineController = new JS.Class(ViewController, {
 
   initialize: function(view, user) {
     this.callSuper();
-    this.canvas = new OverviewChartCanvasController($('canvas', this.view), user.timecards());
+    this.canvas = new OverviewChartCanvasController($('canvas', this.view), this._findTimecards(user));
     this.setName(user.person());
   },
 
@@ -4003,6 +4029,13 @@ var OverviewChartLineController = new JS.Class(ViewController, {
 
   setName: function(person) {
     $('h3', this.view).html(person.first_name + ' ' + person.last_name);
+  },
+
+  _findTimecards: function(user) {
+    day_begin = new Date();
+    day_end = new Date();
+    day_end.setDate(day_begin.getDate() + 1);
+    return Timecard.where('user_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [user.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
   }
 });
 
@@ -4062,46 +4095,8 @@ var OverviewController = new JS.Class(ViewController, {
   },
 
   findUsers: function() {
-    day_begin = new Date();
-    day_end = new Date();
-    day_end.setDate(day_begin.getDate() + 1);
-    timecards = Timecard.where('(begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL)', [day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
-    users_in = [];
-    users_out = [];
-    users = [];
-    console.log(timecards.length);
-    for(timecard in timecards) {
-      timecard_user = null;
-      for(user in users) {
-        if(timecards[timecard].user_id == users[user].id) {
-          timecard_user = users[user];
-        }
-      }
-      if(timecard_user == null) {
-        if(timecards[timecard].user_id != null) {
-          timecard_user = User.find(timecards[timecard].user_id);
-          timecard_user._timecards_loaded = true;
-          users.push(timecard_user);
-        }
-      }
-      if(timecard_user != null) {
-        timecard_user.addTimecard(timecards[timecard]);
-      }
-    }
-    for(user in users) {
-      null_found = false;
-      timecards = users[user].timecards();
-      for(timecard in timecards) {
-        if(timecards[timecard].end == null) {
-          null_found = true;
-        }
-      }
-      if(null_found) {
-        users_in.push(users[user]);
-      } else {
-        users_out.push(users[user]);
-      }
-    }
+    users_in = User._in();
+    users_out = User._out();
     return { users_in: users_in, users_out: users_out }
   },
 
@@ -4267,7 +4262,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   loadTimecards: function() {
     tomorrow = new Date();
     tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]));
+    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
   },
 
   clearTimecards: function() {

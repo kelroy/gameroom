@@ -115,6 +115,8 @@ Gameroom::Application.routes.draw do
         match 'stamp' => 'users#stamp', :via => [:get, :post]
       end
       collection do
+        match 'in' => 'users#in', :via => [:get]
+        match 'out' => 'users#out', :via => [:get]
         match 'search' => 'users#search', :via => [:get, :post]
         match 'where' => 'users#where', :via => [:get, :post]
       end

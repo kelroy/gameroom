@@ -22,6 +22,9 @@ unless Rails.env.production?
     
     customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(2).even?)
     user = Factory.create(:user, :person => person, :rate => (rand(19) + 1), :pin => 4.times.map{ rand(9) }.join, :email => "#{person.first_name}@example.com", :login => 5.times.map{ ('a'..'z').to_a[rand(26)] }.join, :administrator => rand(2).even?)
+    (1..(rand(99) + 1)).each do
+      user.stamp()
+    end
     
     persons.push(person)
     customers.push(customer)
@@ -56,31 +59,31 @@ unless Rails.env.production?
   user = Factory.create(:user, :person => person, :pin => '1111', :email => 'example@example.com', :login => 'login', :administrator => true)
   
   tills = []
-  (1..3).each do |n|
-    till = Factory.create(:till, :title => "Till #{n}", :retainable => true, :active => true)
-    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Deposit', :amount => 50000)
-    till.entries << Factory.create(:entry, :till => till, :title => 'Initial Audit', :amount => 50000)
-    tills.push(till)
-  end
+    (1..3).each do |n|
+      till = Factory.create(:till, :title => "Till #{n}", :retainable => true, :active => true)
+      till.entries << Factory.create(:entry, :till => till, :user => user, :title => 'Initial Deposit', :amount => 50000)
+      till.entries << Factory.create(:entry, :till => till, :user => user, :title => 'Initial Audit', :amount => 50000)
+      tills.push(till)
+    end
 
   items = []
-  (1..100).each do |n|
-    title = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
-    description = (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize
-    tags = 'Foo, Bar'
-    sku = (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase
-    price = (rand(9999) + 1)
-    credit_price = (price * 0.8).round
-    cash_price = (credit_price / 2).round
-    item = Factory.create(:item, :title => title, :description => description, :tags => tags, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
-    item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
-    items.push(item)
-  end
+    (1..100).each do |n|
+      title = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
+      description = (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize
+      tags = 'Foo, Bar'
+      sku = (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase
+      price = (rand(9999) + 1)
+      credit_price = (price * 0.8).round
+      cash_price = (credit_price / 2).round
+      item = Factory.create(:item, :title => title, :description => description, :tags => tags, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
+      item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
+      items.push(item)
+    end
   
   transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
   (1...5).each do |n|
-    item = items[n]
-    transaction.lines << Factory.create(:line, :title => item.title, :description => item.description, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
+   item = items[n]
+   transaction.lines << Factory.create(:line, :title => item.title, :description => item.description, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
   end
   transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
 

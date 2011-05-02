@@ -6,8 +6,8 @@ class CreateLines < ActiveRecord::Migration
       t.string  :title,                         :null => false
       t.string  :description,                   :null => false
       t.integer :quantity,                      :null => false, :default => 0
-      t.decimal :condition,                     :null => false, :default => 1
-      t.decimal :discount,                      :null => false, :default => 1
+      t.decimal :condition,                     :null => false, :default => 1, :precision => 2, :scale => 1
+      t.decimal :discount,                      :null => false, :default => 1, :precision => 2, :scale => 1
       t.integer :price,                         :null => false, :default => 0
       t.integer :credit,                        :null => false, :default => 0
       t.integer :cash,                          :null => false, :default => 0

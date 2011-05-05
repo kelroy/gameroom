@@ -66,4 +66,6 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   pdf.text "Open 10a-10p 7 Days", :align => :center
   pdf.move_down 10
   pdf.text "www.gameroomlincoln.com", :align => :center
+  pdf.move_down 10
+  pdf.text "www.facebook.com/gameroomforpresident", :align => :center
 end

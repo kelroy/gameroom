@@ -4,7 +4,7 @@ class CreateTransactions < ActiveRecord::Migration
       t.integer :till_id
       t.integer :customer_id
       t.integer :user_id
-      t.decimal :tax_rate,    :null => false, :default => 0.07, :precision => 10, :scale => 2
+      t.decimal :tax_rate,    :null => false, :default => 0.07, :precision => 3, :scale => 2
       t.boolean :complete,    :null => false, :default => true
       t.boolean :locked,      :null => false, :default => false
 

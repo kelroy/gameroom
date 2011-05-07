@@ -1,4 +1,4 @@
-class Api::PhonesController < ApplicationController
+class Api::PhonesController < ApiController
   
   # GET /phones.xml
   # GET /phones.json

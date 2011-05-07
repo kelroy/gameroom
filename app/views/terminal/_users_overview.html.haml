@@ -1,0 +1,13 @@
+%div{:id => 'overview_header', :class => 'header_container'}
+  %form{:action => '#select', :id => 'overview_select', :method => 'get'}
+    %ul
+      %li= #select_tag :user, options_for_select([[]].push(*@users.map { |user| ["#{user.person.first_name} #{user.person.last_name}", user.id] }))
+  %ul{:class => 'overview_action_nav button_nav'}
+    %li
+      %a{:href => '#new', :class => 'button new'} New User
+%ul{:id => 'overview_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#overview_form', :class => 'overview_form selected'} User
+%div{:id => 'overview_pages', :class => 'page_container'}
+  %div{:id => 'overview_form'}
+    = render :partial => 'users_overview_form'

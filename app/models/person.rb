@@ -1,12 +1,10 @@
 class Person < ActiveRecord::Base
-  has_one     :customer
-  has_one     :user
-  has_many    :emails
-  has_many    :phones
-  has_many    :addresses
+  validates_presence_of     :first_name, :last_name
   
-  accepts_nested_attributes_for :customer
-  accepts_nested_attributes_for :emails
-  accepts_nested_attributes_for :addresses
-  accepts_nested_attributes_for :phones
+  belongs_to    :account
+  has_one       :customer
+  has_one       :employee
+  serialize     :emails
+  serialize     :phones
+  serialize     :addresses
 end

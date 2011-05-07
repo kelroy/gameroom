@@ -1,4 +1,4 @@
-class Api::RepairsController < ApplicationController
+class Api::RepairsController < ApiController
 
   # GET /repairs.xml
   # GET /repairs.json

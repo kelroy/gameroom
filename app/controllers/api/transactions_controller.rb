@@ -1,4 +1,4 @@
-class Api::TransactionsController < ApplicationController
+class Api::TransactionsController < ApiController
 
   # GET /transactions.xml
   # GET /transactions.json

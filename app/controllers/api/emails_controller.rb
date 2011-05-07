@@ -1,4 +1,4 @@
-class Api::EmailsController < ApplicationController
+class Api::EmailsController < ApiController
   
   # GET /emails.xml
   # GET /emails.json

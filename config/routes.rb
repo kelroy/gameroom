@@ -1,9 +1,5 @@
 Gameroom::Application.routes.draw do
   
-  match 'login' => "user_sessions#new",      :as => :login
-  match 'logout' => "user_sessions#destroy", :as => :logout
-  resource :user_sessions, :except => [:index, :show]
-  
   namespace 'api' do
     resources :addresses do
       collection do
@@ -125,40 +121,8 @@ Gameroom::Application.routes.draw do
     end
   end
   
-  namespace 'dashboard' do
-    root :to => 'dashboard#index'
-  end
-  
-  namespace 'inventory' do
-    root :to => 'inventory#index'
-  end
-  
-  namespace 'repairs' do
-    root :to => 'repairs#index'
-  end
-  
-  namespace 'reports' do
-    root :to => 'reports#index'
-  end
-  
-  namespace 'tills' do
-    root :to => 'tills#index'
-  end
-  
-  namespace 'timeclock' do
-    root :to => 'timeclock#index'
-  end
-  
-  namespace 'transactions' do
-    root :to => 'transactions#index'
-  end
-  
-  namespace 'users' do
-    root :to => 'users#index'
-  end
-  
-  root :to => redirect("/dashboard")
-  match '*path', :to => redirect("/dashboard")
+  root :to => "terminal#index"
+  match '*path', :to => redirect("/")
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

@@ -1,4 +1,4 @@
-class Api::EntriesController < ApplicationController
+class Api::EntriesController < ApiController
   
   # GET /entries.xml
   # GET /entries.json

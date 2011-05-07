@@ -8,87 +8,104 @@
 
 unless Rails.env.production?
   
-  persons = []
+  account = Factory.create(:account, :title => 'Example', :token => 'example')
+  store = Factory.create(:store, :account => account)
+  
+  locations = []
+  (1..5).each do
+    location = Factory.create(:location, :account => account, :store => store)
+    locations.push(location)
+  end
+  
   customers = []
-  users = []
+  employees = []
   (1..20).each do
     first = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
     middle = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
     last = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
-    person = Factory.create(:person, :first_name => first, :middle_name => middle, :last_name => last)
-    person.emails << Factory.create(:email, :person => person)
-    person.addresses << Factory.create(:address, :person => person)
-    person.phones << Factory.create(:phone, :person => person)
+    person = Factory.create(:person, :account => account, :first_name => first, :middle_name => middle, :last_name => last, :date_of_birth => Time.now, :ssn => '555-55-5555', :drivers_license => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase)
+    person.emails = ['example@example.com']
+    person.addresses = ['555 Street Way, Lincoln, NE 68508']
+    person.phones = ['444-5555']
     
-    customer = Factory.create(:customer, :person => person, :credit => (rand(9999) + 1), :drivers_license_number => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase, :drivers_license_state => 'NE', :active => rand(2).even?)
-    user = Factory.create(:user, :person => person, :rate => (rand(19) + 1), :pin => 4.times.map{ rand(9) }.join, :email => "#{person.first_name}@example.com", :login => 5.times.map{ ('a'..'z').to_a[rand(26)] }.join, :administrator => rand(2).even?)
+    customer = Factory.create(:customer, :account => account, :person => person, :credit => (rand(9999) + 1), :notes => 'Lorem Ipsum...', :active => rand(2).even?)
+    employee = Factory.create(:employee, :account => account, :person => person, :rate => (rand(19) + 1), :manager => rand(2).even?)
     (1..(rand(99) + 1)).each do
-      user.stamp()
+      employee.stamp()
+      Factory.create(:shift, :account => account, :employee => employee)
     end
     
-    persons.push(person)
     customers.push(customer)
-    users.push(user)
+    employees.push(employee)
   end
-  
-  (1..20).each do
-    Factory.create(
-      :repair, 
-      :name => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
-      :phone => '555-555-5555',
-      :item => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
-      :description => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
-      :serial => (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase,
-      :symptoms => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
-      :notes => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
-      :warranty => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
-      :cost => rand(10000),
-      :receiver => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
-      :technician => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
-      :started => Time.now,
-      :finished => Time.now,
-      :status => rand(3),
-      :contacted => rand(2).even?,
-      :active => rand(2).even?)
-  end
-  
-  person = Factory.create(:person, :first_name => 'Joe', :middle_name => 'Q', :last_name => 'Example')
-  person.emails << Factory.create(:email, :person => person)
-  person.addresses << Factory.create(:address, :person => person)
-  person.phones << Factory.create(:phone, :person => person)
-  user = Factory.create(:user, :person => person, :pin => '1111', :email => 'example@example.com', :login => 'login', :administrator => true)
   
   tills = []
-    (1..3).each do |n|
-      till = Factory.create(:till, :title => "Till #{n}", :retainable => true, :active => true)
-      till.entries << Factory.create(:entry, :till => till, :user => user, :title => 'Initial Deposit', :amount => 50000)
-      till.entries << Factory.create(:entry, :till => till, :user => user, :title => 'Initial Audit', :amount => 50000)
-      tills.push(till)
-    end
+  (1..3).each do |n|
+    till = Factory.create(:till, :account => account, :store => store, :title => "Till #{n}", :retainable => true, :active => true)
+    till.entries << Factory.create(:entry, :account => account, :till => till, :employee => Employee.first, :title => 'Audit', :amount => 50000)
+    tills.push(till)
+  end
 
   items = []
-    (1..100).each do |n|
-      title = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
-      description = (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize
-      tags = 'Foo, Bar'
-      sku = (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase
-      price = (rand(9999) + 1)
-      credit_price = (price * 0.8).round
-      cash_price = (credit_price / 2).round
-      item = Factory.create(:item, :title => title, :description => description, :tags => tags, :sku => sku, :price => price, :credit => credit_price, :cash => cash_price,:taxable => rand(2).even?, :discountable => rand(2).even?, :locked => true, :active => true)
-      item.properties << Factory.create(:property, :key => 'Foo', :value => 'Bar')
-      items.push(item)
+  units = []
+  (1..100).each do |n|
+    price = (rand(9999) + 1)
+    credit = (price * 0.8).round
+    params = {
+      :account => account,
+      :title => (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize,
+      :description => (1..(rand(99) + 1)).map{ (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join }.join(' ').capitalize,
+      :tags => ['Foo', 'Bar'],
+      :properties => [{:key => 'Foo', :value => 'Bar'}, {:key => 'Foo', :value => 'Bar'}],
+      :sku => (1...10).map{ ('a'..'z').to_a[rand(26)] }.join.upcase,
+      :price => price,
+      :credit => credit,
+      :cash => (credit / 2).round,
+      :taxable => rand(2).even?,
+      :discountable => rand(2).even?,
+      :locked => rand(2).even?,
+      :active => rand(2).even?
+    }
+    item = Factory.create(:item, params)
+    items.push(item)
+    
+    (1..(rand(9) + 1)).each do |n|
+      unit = Factory.create(:unit, :account => account, :item => item, :location => locations[rand(4)], :condition => rand(100) * 0.01)
+      units.push(unit)
     end
-  
-  transaction = Factory.create(:transaction, :tax_rate => 0.07, :till => tills[0], :customer => customers[0], :user => user)
-  (1...5).each do |n|
-   item = items[n]
-   transaction.lines << Factory.create(:line, :title => item.title, :description => item.description, :quantity => (rand(9) + 1), :price => item.price, :credit => item.credit, :cash => item.cash, :taxable => item.taxable, :discountable => item.discountable, :item => item, :transaction => transaction)
   end
-  transaction.payments << Factory.create(:payment, :transaction => transaction, :form => 'cash', :amount => transaction.total)
-
-else
   
-  User.create(:person => Person.create(:first_name => 'Root', :last_name => 'User'), :email => 'root@example.com', :login => 'root', :password => 'password', :password_confirmation => 'password', :administrator => true)
-  
+  (1..100).each do |n|
+    transaction = Factory.create(:transaction, :account => account, :store => store, :till => tills[rand(2)], :customer => customers[rand(19)], :employee => employees[rand(19)], :tax_rate => 0.07)
+    
+    (1..(rand(9) + 1)).each do |n|
+      if rand(2).even?
+        item = items[rand(99)]
+        unit = Unit.new
+      else
+        item = items[rand(99)]
+        unit = Unit.where('item_id = ?', item.id).first
+      end
+      
+      params = {
+        :account => account,
+        :transaction => transaction,
+        :item => item,
+        :unit => unit,
+        :title => item.title,
+        :quantity => rand(9),
+        :condition => unit.condition,
+        :discount => rand(100) * 0.01,
+        :price => item.price,
+        :credit => item.credit,
+        :cash => item.cash,
+        :purchase => rand(2).even?,
+        :taxable => item.taxable
+      }
+      transaction.lines << Factory.create(:line, params)
+    end
+    
+    transaction.payments = [{:form => 'store_credit', :amount => transaction.total}]
+    transaction.save
+  end
 end

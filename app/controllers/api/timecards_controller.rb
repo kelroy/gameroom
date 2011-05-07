@@ -1,4 +1,4 @@
-class Api::TimecardsController < ApplicationController
+class Api::TimecardsController < ApiController
   
   # GET /timecards.xml
   # GET /timecards.json

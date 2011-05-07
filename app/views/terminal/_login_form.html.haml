@@ -1,0 +1,14 @@
+#login_form
+  %h2 Login
+  %form{:action => '#'}
+    %ul
+      %li
+        = label_tag :login, "Username"
+        = text_field_tag :login
+    %ul
+      %li
+        = label_tag :password
+        = password_field_tag :password
+    %ul
+      %li
+        = submit_tag "Login"

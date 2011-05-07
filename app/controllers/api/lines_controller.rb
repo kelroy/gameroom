@@ -1,4 +1,4 @@
-class Api::LinesController < ApplicationController
+class Api::LinesController < ApiController
   
   # GET /lines
   # GET /lines.xml

@@ -1,4 +1,4 @@
-class Api::PropertiesController < ApplicationController
+class Api::PropertiesController < ApiController
   
   # GET /properties.xml
   # GET /properties.json

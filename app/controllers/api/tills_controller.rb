@@ -1,4 +1,4 @@
-class Api::TillsController < ApplicationController
+class Api::TillsController < ApiController
   
   # GET /tills.xml
   # GET /tills.json

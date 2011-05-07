@@ -37,16 +37,7 @@ gem 'prawn_rails'
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem 'cucumber'
-  gem 'cucumber-rails'
-  gem 'capybara'
   gem 'rspec'
   gem 'rspec-rails'
-  gem 'launchy'
   gem 'factory_girl_rails'
-  gem 'fakeweb'
-  gem 'pickle'
-  gem 'email_spec'
-  gem 'sprockets'
-  gem 'jsmin'
 end

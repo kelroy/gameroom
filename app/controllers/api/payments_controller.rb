@@ -1,4 +1,4 @@
-class Api::PaymentsController < ApplicationController
+class Api::PaymentsController < ApiController
   
   # GET /payments.xml
   # GET /payments.json

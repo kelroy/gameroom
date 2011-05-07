@@ -1,4 +1,4 @@
-class Api::PeopleController < ApplicationController
+class Api::PeopleController < ApiController
 
   # GET /people.xml
   # GET /people.json

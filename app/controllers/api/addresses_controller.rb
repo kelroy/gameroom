@@ -1,4 +1,4 @@
-class Api::AddressesController < ApplicationController
+class Api::AddressesController < ApiController
   
   # GET /addresses.xml
   # GET /addresses.json

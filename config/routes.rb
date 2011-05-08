@@ -52,7 +52,7 @@ Gameroom::Application.routes.draw do
         match 'where' => 'people#where', :via => [:get, :post]
       end
       resource  :customer,  :only => [:show]
-      resource  :user,      :only => [:show]
+      resource  :employee,      :only => [:show]
       resources :addresses, :only => [:index]
       resources :emails,    :only => [:index]
       resources :phones,    :only => [:index]
@@ -67,15 +67,6 @@ Gameroom::Application.routes.draw do
       collection do
         match 'search' => 'properties#search', :via => [:get, :post]
         match 'where' => 'properties#where', :via => [:get, :post]
-      end
-    end
-    resources :repairs do
-      collection do
-        match 'search' => 'repairs#search', :via => [:get, :post]
-        match 'where' => 'repairs#where', :via => [:get, :post]
-      end
-      member do
-        match 'receipt' => 'repairs#receipt', :via => [:get]
       end
     end
     resources :timecards do
@@ -106,15 +97,15 @@ Gameroom::Application.routes.draw do
       resources :entries,       :only => [:index]
       resources :transactions,  :only => [:index]
     end
-    resources :users do
+    resources :employees do
       member do
-        match 'stamp' => 'users#stamp', :via => [:get, :post]
+        match 'stamp' => 'employees#stamp', :via => [:get, :post]
       end
       collection do
-        match 'in' => 'users#in', :via => [:get]
-        match 'out' => 'users#out', :via => [:get]
-        match 'search' => 'users#search', :via => [:get, :post]
-        match 'where' => 'users#where', :via => [:get, :post]
+        match 'in' => 'employees#in', :via => [:get]
+        match 'out' => 'employees#out', :via => [:get]
+        match 'search' => 'employees#search', :via => [:get, :post]
+        match 'where' => 'employees#where', :via => [:get, :post]
       end
       resources :entries,       :only => [:index]
       resources :timecards, :only => [:index]

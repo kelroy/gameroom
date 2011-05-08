@@ -4,13 +4,13 @@ class Api::EntriesController < ApiController
   # GET /entries.json
   # GET /tills/:till_id/entries.xml
   # GET /tills/:till_id/entries.json
-  # GET /users/:user_id/entries.xml
-  # GET /users/:user_id/entries.json
+  # GET /employees/:employee_id/entries.xml
+  # GET /employees/:employee_id/entries.json
   def index
     if params[:till_id]
       @entries = Entry.find_all_by_till_id(params[:till_id])
-    elsif params[:user_id]
-      @entries = Entry.find_all_by_user_id(params[:user_id])
+    elsif params[:employee_id]
+      @entries = Entry.find_all_by_employee_id(params[:employee_id])
     else
       @entries = Entry.all
     end

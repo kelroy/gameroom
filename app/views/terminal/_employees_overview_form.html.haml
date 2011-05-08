@@ -1,0 +1,68 @@
+%form{:action => '#overview_employee', :id => 'overview_employee', :method => 'get'}
+  %ul
+    %li
+      = label_tag :first_name, "First Name"
+      = text_field_tag :first_name, nil, :required => true
+    %li
+      = label_tag :last_name, "Last Name"
+      = text_field_tag :last_name, nil, :required => true
+    %li
+      = label_tag :middle_name, "Middle Name"
+      = text_field_tag :middle_name
+    %li
+      = label_tag :date_of_birth, "Date of Birth"
+      = select_date Date.today, :prefix => :date_of_birth, :start_year => Time.now.year - 100, :end_year => Time.now.year
+  %ul
+    %li
+      = label_tag :first_line, "Address First Line"
+      = text_field_tag :first_line, nil, :required => true
+    %li
+      = label_tag :second_line, "Address Second Line"
+      = text_field_tag :second_line
+    %li
+      = label_tag :city
+      = text_field_tag :city, nil, :required => true
+    %li
+      = label_tag :state
+      = text_field_tag :state, nil, :required => true
+    %li
+      = label_tag :zip
+      = text_field_tag :zip, nil, :required => true
+  %ul
+    %li
+      = label_tag :number, "Phone Number"
+      = text_field_tag :number, nil, :required => true
+    %li
+      = label_tag :address, "Email Address"
+      = text_field_tag :address, nil, :required => true
+    %li
+      = label_tag :job_title, "Job Title"
+      = text_field_tag :job_title
+    %li
+      = label_tag :rate, "Pay Rate"
+      = text_field_tag :rate, nil, :placeholder => '0.00'
+  %ul
+    %li
+      = label_tag :login
+      = text_field_tag :login, nil, :required => true
+    %li
+      = label_tag :pin, "PIN"
+      = password_field_tag :pin, nil, :required => true
+    %li
+      = label_tag :password
+      = password_field_tag :password
+    %li
+      = label_tag :password_confirmation, "Password Confirmation"
+      = password_field_tag :password_confirmation
+      = hidden_field_tag :id
+    %li
+      = label_tag :administrator
+      = check_box_tag :administrator, 1
+    %li
+      = label_tag :active
+      = check_box_tag :active, 1
+  %ul
+    %li
+      %ul{:class => 'button_nav'}
+        %li
+          %a{:href => '#save', :class => 'button save'} Save

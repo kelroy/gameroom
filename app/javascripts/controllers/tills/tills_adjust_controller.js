@@ -30,7 +30,7 @@ var TillsAdjustController = new JS.Class(ViewController, {
     if(amount != 0) {
       Entry.create({
         till_id: event.data.instance.till.id,
-        user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
+        employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
         title: 'Adjustment - ' + new Date(),
         description: $('textarea#description', event.data.instance.view).val(),
         amount: amount

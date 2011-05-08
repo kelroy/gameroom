@@ -4,6 +4,7 @@ class CreateEmployees < ActiveRecord::Migration
       t.integer :account_id
       t.integer :person_id
       t.string  :title
+      t.string  :token
       t.string  :pin_hash
       t.string  :pin_salt
       t.integer :rate

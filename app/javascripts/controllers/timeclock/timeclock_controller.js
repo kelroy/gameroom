@@ -1,11 +1,14 @@
-//= require "overview_controller"
-//= require "admin_controller"
+//= require "../view_controller"
+//= require "timeclock_overview_controller"
+//= require "timeclock_admin_controller"
 
-var TimeclockController = new JS.Class({
+var TimeclockController = new JS.Class(ViewController, {
   
-  initialize: function() {
-    this.overview_controller = new OverviewController('section#overview');
-    this.admin_controller = new AdminController('section#admin');
+  initialize: function(view) {
+    this.callSuper();
+    
+    this.overview_controller = new TimeclockOverviewController('section#overview');
+    this.admin_controller = new TimeclockAdminController('section#admin');
     this.section_controller = new SectionController('ul#timeclock_nav', [
       this.overview_controller,
       this.admin_controller

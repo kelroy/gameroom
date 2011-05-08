@@ -1,10 +1,10 @@
 //= require "../model"
-//= require "user"
+//= require "employee"
 
 var Timecard = new JS.Class(Model, {
   extend: {
     resource: 'timecard',
-    columns: ['id', 'user_id', 'begin', 'end'],
-    belongs_to: ['user']
+    columns: ['id', 'employee_id', 'begin', 'end'],
+    belongs_to: ['employee']
   }
 });

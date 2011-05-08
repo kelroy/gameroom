@@ -1,10 +1,13 @@
+//= require "../view_controller"
 //= require "tills_audit_controller"
 //= require "tills_overview_controller"
 //= require "tills_admin_controller"
 
-var TillsController = new JS.Class({
+var TillsController = new JS.Class(ViewController, {
   
-  initialize: function() {
+  initialize: function(view) {
+    this.callSuper();
+    
     this.audit_controller = new TillsAuditController('div#audit');
     this.overview_controller = new TillsOverviewController('section#overview');
     this.admin_controller = new TillsAdminController('section#admin');

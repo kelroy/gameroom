@@ -1,39 +1,36 @@
-%div{:id => 'sessions', :class => 'section_container'}
+%div{:id => 'login', :class => 'section_container'}
   %section{:id => 'login'}
     = render :partial => 'login_form'
 %div{:id => 'dashboard', :class => 'section_container'}
   %section{:id => 'dashboard'}
-    = render :partial => 'nav'
+    = render :partial => 'dashboard_nav'
+%div{:id => 'transactions', :class => 'section_container'}
+  %ul{:id => 'transactions_nav', :class => 'drop_nav'}
+    %li{:id => 'transactions_nav_till'}
+    %li
+      %a{:href => '#reset', :class => 'button reset'} Reset
+  %section{:id => 'cart'}
+    = render :partial => 'transactions_cart'
+  %section{:id => 'customer'}
+    = render :partial => 'transactions_customer'
+  %section{:id => 'payment'}
+    = render :partial => 'transactions_payment'
+  %section{:id => 'review'}
+    = render :partial => 'transactions_review'
 %div{:id => 'inventory', :class => 'section_container'}
   %section{:id => 'overview'}
     = render :partial => 'inventory_overview'
-%div{:id => 'repairs', :class => 'section_container'}
-  %section{:id => 'overview'}
-    = render :partial => 'repairs_overview'
 %div{:id => 'reports', :class => 'section_container'}
 %div{:id => 'tills', :class => 'section_container'}
   %section{:id => 'overview'}
     = render :partial => 'tills_overview'
   %section{:id => 'admin'}
-    = render :partial => 'admin'
+    = render :partial => 'tills_admin'
 %div{:id => 'timeclock', :class => 'section_container'}
   %section{:id => 'overview'}
     = render :partial => 'timeclock_overview'
   %section{:id => 'admin'}
-    = render :partial => 'admin'
-%div{:id => 'transaction', :class => 'section_container'}
-  %ul{:id => 'transaction_nav', :class => 'drop_nav'}
-    %li{:id => 'transaction_nav_till'}
-    %li
-      %a{:href => '#reset', :class => 'button reset'} Reset
-  %section{:id => 'cart'}
-    = render :partial => 'cart'
-  %section{:id => 'customer'}
-    = render :partial => 'customer'
-  %section{:id => 'payment'}
-    = render :partial => 'payment'
-  %section{:id => 'review'}
-    = render :partial => 'review'
-%div{:id => 'users', :class => 'section_container'}
+    = render :partial => 'timeclock_admin'
+%div{:id => 'employees', :class => 'section_container'}
   %section{:id => 'overview'}
-    = render :partial => 'users_overview'
+    = render :partial => 'employees_overview'

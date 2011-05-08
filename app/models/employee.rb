@@ -2,7 +2,10 @@ class Employee < ActiveRecord::Base
   validates_presence_of     :rate, :pin_hash, :pin_salt
   validates_inclusion_of    :manager, :in => [true, false]
   validates_inclusion_of    :active, :in => [true, false]
-  
+  validates_uniqueness_of   :token
+  validates_format_of       :token, :with => /\A[a-z0-9_]+\z/, 
+                                    :message => "Token must contain only letters, numbers and underscores."
+                                    
   after_initialize          :_default
   
   belongs_to  :account
@@ -11,6 +14,10 @@ class Employee < ActiveRecord::Base
   has_many    :timecards
   has_many    :shifts
   has_many    :entries
+  
+  def self.find_by_id_or_token(param)
+    find_by_id(param) || find_by_token(param)
+  end
   
   def self.in
     employees = []

@@ -1,8 +1,11 @@
+//= require "../view_controller"
 //= require "inventory_overview_controller"
 
-var InventoryController = new JS.Class({
+var InventoryController = new JS.Class(ViewController, {
   
-  initialize: function() {
+  initialize: function(view) {
+    this.callSuper();
+    
     this.overview_controller = new InventoryOverviewController('section#overview');
     this.section_controller = new SectionController('ul#inventory_nav', [
       this.overview_controller

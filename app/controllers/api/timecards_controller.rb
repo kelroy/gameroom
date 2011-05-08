@@ -2,11 +2,11 @@ class Api::TimecardsController < ApiController
   
   # GET /timecards.xml
   # GET /timecards.json
-  # GET /user/:user_id/timecards.xml
-  # GET /user/:user_id/timecards.json
+  # GET /employee/:employee_id/timecards.xml
+  # GET /employee/:employee_id/timecards.json
   def index
-    if params[:user_id]
-      @timecards = Timecard.find_all_by_user_id(params[:user_id])
+    if params[:employee_id]
+      @timecards = Timecard.find_all_by_employee_id(params[:employee_id])
     else
       @timecards = Timecard.all
     end

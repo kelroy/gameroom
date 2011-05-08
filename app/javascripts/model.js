@@ -118,7 +118,7 @@ var Model = new JS.Class({
           console.error('Error Thrown: ' + errorThrown);
           console.log(XMLHttpRequest);
         },
-        username: 'x',
+        employeename: 'x',
         password: 'x'
       });
     }

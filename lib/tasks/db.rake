@@ -5,14 +5,14 @@ namespace :db do
     
     adapter = Rails.configuration.database_configuration[Rails.env]['adapter']
     database = Rails.configuration.database_configuration[Rails.env]['database']
-    username = Rails.configuration.database_configuration[Rails.env]['username']
+    employeename = Rails.configuration.database_configuration[Rails.env]['employeename']
     password = Rails.configuration.database_configuration[Rails.env]['password']
     file = File.join(Rails.root, "/tmp/backup/#{Time.now.strftime("%Y_%m_%d_%H_%M_%S")}_#{Rails.env}.sql")
     
     if adapter == 'sqlite3'
       sh "sqlite3 db/#{Rails.env}.sqlite3 '.backup #{file}'"
     elsif adapter == 'mysql2'
-      sh "mysqldump --user=#{username} --password=#{password} #{database} > #{file}"
+      sh "mysqldump --employee=#{employeename} --password=#{password} #{database} > #{file}"
     end
   end
 end

@@ -4,8 +4,8 @@
     %h2 1713 O St. Lincoln NE 68508 
     %h2 402-438-7161
   %p= "ID #%09d" % @transaction.id
-  - unless @transaction.user.nil?
-    %p= @transaction.user.login
+  - unless @transaction.employee.nil?
+    %p= @transaction.employee.token
   %p= @transaction.created_at.getlocal
   %table{:class => 'lines'}
     %thead
@@ -37,10 +37,10 @@
         %td
         %td =========
       - @transaction.payments.each do |payment|
-        - if payment.amount != 0
+        - if payment[:amount] != 0
           %tr{:id => 'payment'}
-            %td= payment.form.gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' ')
-            %td= number_to_currency payment.amount.to_f / 100
+            %td= payment[:form].gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' ')
+            %td= number_to_currency payment[:amount].to_f / 100
       %tr{:id => 'change'}
         %td Change
         %td= number_to_currency @transaction.change.to_f / 100

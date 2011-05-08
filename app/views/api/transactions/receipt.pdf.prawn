@@ -9,8 +9,8 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   
   pdf.text "#{"ID #%09d" % @transaction.id}", :align => :center
   pdf.move_down 10
-  unless @transaction.user.nil?
-    pdf.text "#{@transaction.user.login}", :align => :center
+  unless @transaction.employee.nil?
+    pdf.text "#{@transaction.employee.token}", :align => :center
     pdf.move_down 10
   end
   pdf.text "#{@transaction.created_at.getlocal}", :align => :center
@@ -27,8 +27,8 @@ prawn_document(:page_size => [288, 576], :margin => [20, 20], :page_layout => :p
   
   payments = []
   @transaction.payments.each do |payment|
-    unless payment.amount == 0
-      payments.push([payment.form.gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' '), number_to_currency(payment.amount.to_f / 100)])
+    unless payment[:amount] == 0
+      payments.push([payment[:form].gsub('_', ' ').split(' ').each{|word| word.capitalize!}.join(' '), number_to_currency(payment[:amount].to_f / 100)])
     end
   end
   summary = [

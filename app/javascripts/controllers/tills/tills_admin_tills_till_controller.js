@@ -10,7 +10,7 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
     $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
     $('a.adjust', this.view).bind('click', {instance: this}, this.onAdjust);
-    $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
+    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
   },
   
   set: function(till) {
@@ -36,8 +36,8 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  onUsers: function(event) {
-    event.data.instance.notifyObservers('users', event.data.instance.till);
+  onEmployees: function(event) {
+    event.data.instance.notifyObservers('employees', event.data.instance.till);
     event.preventDefault();
   }
 });

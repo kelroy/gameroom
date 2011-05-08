@@ -1,4 +1,394 @@
 /* Gameroom */
+var ViewController = new JS.Class({
+
+  initialize: function(view) {
+    this.view = $(view);
+  }
+});
+
+var LoginController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+    this.reset();
+  },
+
+  reset: function() {
+
+  }
+});
+
+var DashboardController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.reset();
+  },
+
+  reset: function() {
+
+  }
+});
+var Sectionable = new JS.Module({
+
+  show: function() {
+    if(this.view != null && this.view != undefined) {
+      this.view.show();
+    }
+  },
+
+  hide: function() {
+    if(this.view != null && this.view != undefined) {
+      this.view.hide();
+    }
+  }
+});
+
+var SearchController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.page = 1;
+    this.query = null;
+
+    this.input = $('input', this.view);
+    this.input.bind('change', {instance: this}, this.onChanged);
+    this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
+    this.alphabet_controller.addObserver(this.onLetter, this);
+    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
+    $('a.next', this.view).bind('click', {instance: this}, this.onNext);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
+    this.reset();
+  },
+
+  reset: function() {
+    this.input.val(null);
+  },
+
+  showLoading: function() {
+    $('img.loading', this.view).show();
+  },
+
+  hideLoading: function() {
+    $('img.loading', this.view).hide();
+  },
+
+  onLetter: function(letter) {
+    this.input.val(letter);
+    this.input.trigger('change');
+  },
+
+  onPrev: function(event) {
+    if(event.data.instance.query != null) {
+      if(event.data.instance.page > 1) {
+        event.data.instance.page -= 1;
+      }
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
+  },
+
+  onNext: function(event) {
+    if(event.data.instance.query != null) {
+      event.data.instance.page += 1;
+      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
+    }
+    event.preventDefault();
+  },
+
+  onClear: function(event) {
+    event.data.instance.page = 1;
+    event.data.instance.query = null;
+    event.data.instance.input.val(null);
+    event.preventDefault();
+  },
+
+  onChanged: function(event) {
+    event.data.instance.page = 1;
+    event.data.instance.query = event.data.instance.input.val();
+    if(event.data.instance.query.length > 0) {
+      event.data.instance.notifyObservers(event.data.instance.query, 1);
+    }
+    event.preventDefault();
+  }
+});
+
+var SectionController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view, controllers) {
+    this.callSuper();
+    this._controllers = controllers;
+    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
+  },
+
+  doClick: function(event) {
+    index = $('li > a', event.data.view).index(this);
+    event.data.instance.showController(index);
+    event.data.instance.notifyObservers(index);
+    event.preventDefault();
+  },
+
+  showController: function(index) {
+    this.hideControllers();
+    this._controllers[index].show();
+    $('li > a', this.view).removeClass('selected');
+    $('li', this.view).eq(index).find('a').addClass('selected');
+  },
+
+  hideControllers: function() {
+    for(controller in this._controllers) {
+      this._controllers[controller].hide();
+    }
+  },
+
+  reset: function() {
+    this.view.show();
+    this.showController(0);
+  }
+});
+
+var FormController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+  },
+
+  update: function(data) {
+  },
+
+  save: function() {
+  },
+
+  onClear: function(event) {
+    event.data.instance.reset();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    event.data.instance.save();
+    event.preventDefault();
+  }
+});
+
+var TransactionsCustomerFormController = new JS.Class(FormController, {
+  include: Sectionable,
+
+  initialize: function(view) {
+    this.callSuper();
+  },
+
+  update: function(customer) {
+    this.reset();
+
+    $('input#id', this.view).val(customer.id);
+    $('input#credit', this.view).val(Currency.format(customer.credit));
+    $('input#drivers_license_number', this.view).val(customer.drivers_license_number);
+    $('input#drivers_license_state', this.view).val(customer.drivers_license_state);
+    $('input#flagged', this.view).attr('checked', !customer.active);
+    $('textarea#notes', this.view).val(customer.notes);
+
+    person = customer.person();
+    if(person != undefined) {
+      $('input#first_name', this.view).val(person.first_name);
+      $('input#middle_name', this.view).val(person.middle_name);
+      $('input#last_name', this.view).val(person.last_name);
+      if(person.date_of_birth == null || person.date_of_birth == undefined) {
+        person.date_of_birth = new Date();
+      }
+      date_of_birth = (new Date()).setISO8601(person.date_of_birth);
+      $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
+      $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
+      $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
+
+      addresses = person.addresses();
+      if(addresses.length > 0) {
+        $('input#first_line', this.view).val(addresses[0].first_line);
+        $('input#second_line', this.view).val(addresses[0].second_line);
+        $('input#city', this.view).val(addresses[0].city);
+        $('input#state', this.view).val(addresses[0].state);
+        $('input#zip', this.view).val(addresses[0].zip);
+      }
+
+      phones = person.phones();
+      if(phones.length > 0){
+        $('input#number', this.view).val(phones[0].number);
+      }
+
+      emails = person.emails();
+      if(emails.length > 0){
+        $('input#address', this.view).val(emails[0].address);
+      }
+    }
+  },
+
+  save: function() {
+    if(this.valid()) {
+      if($('input#id', this.view).val() > 0) {
+        customer = Customer.find($('input#id', this.view).val());
+        customer.credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
+        customer.notes = $('textarea#notes', this.view).val();
+        customer.drivers_license_number = $('input#drivers_license_number', this.view).val();
+        customer.drivers_license_state = $('input#drivers_license_state', this.view).val();
+        customer.active = !$('input#flagged', this.view).is(':checked');
+        customer.save();
+
+        if(customer != undefined) {
+          person = customer.person();
+          if(person != undefined) {
+            date_of_birth_year = $('select#date_of_birth_year').val();
+            date_of_birth_month = $('select#date_of_birth_month').val() - 1;
+            date_of_birth_day = $('select#date_of_birth_day').val();
+            date_of_birth = new Date(date_of_birth_year, date_of_birth_month, date_of_birth_day);
+
+            person.first_name = $('input#first_name', this.view).val();
+            person.middle_name = $('input#middle_name', this.view).val();
+            person.last_name = $('input#last_name', this.view).val();
+            person.date_of_birth = date_of_birth;
+            person.save();
+
+            addresses = person.addresses();
+            if(addresses.length > 0) {
+              addresses[0].first_line =  $('input#first_line', this.view).val();
+              addresses[0].second_line = $('input#second_line', this.view).val();
+              addresses[0].city = $('input#city', this.view).val();
+              addresses[0].state = $('input#state', this.view).val();
+              addresses[0].zip = $('input#zip', this.view).val();
+              addresses[0].save();
+            } else {
+              address = new Address({
+                first_line: $('input#first_line', this.view).val(),
+                second_line: $('input#second_line', this.view).val(),
+                city: $('input#city', this.view).val(),
+                state: $('input#state', this.view).val(),
+                zip: $('input#zip', this.view).val(),
+              });
+              address.setPerson(person);
+              address.save();
+            }
+
+            phones = person.phones();
+            if(phones.length > 0) {
+              phones[0].number =  $('input#number', this.view).val();
+              phones[0].save();
+            } else {
+              phone = new Phone({
+                number: $('input#number', this.view).val()
+              });
+              phone.setPerson(person);
+              phone.save();
+            }
+
+            emails = person.emails();
+            if(emails.length > 0) {
+              emails[0].address =  $('input#address', this.view).val();
+              emails[0].save();
+            } else {
+              email = new Email({
+                address: $('input#address', this.view).val()
+              });
+              email.setPerson(person);
+              email.save();
+            }
+
+            customer.setPerson(person);
+          }
+        }
+      } else {
+        person = new Person({
+          first_name: $('input#first_name', this.view).val(),
+          middle_name: $('input#middle_name', this.view).val(),
+          last_name: $('input#last_name', this.view).val()
+        });
+        if(person.save()) {
+          address = new Address({
+            first_line: $('input#first_line', this.view).val(),
+            second_line: $('input#second_line', this.view).val(),
+            city: $('input#city', this.view).val(),
+            state: $('input#state', this.view).val(),
+            zip: $('input#zip', this.view).val(),
+          });
+          address.setPerson(person);
+          address.save();
+
+          phone = new Phone({
+            number: $('input#number', this.view).val()
+          });
+          phone.setPerson(person);
+          phone.save();
+
+          email = new Email({
+            address: $('input#address', this.view).val()
+          });
+          email.setPerson(person);
+          email.save();
+        }
+
+        customer = new Customer({
+          credit: parseInt(Currency.toPennies($('input#credit', this.view).val())),
+          notes: $('textarea#notes', this.view).val(),
+          drivers_license_number: $('input#drivers_license_number', this.view).val(),
+          drivers_license_state: $('input#drivers_license_state', this.view).val(),
+          active: !$('input#flagged', this.view).is(':checked')
+        });
+        customer.setPerson(person);
+      }
+      if(customer.save()) {
+        this.update(customer);
+        this.notifyObservers(customer);
+      }
+    } else {
+      this.error();
+    }
+  },
+
+  valid: function() {
+    if($('input#first_name', this.view).val() == '') {
+      return false;
+    }
+    if($('input#last_name', this.view).val() == '') {
+      return false;
+    }
+    if($('input#number', this.view).val() == '' &&
+       $('input#address', this.view).val() == '' &&
+       $('input#drivers_license_number', this.view).val() == '' &&
+       $('input#drivers_license_number', this.view).val() == '') {
+      return false;
+    }
+    return true;
+  },
+
+  error: function() {
+    $(':required', this.view).addClass('error');
+  },
+
+  reset: function() {
+    this.callSuper();
+    $('input#id', this.view).val(0);
+    $('input#credit', this.view).val(Currency.format(0));
+    $(':required', this.view).removeClass('error');
+  }
+});
 var Associable = new JS.Module({
   extend: {
     belongs_to: [],
@@ -376,7 +766,7 @@ var Model = new JS.Class({
           console.error('Error Thrown: ' + errorThrown);
           console.log(XMLHttpRequest);
         },
-        username: 'x',
+        employeename: 'x',
         password: 'x'
       });
     }
@@ -450,9 +840,9 @@ var Model = new JS.Class({
   }
 });
 
-var User = new JS.Class(Model, {
+var Employee = new JS.Class(Model, {
   extend: {
-    resource: 'user',
+    resource: 'employee',
     columns: ['id', 'person_id', 'rate', 'login', 'pin', 'email', 'password', 'password_confirmation', 'administrator', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
@@ -493,6 +883,14 @@ var User = new JS.Class(Model, {
   }
 });
 
+var Person = new JS.Class(Model, {
+  extend: {
+    resource: 'person',
+    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
+    has_one: ['customer', 'employee']
+  }
+});
+
 var Customer = new JS.Class(Model, {
   extend: {
     resource: 'customer',
@@ -502,74 +900,190 @@ var Customer = new JS.Class(Model, {
   }
 });
 
-var Phone = new JS.Class(Model, {
+var TableController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.table_row = $('tbody > tr', view).detach();
+    this.reset();
+    $('tbody > tr', view).live('click', {instance: this}, this.onSelect);
+  },
+
+  reset: function() {
+    $('tbody > tr', this.view).remove();
+  },
+
+  update: function(data) {
+  },
+
+  onSelect: function(event) {
+    $('tbody > tr', event.data.instance.view).removeClass('selected');
+    $(this).addClass('selected');
+    event.data.instance.notifyObservers($(this).attr('data-object-id'));
+  }
+});
+var Boolean = new JS.Class({
   extend: {
-    resource: 'phone',
-    columns: ['id', 'person_id', 'title', 'number'],
-    belongs_to: ['person'],
-    'number': {
-      'presence_of': {}
+    toString: function(boolean) {
+      return boolean ? 'Yes' : 'No'
     }
   }
 });
 
-var Email = new JS.Class(Model, {
-  extend: {
-    resource: 'email',
-    columns: ['id', 'person_id', 'address'],
-    belongs_to: ['person'],
-    validations: {
-      'address': {
-        'presence_of': {}
-      }
-    },
-  }
-});
+var TransactionsCustomerTableController = new JS.Class(TableController, {
 
-var Person = new JS.Class(Model, {
-  extend: {
-    resource: 'person',
-    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
-    has_one: ['customer', 'user'],
-    has_many: ['addresses', 'emails', 'phones']
-  }
-});
+  update: function(people) {
+    this.reset();
 
-var Address = new JS.Class(Model, {
-  extend: {
-    resource: 'address',
-    columns: ['id', 'person_id', 'first_line', 'second_line', 'city', 'state', 'country', 'zip'],
-    belongs_to: ['person'],
-    validations: {
-      'first_line': {
-        'presence_of': {}
-      },
-      'city': {
-        'presence_of': {}
-      },
-      'state': {
-        'presence_of': {}
-      },
-      'zip': {
-        'presence_of': {}
+    if(people.length > 0) {
+      for(person in people){
+        new_row = $(this.table_row).clone();
+        new_row.attr('data-object-id', people[person].id);
+
+        $('td.name', new_row).html([
+          people[person].first_name,
+          people[person].last_name
+        ].join(' '));
+
+        addresses = people[person].addresses();
+        for(address in addresses) {
+          address_string = [
+            addresses[address].first_line,
+            addresses[address].second_line,
+            addresses[address].city + ',',
+            addresses[address].state,
+            addresses[address].province,
+            addresses[address].country,
+            addresses[address].zip
+          ].join(' ');
+          $('td.address', new_row).append($('<address></address>').html(address_string));
+        }
+
+        phones = people[person].phones();
+        for(phone in phones) {
+          if(phones[phone].title != null) {
+            phone_string = phones[phone].title + ' - ' + phones[phone].number;
+          } else {
+            phone_string = phones[phone].number;
+          }
+          $('td.phone', new_row).append($('<p></p>').html(phone_string));
+        }
+
+        emails = people[person].emails();
+        for(email in emails) {
+          email_string = emails[email].address;
+          $('td.email', new_row).append($('<p></p>').html(email_string));
+        }
+
+        customer = people[person].customer();
+        if(customer != undefined) {
+          $('td.credit', new_row).html(Currency.pretty(customer.credit));
+          $('td.drivers_license', new_row).html([
+            customer.drivers_license_number,
+            customer.drivers_license_state
+          ].join(' '));
+          $('td.flagged', new_row).html(Boolean.toString(!customer.active));
+          $('td.notes', new_row).html(customer.notes);
+          $('tbody', this.view).append(new_row);
+        }
       }
+      this.view.show();
+    } else {
+      this.view.hide();
     }
   }
 });
 
-var Entry = new JS.Class(Model, {
-  extend: {
-    resource: 'entry',
-    columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
-    belongs_to: ['till']
+var TransactionsCustomerSearchResultsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.customer_table_controller = new TransactionsCustomerTableController($('table', this.view));
+    this.customer_table_controller.addObserver(this.onPerson, this);
+  },
+
+  reset: function() {
+    this.customer_table_controller.reset();
+  },
+
+  update: function(results) {
+    if(results.length > 0) {
+      $('h2#customer_search_results_notice').hide();
+    } else {
+      $('h2#customer_search_results_notice').show();
+    }
+    this.customer_table_controller.update(results);
+  },
+
+  onPerson: function(id) {
+    this.notifyObservers(Person.find(id).customer());
   }
 });
 
-var Property = new JS.Class(Model, {
-  extend: {
-    resource: 'property',
-    columns: ['id', 'key', 'value'],
-    has_many: ['items']
+var TransactionsCustomerController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.customer_review_controller = new TransactionsCustomerReviewController('div#customer_review');
+    this.customer_form_controller = new TransactionsCustomerFormController('div#customer_form');
+    this.customer_search_controller = new SearchController('div#customer_search');
+    this.customer_search_results_controller = new TransactionsCustomerSearchResultsController('div#customer_search_results');
+    this.customer_section_controller = new SectionController('ul#customer_nav', [
+      this.customer_review_controller,
+      this.customer_form_controller,
+      this.customer_search_results_controller
+    ]);
+    this.customer_search_controller.addObserver(this.search, this);
+    this.customer_search_controller.addObserver(this.showSearchController, this);
+    this.customer_search_results_controller.addObserver(this.setCustomer, this);
+    this.customer_form_controller.addObserver(this.setCustomer, this);
+
+    this.reset();
+  },
+
+  reset: function() {
+    this.customer_review_controller.reset();
+    this.customer_form_controller.reset();
+    this.customer_search_controller.reset();
+    this.customer_search_results_controller.reset();
+    this.customer_section_controller.reset();
+    this.showReviewSection();
+  },
+
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      pattern = 'first_name_or_last_name_contains_any';
+    } else {
+      pattern = 'last_name_starts_with';
+    }
+    this.customer_search_results_controller.update(Person.search(pattern, query.split(' '), page, 10, this.customer_search_controller.showLoading, this.customer_search_controller.hideLoading));
+  },
+
+  showReviewSection: function() {
+    this.customer_section_controller.showController(0);
+  },
+
+  showFormController: function() {
+    this.customer_section_controller.showController(1);
+  },
+
+  showSearchController: function(query) {
+    if(query) {
+      this.customer_section_controller.showController(2);
+    }
+  },
+
+  setCustomer: function(customer) {
+    this.customer_review_controller.update(customer);
+    this.customer_form_controller.update(customer);
+    this.showReviewSection();
+    this.notifyObservers(customer);
   }
 });
 
@@ -612,7 +1126,6 @@ var Item = new JS.Class(Model, {
   extend: {
     resource: 'item',
     columns: ['id', 'title', 'description', 'tags', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
-    has_many: ['properties'],
     validations: {
       'title': {
         'presence_of': {}
@@ -624,11 +1137,600 @@ var Item = new JS.Class(Model, {
   }
 });
 
-var Payment = new JS.Class(Model, {
+var TransactionsCartFormController = new JS.Class(FormController, {
+  include: Sectionable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.row = $('ul.line_elements', view).first().clone();
+
+    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
+    $('a.more', this.view).bind('click', {instance: this}, this.onMore);
+    $('a.less', this.view).bind('click', {instance: this}, this.onLess);
+    $('a.clear_all', this.view).live('click', {instance: this}, this.onClearAll);
+    $('a.add_all', this.view).live('click', {instance: this}, this.onAddAll);
+    $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
+    $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
+  },
+
+  saveAll: function() {
+    var controller = this;
+    $('ul.line_elements', this.view).each(function(index, value) {
+      controller.saveLine(index);
+    });
+  },
+
+  saveLine: function(index) {
+    new_line = $('ul.line_elements', this.view).eq(index);
+
+    base_price = parseInt(Currency.toPennies($('input#price', new_line).val()));
+    if(base_price <= 0) {
+      base_price = 0;
+    }
+    credit_price = parseInt(Currency.toPennies($('input#credit', new_line).val()));
+    if(credit_price <= 0) {
+      credit_price = 0;
+    }
+    cash_price = parseInt(Currency.toPennies($('input#cash', new_line).val()));
+    if(cash_price <= 0) {
+      cash_price = 0;
+    }
+
+    line = new Line({
+      title: $('input#title', new_line).val(),
+      description: $('input#description', new_line).val(),
+      quantity: parseInt(Math.abs($('input#quantity', new_line).val())),
+      condition: 1,
+      discount: 1,
+      price: base_price,
+      credit: credit_price,
+      cash: cash_price,
+      purchase: true,
+      taxable: $('input#taxable', new_line).attr('checked'),
+      discountable: $('input#discountable', new_line).attr('checked')
+    });
+
+    if(this.valid([line])) {
+      this.notifyObservers([line]);
+    }
+  },
+
+  valid: function(lines) {
+    for(l in lines) {
+      if(lines[l].valid()) {
+        if((lines[l].price > 0 || lines[l].credit > 0 || lines[l].cash > 0) && lines[l].quantity > 0) {
+          return true;
+        }
+        return false;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  },
+
+  reset: function() {
+    this.callSuper();
+    $('input#quantity', this.view).val(1);
+    $('input#taxable', this.view).attr('checked', true);
+    $('input#discountable', this.view).attr('checked', true);
+  },
+
+  onPrice: function(event) {
+    value = $(this).val();
+    if(isNaN(value)) {
+      $(this).val(Currency.format(0));
+    } else {
+      $(this).val(Currency.format(Currency.toPennies(Math.abs(value))));
+    }
+  },
+
+  onMore: function(event) {
+    $('form', event.data.instance.view).append(event.data.instance.row.clone());
+    event.preventDefault();
+  },
+
+  onLess: function(event) {
+    $('ul.line_elements', event.data.instance.view).last().remove();
+    event.preventDefault();
+  },
+
+  onAddAll: function(event) {
+    event.data.instance.saveAll();
+    event.preventDefault();
+  },
+
+  onClearAll: function(event) {
+    event.data.instance.reset();
+    event.preventDefault();
+  },
+
+  onClearRow: function(event) {
+    $(this)
+      .closest('ul')
+      .find(':input')
+      .not(':button, :submit, :reset, :hidden')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected')
+    $(this)
+      .closest('ul')
+      .find('input#quantity').val(1);
+    $(this)
+      .closest('ul')
+      .find('input#taxable').attr('checked', true);
+    $(this)
+      .closest('ul')
+      .find('input#discountable').attr('checked', true);
+    event.preventDefault();
+  },
+
+  onAddRow: function(event) {
+    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
+    event.preventDefault();
+  }
+});
+
+var TransactionsCartLineController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view, index, line, open) {
+    this.callSuper();
+    this.line_index = index;
+    this.line = line;
+    this.open = open;
+    this.set(line);
+    $('a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
+    $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
+    $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
+    $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('ul.cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
+    $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
+  },
+
+  set: function(line) {
+
+    $('input.quantity', this.view).val(line.quantity);
+    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
+    if(line.description != undefined) {
+      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
+    }
+    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
+    $('ul.cart_line_action li a', this.view).removeClass('selected');
+    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
+    $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
+    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    if(line.purchase) {
+      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      if(line.discountable) {
+        this.showPurchaseControls();
+      }
+      this.hideSellControls();
+    } else {
+      $('ul.cart_line_action li a.sell', this.view).addClass('selected');
+      this.showSellControls();
+      this.hidePurchaseControls();
+    }
+    if(this.isOpen()) {
+      $('div.cart_info', this.view).css('display', 'block');
+    }
+  },
+
+  isOpen: function() {
+    return this.open;
+  },
+
+  toggleInfo: function() {
+    if(this.open) {
+      this.open = false;
+      $('div.cart_info', this.view).hide();
+    } else {
+      this.open = true;
+      $('div.cart_info', this.view).show();
+    }
+  },
+
+  setPurchase: function() {
+    this.line.purchase = true;
+    this.notifyObservers(this.line_index, this.line);
+  },
+
+  setSell: function() {
+    this.line.purchase = false;
+    this.notifyObservers(this.line_index, this.line);
+  },
+
+  onDiscount: function(event) {
+    index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
+    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    event.preventDefault();
+  },
+
+  onCondition: function(event) {
+    index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
+    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    event.preventDefault();
+  },
+
+  onInfo: function(event) {
+    $('div.cart_info', event.data.instance.view).toggle();
+    event.data.instance.open = !event.data.instance.open;
+    event.preventDefault();
+  },
+
+  onPlus: function(event) {
+    quantity = $('input.quantity', event.data.instance.view).val();
+    event.data.instance.line.quantity = parseInt(quantity) + 1;
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    event.preventDefault();
+  },
+
+  onMinus: function(event) {
+    quantity = $('input.quantity', event.data.instance.view).val();
+    if(quantity > 1) {
+      event.data.instance.line.quantity = parseInt(quantity) - 1;
+      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    }
+    event.preventDefault();
+  },
+
+  onSubmit: function(event) {
+    quantity = $('input.quantity', event.data.instance.view).val();
+    if(quantity >= 1) {
+      event.data.instance.line.quantity = parseInt(quantity);
+      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    } else {
+      $('input.quantity', event.data.instance.view).val(1);
+    }
+    event.preventDefault();
+  },
+
+  onAction: function(event) {
+    index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
+    if(index == 0) {
+      event.data.instance.setPurchase();
+    } else {
+      event.data.instance.setSell();
+    }
+    event.preventDefault();
+  },
+
+  onRemove: function(event) {
+    event.data.instance.line.quantity = 0;
+    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
+    event.preventDefault();
+  },
+
+  showSellControls: function() {
+    $('ul.cart_line_sell_control', this.view).css('display', 'block');
+  },
+
+  hideSellControls: function() {
+    $('ul.cart_line_sell_control', this.view).hide();
+  },
+
+  showPurchaseControls: function() {
+    $('ul.cart_line_purchase_control', this.view).css('display', 'block');
+  },
+
+  hidePurchaseControls: function() {
+    $('ul.cart_line_purchase_control', this.view).hide();
+  }
+});
+
+var TransactionsCartLinesController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.lines = [];
+    this.line_controllers = [];
+    this.line = $('li.cart_line', this.view).detach();
+    this.hideCartNav();
+    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
+  },
+
+  reset: function() {
+    this.lines = [];
+    this.line_controllers = [];
+    this.clearLines();
+    this.showCartNotice();
+    this.hideCartNav();
+  },
+
+  add: function(lines) {
+    this.clearLines();
+    for(line in lines) {
+      this.lines.push(lines[line]);
+    }
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+
+  replace: function(lines) {
+    this.clearLines();
+    this.lines = lines;
+    this.setLines(this.lines);
+    this.notifyObservers(this.lines);
+  },
+
+  setLines: function(lines) {
+    opened = [];
+    for(controller in this.line_controllers) {
+      if(this.line_controllers[controller].isOpen()) {
+        opened.push(controller);
+      }
+    }
+    this.line_controllers = [];
+    for(line in lines) {
+      is_open = false;
+      for(index in opened) {
+        if(line == opened[index]) {
+          is_open = true;
+        }
+      }
+      if(is_open) {
+        new_line = new TransactionsCartLineController(this.line.clone(), line, lines[line], true);
+      } else {
+        new_line = new TransactionsCartLineController(this.line.clone(), line, lines[line], false);
+      }
+      new_line.addObserver(this.updateLine, this);
+      this.line_controllers.push(new_line);
+      $('ul#cart_lines', this.view).append(new_line.view);
+    }
+    if(lines.length > 0) {
+      this.showCartNav();
+      this.hideCartNotice();
+    } else {
+      this.hideCartNav();
+      this.showCartNotice();
+    }
+  },
+
+  clearLines: function() {
+    $('ul#cart_lines > li').remove();
+  },
+
+  updateLine: function(index, updated_line) {
+    if(updated_line.quantity > 0) {
+      this.lines[index] = updated_line;
+    } else {
+      this.lines.splice(index, 1);
+    }
+    this.replace(this.lines);
+  },
+
+  onRemove: function(event) {
+    event.data.instance.reset();
+    event.data.instance.lines = [];
+    event.data.instance.line_controllers = [];
+    event.data.instance.notifyObservers(event.data.instance.lines);
+    event.preventDefault();
+  },
+
+  onInfo: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].toggleInfo();
+    }
+    event.preventDefault();
+  },
+
+  onPurchase: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setPurchase();
+    }
+    event.preventDefault();
+  },
+
+  onSell: function(event) {
+    for(controller in event.data.instance.line_controllers) {
+      event.data.instance.line_controllers[controller].setSell();
+    }
+    event.preventDefault();
+  },
+
+  showCartNav: function() {
+    $('ul#cart_lines_nav', this.view).show();
+  },
+
+  hideCartNav: function() {
+    $('ul#cart_lines_nav', this.view).hide();
+  },
+
+  showCartNotice: function() {
+    $('h2#cart_lines_notice', this.view).show();
+  },
+
+  hideCartNotice: function() {
+    $('h2#cart_lines_notice', this.view).hide();
+  }
+});
+
+var TransactionsCartTableController = new JS.Class(TableController, {
+
+  update: function(items) {
+    this.reset();
+
+    if(items.length > 0) {
+      for(item in items){
+        new_row = $(this.table_row).clone();
+        new_row.attr('data-object-id', items[item].id);
+
+        if(items[item].description == null || items[item].description == undefined) {
+          items[item].description = '';
+        }
+
+        $('td.title', new_row).html(items[item].title);
+        $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
+        $('td.tags', new_row).html(items[item].tags);
+        $('td.sku', new_row).html(items[item].sku);
+        $('td.price', new_row).html(Currency.pretty(items[item].price));
+        $('td.credit', new_row).html(Currency.pretty(items[item].credit));
+        $('td.cash', new_row).html(Currency.pretty(items[item].cash));
+        $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
+        $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
+        $('tbody', this.view).append(new_row);
+      }
+      this.view.show();
+    } else {
+      this.view.hide();
+    }
+  },
+
+  _processProperty: function(property) {
+    property.key = property.key.split('_').join(' ').capitalize();
+    return property;
+  }
+});
+
+var TransactionsCartSearchResultsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.cart_table_controller = new TransactionsCartTableController($('table', this.view));
+    this.cart_table_controller.addObserver(this.onItem, this);
+  },
+
+  reset: function() {
+    this.cart_table_controller.reset();
+  },
+
+  update: function(results) {
+    if(results.length > 0) {
+      $('h2#cart_search_results_notice').hide();
+    } else {
+      $('h2#cart_search_results_notice').show();
+    }
+    this.cart_table_controller.update(results);
+  },
+
+  onItem: function(id) {
+    item = Item.find(id);
+    this.notifyObservers([new Line({
+      item_id: item.id,
+      title: item.title,
+      description: item.description,
+      quantity: 1,
+      condition: 1,
+      discount: 1,
+      price: item.price,
+      credit: item.credit,
+      cash: item.cash,
+      purchase: true,
+      taxable: item.taxable,
+      discountable: item.discountable
+    })]);
+  }
+});
+
+var TransactionsCartController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.cart_lines_controller = new TransactionsCartLinesController('div#cart_lines');
+    this.cart_form_controller = new TransactionsCartFormController('div#cart_form');
+    this.cart_search_controller = new SearchController('div#cart_search');
+    this.cart_search_results_controller = new TransactionsCartSearchResultsController('div#cart_search_results');
+    this.cart_section_controller = new SectionController('ul#cart_nav', [
+      this.cart_lines_controller,
+      this.cart_form_controller,
+      this.cart_search_results_controller
+    ]);
+    this.cart_search_controller.addObserver(this.search, this);
+    this.cart_search_controller.addObserver(this.showSearchController, this);
+    this.cart_lines_controller.addObserver(this.setLines, this);
+    this.cart_search_results_controller.addObserver(this.addLines, this);
+    this.cart_form_controller.addObserver(this.addLines, this);
+
+    this.reset();
+  },
+
+  reset: function() {
+    this.cart_lines_controller.reset();
+    this.cart_form_controller.reset();
+    this.cart_search_controller.reset();
+    this.cart_search_results_controller.reset();
+    this.cart_section_controller.reset();
+    $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
+    this.showLinesController();
+  },
+
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      keywords = query.split('|');
+      if(keywords.length > 1) {
+        pairs = [];
+        for(keyword in keywords) {
+          pair = keywords[keyword].split('~');
+          if(pair.length > 1) {
+            pairs.push(pair);
+          }
+        }
+        statement = '';
+        match_statements = [];
+        params = [];
+        for(pair in pairs) {
+          match_statements.push(pairs[pair][0] + ' LIKE ?');
+          params.push('%' + pairs[pair][1] + '%');
+        }
+        statement = match_statements.join(' AND ');
+        console.log(statement);
+        this.cart_search_results_controller.update(Item.where(statement, params, page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
+      } else {
+        pattern = 'title_or_description_or_sku_contains_all';
+        this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
+      }
+    } else {
+      pattern = 'title_starts_with';
+      this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
+    }
+  },
+
+  update: function(transaction) {
+    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
+  },
+
+  showLinesController: function() {
+    this.cart_section_controller.showController(0);
+  },
+
+  showFormController: function() {
+    this.cart_section_controller.showController(1);
+  },
+
+  showSearchController: function() {
+    this.cart_section_controller.showController(2);
+  },
+
+  addLines: function(lines) {
+    this.cart_lines_controller.add(lines);
+  },
+
+  setLines: function(lines) {
+    this.notifyObservers(lines);
+  }
+});
+
+var Entry = new JS.Class(Model, {
   extend: {
-    resource: 'payment',
-    columns: ['id', 'transaction_id', 'form', 'amount'],
-    belongs_to: ['transaction']
+    resource: 'entry',
+    columns: ['id', 'till_id', 'title', 'description', 'time', 'amount'],
+    belongs_to: ['till']
   }
 });
 
@@ -636,7 +1738,7 @@ var Till = new JS.Class(Model, {
   extend: {
     resource: 'till',
     columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
-    has_many: ['entries', 'transactions', 'users']
+    has_many: ['entries', 'transactions', 'employees']
   },
 
   balance: function() {
@@ -649,20 +1751,12 @@ var Till = new JS.Class(Model, {
   }
 });
 
-var Timecard = new JS.Class(Model, {
-  extend: {
-    resource: 'timecard',
-    columns: ['id', 'user_id', 'begin', 'end'],
-    belongs_to: ['user']
-  }
-});
-
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
-    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
-    belongs_to: ['customer', 'till', 'user'],
-    has_many: ['lines', 'payments']
+    columns: ['id', 'till_id', 'customer_id', 'employee_id', 'tax_rate', 'complete', 'locked'],
+    belongs_to: ['customer', 'till', 'employee'],
+    has_many: ['lines']
   },
 
   subtotal: function() {
@@ -836,1389 +1930,8 @@ var Transaction = new JS.Class(Model, {
     }
   }
 });
-var Factory = new JS.Class({
-  extend: {
-    factories: [],
 
-    build: function(klass, properties) {
-      var factory = this._factory_fetch(klass);
-      if(factory != null && window[klass] != undefined) {
-        var properties = this._merge_properties(factory.properties, properties);
-        for(property in properties) {
-          if(properties[property].sequence != undefined) {
-            properties[property] = this.sequence(klass, properties[property].sequence);
-          } else if(properties[property].factory != undefined) {
-          } else if(properties[property].factories != undefined) {
-          } else {
-            properties[property] = properties[property];
-          }
-        }
-        return new window[klass](properties);
-      } else {
-        return null;
-      }
-    },
-
-    define: function(klass, properties) {
-      if(!this._factory_exists(klass)) {
-        this.factories.push({klass: klass, properties: properties, sequences: {}});
-      } else {
-        var factory = this._factory_fetch(klass);
-        factory.properties = properties;
-      }
-    },
-
-    sequence: function(klass, property) {
-      if(this._factory_exists(klass)) {
-        var factory = this._factory_fetch(klass);
-      } else {
-        this.define(klass, {});
-        var factory = this._factory_fetch(klass);
-      }
-      if(factory.sequences[property] != undefined) {
-        factory.sequences[property] += 1;
-      } else {
-        factory.sequences[property] = 1;
-      }
-      return factory.sequences[property];
-    },
-
-    _merge_properties: function(original, source) {
-      var original_copy = {};
-      for(property in original) {
-        original_copy[property]  = original[property];
-      }
-      for(property in source) {
-        original_copy[property] = source[property];
-      }
-      return original_copy;
-    },
-
-    _factory_fetch: function(klass) {
-      for(factory in this.factories) {
-        if(this.factories[factory].klass == klass) {
-          return this.factories[factory];
-        }
-      }
-      return null;
-    },
-
-    _factory_exists: function(klass) {
-      for(factory in this.factories) {
-        if(this.factories[factory].klass == klass) {
-          return true;
-        }
-      }
-      return false;
-    }
-  }
-});
-
-Factory.define('Address', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  first_line: '555 Street Way',
-  second_line: 'Suite 309',
-  city: 'Lincoln',
-  state: 'NE',
-  province: '',
-  country: 'US',
-  zip: '68508'
-});
-
-Factory.define('Customer', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  credit: 1000,
-  drivers_license_number: 'H12000000',
-  drivers_license_state: 'NE',
-  notes: 'Lorem Ipsum...',
-  active: true
-});
-
-Factory.define('Email', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  address: 'example@example.com'
-});
-
-Factory.define('Entry', {
-  id: {
-    sequence: 'id'
-  },
-  till: {
-    factory: 'Till'
-  },
-  title: 'Title',
-  description: 'Lorem Ipsum...',
-  time: new Date(),
-  amount: 0
-});
-
-Factory.define('Item', {
-  id: {
-    sequence: 'id'
-  },
-  properties: {
-    factories: 'Property'
-  },
-  title: 'Title',
-  description: 'Lorem Ipsum...',
-  sku: {
-    sequence: 'sku'
-  },
-  price: 1000,
-  taxable: true,
-  discountable: false,
-  locked: false,
-  active: true
-});
-
-Factory.define('Line', {
-  id: {
-    sequence: 'id'
-  },
-  properties: {
-    factories: 'Item'
-  },
-  quantity: 1,
-  price: 1000
-});
-
-Factory.define('Payment', {
-  id: {
-    sequence: 'id'
-  },
-  transaction: {
-    factory: 'Transaction'
-  },
-  form: 'cash',
-  amount: 0
-});
-
-Factory.define('Person', {
-  id: {
-    sequence: 'id'
-  },
-  phones: {
-    factories: 'Phone'
-  },
-  emails: {
-    factories: 'Email'
-  },
-  addresses: {
-    factories: 'Address'
-  },
-  first_name: 'Joe',
-  middle_name: 'Q',
-  last_name: 'Example',
-  date_of_birth: new Date()
-});
-
-Factory.define('Phone', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  title: 'Work',
-  number: '402-444-5555'
-});
-
-Factory.define('Property', {
-  id: {
-    sequence: 'id'
-  },
-  key: 'foo',
-  value: 'bar'
-});
-
-Factory.define('Till', {
-  id: {
-    sequence: 'id'
-  },
-  title: 'Title'
-});
-
-Factory.define('Timecard', {
-  id: {
-    sequence: 'id'
-  },
-  user: {
-    factory: 'User'
-  },
-  begin: new Date(),
-  end: new Date()
-});
-
-Factory.define('Transaction', {
-  id: {
-    sequence: 'id'
-  },
-  till: {
-    factory: 'Till'
-  },
-  customer: {
-    factory: 'Customer'
-  },
-  lines: {
-    factories: 'Line'
-  },
-  payments: {
-    factories: 'Payment'
-  },
-  tax_rate: 0.07,
-  complete: false,
-  locked: false
-});
-
-Factory.define('User', {
-  id: {
-    sequence: 'id'
-  },
-  person: {
-    factory: 'Person'
-  },
-  login: 'login',
-  email: 'example@example.com',
-  pin: '1111',
-  active: true
-});
-var ViewController = new JS.Class({
-
-  initialize: function(view) {
-    this.view = $(view);
-  }
-});
-
-var TillController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
-  },
-
-  doSelect: function(event) {
-    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
-    event.preventDefault();
-  }
-});
-var Sectionable = new JS.Module({
-
-  show: function() {
-    if(this.view != null && this.view != undefined) {
-      this.view.show();
-    }
-  },
-
-  hide: function() {
-    if(this.view != null && this.view != undefined) {
-      this.view.hide();
-    }
-  }
-});
-
-var SearchController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.page = 1;
-    this.query = null;
-
-    this.input = $('input', this.view);
-    this.input.bind('change', {instance: this}, this.onChanged);
-    this.alphabet_controller = new AlphabetController($('ul.alphabet_nav', this.view));
-    this.alphabet_controller.addObserver(this.onLetter, this);
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
-    $('a.prev', this.view).bind('click', {instance: this}, this.onPrev);
-    $('a.next', this.view).bind('click', {instance: this}, this.onNext);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
-    this.reset();
-  },
-
-  reset: function() {
-    this.input.val(null);
-  },
-
-  showLoading: function() {
-    $('img.loading', this.view).show();
-  },
-
-  hideLoading: function() {
-    $('img.loading', this.view).hide();
-  },
-
-  onLetter: function(letter) {
-    this.input.val(letter);
-    this.input.trigger('change');
-  },
-
-  onPrev: function(event) {
-    if(event.data.instance.query != null) {
-      if(event.data.instance.page > 1) {
-        event.data.instance.page -= 1;
-      }
-      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
-    }
-    event.preventDefault();
-  },
-
-  onNext: function(event) {
-    if(event.data.instance.query != null) {
-      event.data.instance.page += 1;
-      event.data.instance.notifyObservers(event.data.instance.query, event.data.instance.page);
-    }
-    event.preventDefault();
-  },
-
-  onClear: function(event) {
-    event.data.instance.page = 1;
-    event.data.instance.query = null;
-    event.data.instance.input.val(null);
-    event.preventDefault();
-  },
-
-  onChanged: function(event) {
-    event.data.instance.page = 1;
-    event.data.instance.query = event.data.instance.input.val();
-    if(event.data.instance.query.length > 0) {
-      event.data.instance.notifyObservers(event.data.instance.query, 1);
-    }
-    event.preventDefault();
-  }
-});
-
-var FormController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
-  },
-
-  reset: function() {
-    $(':input', this.view)
-      .not(':button, :submit, :reset')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected');
-  },
-
-  update: function(data) {
-  },
-
-  save: function() {
-  },
-
-  onClear: function(event) {
-    event.data.instance.reset();
-    event.preventDefault();
-  },
-
-  onSave: function(event) {
-    event.data.instance.save();
-    event.preventDefault();
-  }
-});
-
-var CustomerFormController = new JS.Class(FormController, {
-  include: Sectionable,
-
-  initialize: function(view) {
-    this.callSuper();
-  },
-
-  update: function(customer) {
-    this.reset();
-
-    $('input#id', this.view).val(customer.id);
-    $('input#credit', this.view).val(Currency.format(customer.credit));
-    $('input#drivers_license_number', this.view).val(customer.drivers_license_number);
-    $('input#drivers_license_state', this.view).val(customer.drivers_license_state);
-    $('input#flagged', this.view).attr('checked', !customer.active);
-    $('textarea#notes', this.view).val(customer.notes);
-
-    person = customer.person();
-    if(person != undefined) {
-      $('input#first_name', this.view).val(person.first_name);
-      $('input#middle_name', this.view).val(person.middle_name);
-      $('input#last_name', this.view).val(person.last_name);
-      if(person.date_of_birth == null || person.date_of_birth == undefined) {
-        person.date_of_birth = new Date();
-      }
-      date_of_birth = (new Date()).setISO8601(person.date_of_birth);
-      $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
-      $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
-      $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
-
-      addresses = person.addresses();
-      if(addresses.length > 0) {
-        $('input#first_line', this.view).val(addresses[0].first_line);
-        $('input#second_line', this.view).val(addresses[0].second_line);
-        $('input#city', this.view).val(addresses[0].city);
-        $('input#state', this.view).val(addresses[0].state);
-        $('input#zip', this.view).val(addresses[0].zip);
-      }
-
-      phones = person.phones();
-      if(phones.length > 0){
-        $('input#number', this.view).val(phones[0].number);
-      }
-
-      emails = person.emails();
-      if(emails.length > 0){
-        $('input#address', this.view).val(emails[0].address);
-      }
-    }
-  },
-
-  save: function() {
-    if(this.valid()) {
-      if($('input#id', this.view).val() > 0) {
-        customer = Customer.find($('input#id', this.view).val());
-        customer.credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
-        customer.notes = $('textarea#notes', this.view).val();
-        customer.drivers_license_number = $('input#drivers_license_number', this.view).val();
-        customer.drivers_license_state = $('input#drivers_license_state', this.view).val();
-        customer.active = !$('input#flagged', this.view).is(':checked');
-        customer.save();
-
-        if(customer != undefined) {
-          person = customer.person();
-          if(person != undefined) {
-            date_of_birth_year = $('select#date_of_birth_year').val();
-            date_of_birth_month = $('select#date_of_birth_month').val() - 1;
-            date_of_birth_day = $('select#date_of_birth_day').val();
-            date_of_birth = new Date(date_of_birth_year, date_of_birth_month, date_of_birth_day);
-
-            person.first_name = $('input#first_name', this.view).val();
-            person.middle_name = $('input#middle_name', this.view).val();
-            person.last_name = $('input#last_name', this.view).val();
-            person.date_of_birth = date_of_birth;
-            person.save();
-
-            addresses = person.addresses();
-            if(addresses.length > 0) {
-              addresses[0].first_line =  $('input#first_line', this.view).val();
-              addresses[0].second_line = $('input#second_line', this.view).val();
-              addresses[0].city = $('input#city', this.view).val();
-              addresses[0].state = $('input#state', this.view).val();
-              addresses[0].zip = $('input#zip', this.view).val();
-              addresses[0].save();
-            } else {
-              address = new Address({
-                first_line: $('input#first_line', this.view).val(),
-                second_line: $('input#second_line', this.view).val(),
-                city: $('input#city', this.view).val(),
-                state: $('input#state', this.view).val(),
-                zip: $('input#zip', this.view).val(),
-              });
-              address.setPerson(person);
-              address.save();
-            }
-
-            phones = person.phones();
-            if(phones.length > 0) {
-              phones[0].number =  $('input#number', this.view).val();
-              phones[0].save();
-            } else {
-              phone = new Phone({
-                number: $('input#number', this.view).val()
-              });
-              phone.setPerson(person);
-              phone.save();
-            }
-
-            emails = person.emails();
-            if(emails.length > 0) {
-              emails[0].address =  $('input#address', this.view).val();
-              emails[0].save();
-            } else {
-              email = new Email({
-                address: $('input#address', this.view).val()
-              });
-              email.setPerson(person);
-              email.save();
-            }
-
-            customer.setPerson(person);
-          }
-        }
-      } else {
-        person = new Person({
-          first_name: $('input#first_name', this.view).val(),
-          middle_name: $('input#middle_name', this.view).val(),
-          last_name: $('input#last_name', this.view).val()
-        });
-        if(person.save()) {
-          address = new Address({
-            first_line: $('input#first_line', this.view).val(),
-            second_line: $('input#second_line', this.view).val(),
-            city: $('input#city', this.view).val(),
-            state: $('input#state', this.view).val(),
-            zip: $('input#zip', this.view).val(),
-          });
-          address.setPerson(person);
-          address.save();
-
-          phone = new Phone({
-            number: $('input#number', this.view).val()
-          });
-          phone.setPerson(person);
-          phone.save();
-
-          email = new Email({
-            address: $('input#address', this.view).val()
-          });
-          email.setPerson(person);
-          email.save();
-        }
-
-        customer = new Customer({
-          credit: parseInt(Currency.toPennies($('input#credit', this.view).val())),
-          notes: $('textarea#notes', this.view).val(),
-          drivers_license_number: $('input#drivers_license_number', this.view).val(),
-          drivers_license_state: $('input#drivers_license_state', this.view).val(),
-          active: !$('input#flagged', this.view).is(':checked')
-        });
-        customer.setPerson(person);
-      }
-      if(customer.save()) {
-        this.update(customer);
-        this.notifyObservers(customer);
-      }
-    } else {
-      this.error();
-    }
-  },
-
-  valid: function() {
-    if($('input#first_name', this.view).val() == '') {
-      return false;
-    }
-    if($('input#last_name', this.view).val() == '') {
-      return false;
-    }
-    if($('input#number', this.view).val() == '' &&
-       $('input#address', this.view).val() == '' &&
-       $('input#drivers_license_number', this.view).val() == '' &&
-       $('input#drivers_license_number', this.view).val() == '') {
-      return false;
-    }
-    return true;
-  },
-
-  error: function() {
-    $(':required', this.view).addClass('error');
-  },
-
-  reset: function() {
-    this.callSuper();
-    $('input#id', this.view).val(0);
-    $('input#credit', this.view).val(Currency.format(0));
-    $(':required', this.view).removeClass('error');
-  }
-});
-
-var TableController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.table_row = $('tbody > tr', view).detach();
-    this.reset();
-    $('tbody > tr', view).live('click', {instance: this}, this.onSelect);
-  },
-
-  reset: function() {
-    $('tbody > tr', this.view).remove();
-  },
-
-  update: function(data) {
-  },
-
-  onSelect: function(event) {
-    $('tbody > tr', event.data.instance.view).removeClass('selected');
-    $(this).addClass('selected');
-    event.data.instance.notifyObservers($(this).attr('data-object-id'));
-  }
-});
-var Boolean = new JS.Class({
-  extend: {
-    toString: function(boolean) {
-      return boolean ? 'Yes' : 'No'
-    }
-  }
-});
-
-var CustomerTableController = new JS.Class(TableController, {
-
-  update: function(people) {
-    this.reset();
-
-    if(people.length > 0) {
-      for(person in people){
-        new_row = $(this.table_row).clone();
-        new_row.attr('data-object-id', people[person].id);
-
-        $('td.name', new_row).html([
-          people[person].first_name,
-          people[person].last_name
-        ].join(' '));
-
-        addresses = people[person].addresses();
-        for(address in addresses) {
-          address_string = [
-            addresses[address].first_line,
-            addresses[address].second_line,
-            addresses[address].city + ',',
-            addresses[address].state,
-            addresses[address].province,
-            addresses[address].country,
-            addresses[address].zip
-          ].join(' ');
-          $('td.address', new_row).append($('<address></address>').html(address_string));
-        }
-
-        phones = people[person].phones();
-        for(phone in phones) {
-          if(phones[phone].title != null) {
-            phone_string = phones[phone].title + ' - ' + phones[phone].number;
-          } else {
-            phone_string = phones[phone].number;
-          }
-          $('td.phone', new_row).append($('<p></p>').html(phone_string));
-        }
-
-        emails = people[person].emails();
-        for(email in emails) {
-          email_string = emails[email].address;
-          $('td.email', new_row).append($('<p></p>').html(email_string));
-        }
-
-        customer = people[person].customer();
-        if(customer != undefined) {
-          $('td.credit', new_row).html(Currency.pretty(customer.credit));
-          $('td.drivers_license', new_row).html([
-            customer.drivers_license_number,
-            customer.drivers_license_state
-          ].join(' '));
-          $('td.flagged', new_row).html(Boolean.toString(!customer.active));
-          $('td.notes', new_row).html(customer.notes);
-          $('tbody', this.view).append(new_row);
-        }
-      }
-      this.view.show();
-    } else {
-      this.view.hide();
-    }
-  }
-});
-
-var CustomerSearchResultsController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.customer_table_controller = new CustomerTableController($('table', this.view));
-    this.customer_table_controller.addObserver(this.onPerson, this);
-  },
-
-  reset: function() {
-    this.customer_table_controller.reset();
-  },
-
-  update: function(results) {
-    if(results.length > 0) {
-      $('h2#customer_search_results_notice').hide();
-    } else {
-      $('h2#customer_search_results_notice').show();
-    }
-    this.customer_table_controller.update(results);
-  },
-
-  onPerson: function(id) {
-    this.notifyObservers(Person.find(id).customer());
-  }
-});
-
-var CustomerController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.customer_review_controller = new CustomerReviewController('div#customer_review');
-    this.customer_form_controller = new CustomerFormController('div#customer_form');
-    this.customer_search_controller = new SearchController('div#customer_search');
-    this.customer_search_results_controller = new CustomerSearchResultsController('div#customer_search_results');
-    this.customer_section_controller = new SectionController('ul#customer_nav', [
-      this.customer_review_controller,
-      this.customer_form_controller,
-      this.customer_search_results_controller
-    ]);
-    this.customer_search_controller.addObserver(this.search, this);
-    this.customer_search_controller.addObserver(this.showSearchController, this);
-    this.customer_search_results_controller.addObserver(this.setCustomer, this);
-    this.customer_form_controller.addObserver(this.setCustomer, this);
-
-    this.reset();
-  },
-
-  reset: function() {
-    this.customer_review_controller.reset();
-    this.customer_form_controller.reset();
-    this.customer_search_controller.reset();
-    this.customer_search_results_controller.reset();
-    this.customer_section_controller.reset();
-    this.showReviewSection();
-  },
-
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      pattern = 'first_name_or_last_name_contains_any';
-    } else {
-      pattern = 'last_name_starts_with';
-    }
-    this.customer_search_results_controller.update(Person.search(pattern, query.split(' '), page, 10, this.customer_search_controller.showLoading, this.customer_search_controller.hideLoading));
-  },
-
-  showReviewSection: function() {
-    this.customer_section_controller.showController(0);
-  },
-
-  showFormController: function() {
-    this.customer_section_controller.showController(1);
-  },
-
-  showSearchController: function(query) {
-    if(query) {
-      this.customer_section_controller.showController(2);
-    }
-  },
-
-  setCustomer: function(customer) {
-    this.customer_review_controller.update(customer);
-    this.customer_form_controller.update(customer);
-    this.showReviewSection();
-    this.notifyObservers(customer);
-  }
-});
-
-var CartLineController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view, index, line, open) {
-    this.callSuper();
-    this.line_index = index;
-    this.line = line;
-    this.open = open;
-    this.set(line);
-    $('a.remove', this.view).bind('click', {instance: this}, this.onRemove);
-    $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
-    $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
-    $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
-    $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
-    $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
-    $('ul.cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
-    $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
-  },
-
-  set: function(line) {
-
-    $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
-    if(line.description != undefined) {
-      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
-    }
-    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
-    $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
-    $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
-    if(line.purchase) {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
-      if(line.discountable) {
-        this.showPurchaseControls();
-      }
-      this.hideSellControls();
-    } else {
-      $('ul.cart_line_action li a.sell', this.view).addClass('selected');
-      this.showSellControls();
-      this.hidePurchaseControls();
-    }
-    if(this.isOpen()) {
-      $('div.cart_info', this.view).css('display', 'block');
-    }
-  },
-
-  isOpen: function() {
-    return this.open;
-  },
-
-  toggleInfo: function() {
-    if(this.open) {
-      this.open = false;
-      $('div.cart_info', this.view).hide();
-    } else {
-      this.open = true;
-      $('div.cart_info', this.view).show();
-    }
-  },
-
-  setPurchase: function() {
-    this.line.purchase = true;
-    this.notifyObservers(this.line_index, this.line);
-  },
-
-  setSell: function() {
-    this.line.purchase = false;
-    this.notifyObservers(this.line_index, this.line);
-  },
-
-  onDiscount: function(event) {
-    index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
-    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    event.preventDefault();
-  },
-
-  onCondition: function(event) {
-    index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
-    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    event.preventDefault();
-  },
-
-  onInfo: function(event) {
-    $('div.cart_info', event.data.instance.view).toggle();
-    event.data.instance.open = !event.data.instance.open;
-    event.preventDefault();
-  },
-
-  onPlus: function(event) {
-    quantity = $('input.quantity', event.data.instance.view).val();
-    event.data.instance.line.quantity = parseInt(quantity) + 1;
-    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    event.preventDefault();
-  },
-
-  onMinus: function(event) {
-    quantity = $('input.quantity', event.data.instance.view).val();
-    if(quantity > 1) {
-      event.data.instance.line.quantity = parseInt(quantity) - 1;
-      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    }
-    event.preventDefault();
-  },
-
-  onSubmit: function(event) {
-    quantity = $('input.quantity', event.data.instance.view).val();
-    if(quantity >= 1) {
-      event.data.instance.line.quantity = parseInt(quantity);
-      event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    } else {
-      $('input.quantity', event.data.instance.view).val(1);
-    }
-    event.preventDefault();
-  },
-
-  onAction: function(event) {
-    index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
-    if(index == 0) {
-      event.data.instance.setPurchase();
-    } else {
-      event.data.instance.setSell();
-    }
-    event.preventDefault();
-  },
-
-  onRemove: function(event) {
-    event.data.instance.line.quantity = 0;
-    event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
-    event.preventDefault();
-  },
-
-  showSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).css('display', 'block');
-  },
-
-  hideSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).hide();
-  },
-
-  showPurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).css('display', 'block');
-  },
-
-  hidePurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).hide();
-  }
-});
-
-var CartLinesController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.lines = [];
-    this.line_controllers = [];
-    this.line = $('li.cart_line', this.view).detach();
-    this.hideCartNav();
-    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
-    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
-    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
-    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
-  },
-
-  reset: function() {
-    this.lines = [];
-    this.line_controllers = [];
-    this.clearLines();
-    this.showCartNotice();
-    this.hideCartNav();
-  },
-
-  add: function(lines) {
-    this.clearLines();
-    for(line in lines) {
-      this.lines.push(lines[line]);
-    }
-    this.setLines(this.lines);
-    this.notifyObservers(this.lines);
-  },
-
-  replace: function(lines) {
-    this.clearLines();
-    this.lines = lines;
-    this.setLines(this.lines);
-    this.notifyObservers(this.lines);
-  },
-
-  setLines: function(lines) {
-    opened = [];
-    for(controller in this.line_controllers) {
-      if(this.line_controllers[controller].isOpen()) {
-        opened.push(controller);
-      }
-    }
-    this.line_controllers = [];
-    for(line in lines) {
-      is_open = false;
-      for(index in opened) {
-        if(line == opened[index]) {
-          is_open = true;
-        }
-      }
-      if(is_open) {
-        new_line = new CartLineController(this.line.clone(), line, lines[line], true);
-      } else {
-        new_line = new CartLineController(this.line.clone(), line, lines[line], false);
-      }
-      new_line.addObserver(this.updateLine, this);
-      this.line_controllers.push(new_line);
-      $('ul#cart_lines', this.view).append(new_line.view);
-    }
-    if(lines.length > 0) {
-      this.showCartNav();
-      this.hideCartNotice();
-    } else {
-      this.hideCartNav();
-      this.showCartNotice();
-    }
-  },
-
-  clearLines: function() {
-    $('ul#cart_lines > li').remove();
-  },
-
-  updateLine: function(index, updated_line) {
-    if(updated_line.quantity > 0) {
-      this.lines[index] = updated_line;
-    } else {
-      this.lines.splice(index, 1);
-    }
-    this.replace(this.lines);
-  },
-
-  onRemove: function(event) {
-    event.data.instance.reset();
-    event.data.instance.lines = [];
-    event.data.instance.line_controllers = [];
-    event.data.instance.notifyObservers(event.data.instance.lines);
-    event.preventDefault();
-  },
-
-  onInfo: function(event) {
-    for(controller in event.data.instance.line_controllers) {
-      event.data.instance.line_controllers[controller].toggleInfo();
-    }
-    event.preventDefault();
-  },
-
-  onPurchase: function(event) {
-    for(controller in event.data.instance.line_controllers) {
-      event.data.instance.line_controllers[controller].setPurchase();
-    }
-    event.preventDefault();
-  },
-
-  onSell: function(event) {
-    for(controller in event.data.instance.line_controllers) {
-      event.data.instance.line_controllers[controller].setSell();
-    }
-    event.preventDefault();
-  },
-
-  showCartNav: function() {
-    $('ul#cart_lines_nav', this.view).show();
-  },
-
-  hideCartNav: function() {
-    $('ul#cart_lines_nav', this.view).hide();
-  },
-
-  showCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).show();
-  },
-
-  hideCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).hide();
-  }
-});
-
-var CartFormController = new JS.Class(FormController, {
-  include: Sectionable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.row = $('ul.line_elements', view).first().clone();
-
-    $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
-    $('a.more', this.view).bind('click', {instance: this}, this.onMore);
-    $('a.less', this.view).bind('click', {instance: this}, this.onLess);
-    $('a.clear_all', this.view).live('click', {instance: this}, this.onClearAll);
-    $('a.add_all', this.view).live('click', {instance: this}, this.onAddAll);
-    $('a.clear_row', this.view).live('click', {instance: this}, this.onClearRow);
-    $('a.add_row', this.view).live('click', {instance: this}, this.onAddRow);
-  },
-
-  saveAll: function() {
-    var controller = this;
-    $('ul.line_elements', this.view).each(function(index, value) {
-      controller.saveLine(index);
-    });
-  },
-
-  saveLine: function(index) {
-    new_line = $('ul.line_elements', this.view).eq(index);
-
-    base_price = parseInt(Currency.toPennies($('input#price', new_line).val()));
-    if(base_price <= 0) {
-      base_price = 0;
-    }
-    credit_price = parseInt(Currency.toPennies($('input#credit', new_line).val()));
-    if(credit_price <= 0) {
-      credit_price = 0;
-    }
-    cash_price = parseInt(Currency.toPennies($('input#cash', new_line).val()));
-    if(cash_price <= 0) {
-      cash_price = 0;
-    }
-
-    line = new Line({
-      title: $('input#title', new_line).val(),
-      description: $('input#description', new_line).val(),
-      quantity: parseInt(Math.abs($('input#quantity', new_line).val())),
-      condition: 1,
-      discount: 1,
-      price: base_price,
-      credit: credit_price,
-      cash: cash_price,
-      purchase: true,
-      taxable: $('input#taxable', new_line).attr('checked'),
-      discountable: $('input#discountable', new_line).attr('checked')
-    });
-
-    if(this.valid([line])) {
-      this.notifyObservers([line]);
-    }
-  },
-
-  valid: function(lines) {
-    for(l in lines) {
-      if(lines[l].valid()) {
-        if((lines[l].price > 0 || lines[l].credit > 0 || lines[l].cash > 0) && lines[l].quantity > 0) {
-          return true;
-        }
-        return false;
-      } else {
-        return false;
-      }
-    }
-    return false;
-  },
-
-  reset: function() {
-    this.callSuper();
-    $('input#quantity', this.view).val(1);
-    $('input#taxable', this.view).attr('checked', true);
-    $('input#discountable', this.view).attr('checked', true);
-  },
-
-  onPrice: function(event) {
-    value = $(this).val();
-    if(isNaN(value)) {
-      $(this).val(Currency.format(0));
-    } else {
-      $(this).val(Currency.format(Currency.toPennies(Math.abs(value))));
-    }
-  },
-
-  onMore: function(event) {
-    $('form', event.data.instance.view).append(event.data.instance.row.clone());
-    event.preventDefault();
-  },
-
-  onLess: function(event) {
-    $('ul.line_elements', event.data.instance.view).last().remove();
-    event.preventDefault();
-  },
-
-  onAddAll: function(event) {
-    event.data.instance.saveAll();
-    event.preventDefault();
-  },
-
-  onClearAll: function(event) {
-    event.data.instance.reset();
-    event.preventDefault();
-  },
-
-  onClearRow: function(event) {
-    $(this)
-      .closest('ul')
-      .find(':input')
-      .not(':button, :submit, :reset, :hidden')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected')
-    $(this)
-      .closest('ul')
-      .find('input#quantity').val(1);
-    $(this)
-      .closest('ul')
-      .find('input#taxable').attr('checked', true);
-    $(this)
-      .closest('ul')
-      .find('input#discountable').attr('checked', true);
-    event.preventDefault();
-  },
-
-  onAddRow: function(event) {
-    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
-    event.preventDefault();
-  }
-});
-
-var CartTableController = new JS.Class(TableController, {
-
-  update: function(items) {
-    this.reset();
-
-    if(items.length > 0) {
-      for(item in items){
-        new_row = $(this.table_row).clone();
-        new_row.attr('data-object-id', items[item].id);
-
-        if(items[item].description == null || items[item].description == undefined) {
-          items[item].description = '';
-        }
-
-        $('td.title', new_row).html(items[item].title);
-        $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
-        $('td.tags', new_row).html(items[item].tags);
-        $('td.sku', new_row).html(items[item].sku);
-        $('td.price', new_row).html(Currency.pretty(items[item].price));
-        $('td.credit', new_row).html(Currency.pretty(items[item].credit));
-        $('td.cash', new_row).html(Currency.pretty(items[item].cash));
-        $('td.taxable', new_row).html(Boolean.toString(items[item].taxable));
-        $('td.discountable', new_row).html(Boolean.toString(items[item].discountable));
-        $('tbody', this.view).append(new_row);
-      }
-      this.view.show();
-    } else {
-      this.view.hide();
-    }
-  },
-
-  _processProperty: function(property) {
-    property.key = property.key.split('_').join(' ').capitalize();
-    return property;
-  }
-});
-
-var CartSearchResultsController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.cart_table_controller = new CartTableController($('table', this.view));
-    this.cart_table_controller.addObserver(this.onItem, this);
-  },
-
-  reset: function() {
-    this.cart_table_controller.reset();
-  },
-
-  update: function(results) {
-    if(results.length > 0) {
-      $('h2#cart_search_results_notice').hide();
-    } else {
-      $('h2#cart_search_results_notice').show();
-    }
-    this.cart_table_controller.update(results);
-  },
-
-  onItem: function(id) {
-    item = Item.find(id);
-    this.notifyObservers([new Line({
-      item_id: item.id,
-      title: item.title,
-      description: item.description,
-      quantity: 1,
-      condition: 1,
-      discount: 1,
-      price: item.price,
-      credit: item.credit,
-      cash: item.cash,
-      purchase: true,
-      taxable: item.taxable,
-      discountable: item.discountable
-    })]);
-  }
-});
-
-var CartController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.cart_lines_controller = new CartLinesController('div#cart_lines');
-    this.cart_form_controller = new CartFormController('div#cart_form');
-    this.cart_search_controller = new SearchController('div#cart_search');
-    this.cart_search_results_controller = new CartSearchResultsController('div#cart_search_results');
-    this.cart_section_controller = new SectionController('ul#cart_nav', [
-      this.cart_lines_controller,
-      this.cart_form_controller,
-      this.cart_search_results_controller
-    ]);
-    this.cart_search_controller.addObserver(this.search, this);
-    this.cart_search_controller.addObserver(this.showSearchController, this);
-    this.cart_lines_controller.addObserver(this.setLines, this);
-    this.cart_search_results_controller.addObserver(this.addLines, this);
-    this.cart_form_controller.addObserver(this.addLines, this);
-
-    this.reset();
-  },
-
-  reset: function() {
-    this.cart_lines_controller.reset();
-    this.cart_form_controller.reset();
-    this.cart_search_controller.reset();
-    this.cart_search_results_controller.reset();
-    this.cart_section_controller.reset();
-    $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
-    this.showLinesController();
-  },
-
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      keywords = query.split('|');
-      if(keywords.length > 1) {
-        pairs = [];
-        for(keyword in keywords) {
-          pair = keywords[keyword].split('~');
-          if(pair.length > 1) {
-            pairs.push(pair);
-          }
-        }
-        statement = '';
-        match_statements = [];
-        params = [];
-        for(pair in pairs) {
-          match_statements.push(pairs[pair][0] + ' LIKE ?');
-          params.push('%' + pairs[pair][1] + '%');
-        }
-        statement = match_statements.join(' AND ');
-        console.log(statement);
-        this.cart_search_results_controller.update(Item.where(statement, params, page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
-      } else {
-        pattern = 'title_or_description_or_sku_contains_all';
-        this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
-      }
-    } else {
-      pattern = 'title_starts_with';
-      this.cart_search_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.cart_search_controller.showLoading, this.cart_search_controller.hideLoading));
-    }
-  },
-
-  update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
-  },
-
-  showLinesController: function() {
-    this.cart_section_controller.showController(0);
-  },
-
-  showFormController: function() {
-    this.cart_section_controller.showController(1);
-  },
-
-  showSearchController: function() {
-    this.cart_section_controller.showController(2);
-  },
-
-  addLines: function(lines) {
-    this.cart_lines_controller.add(lines);
-  },
-
-  setLines: function(lines) {
-    this.notifyObservers(lines);
-  }
-});
-
-var PaymentFieldController = new JS.Class(ViewController, {
+var TransactionsPaymentFieldController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -2271,7 +1984,7 @@ var PaymentFieldController = new JS.Class(ViewController, {
   }
 });
 
-var PaymentLineController = new JS.Class(PaymentFieldController, {
+var TransactionsPaymentLineController = new JS.Class(TransactionsPaymentFieldController, {
 
   initialize: function(view) {
     this.callSuper();
@@ -2301,7 +2014,7 @@ var PaymentLineController = new JS.Class(PaymentFieldController, {
   }
 });
 
-var PaymentCashController = new JS.Class(PaymentLineController, {
+var TransactionsPaymentCashController = new JS.Class(TransactionsPaymentLineController, {
 
   initialize: function(view) {
     this.callSuper();
@@ -2346,7 +2059,7 @@ var PaymentCashController = new JS.Class(PaymentLineController, {
   }
 });
 
-var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
+var TransactionsPaymentStoreCreditController = new JS.Class(TransactionsPaymentLineController, {
 
   initialize: function(view) {
     this.callSuper();
@@ -2405,7 +2118,7 @@ var PaymentStoreCreditController = new JS.Class(PaymentLineController, {
 
 });
 
-var PaymentPayoutController = new JS.Class(PaymentFieldController, {
+var TransactionsPaymentPayoutController = new JS.Class(TransactionsPaymentFieldController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -2429,7 +2142,7 @@ var PaymentPayoutController = new JS.Class(PaymentFieldController, {
   }
 });
 
-var PaymentScaleController = new JS.Class(ViewController, {
+var TransactionsPaymentScaleController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -2444,21 +2157,21 @@ var PaymentScaleController = new JS.Class(ViewController, {
   }
 });
 
-var PaymentController = new JS.Class(ViewController, {
+var TransactionsPaymentController = new JS.Class(ViewController, {
   include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
     this.payments = [];
 
-    this.scale_controller = new PaymentScaleController('ul#payment_scale_container');
-    this.store_credit_controller = new PaymentStoreCreditController('div#payment_store_credit');
-    this.gift_card_controller = new PaymentLineController('div#payment_gift_card');
-    this.check_controller = new PaymentLineController('div#payment_check');
-    this.credit_card_controller = new PaymentLineController('div#payment_credit_card');
-    this.cash_controller = new PaymentCashController('div#payment_cash');
-    this.store_credit_payout_controller = new PaymentPayoutController('li#payment_scale_store_credit');
-    this.cash_payout_controller = new PaymentPayoutController('li#payment_scale_cash');
+    this.scale_controller = new TransactionsPaymentScaleController('ul#payment_scale_container');
+    this.store_credit_controller = new TransactionsPaymentStoreCreditController('div#payment_store_credit');
+    this.gift_card_controller = new TransactionsPaymentLineController('div#payment_gift_card');
+    this.check_controller = new TransactionsPaymentLineController('div#payment_check');
+    this.credit_card_controller = new TransactionsPaymentLineController('div#payment_credit_card');
+    this.cash_controller = new TransactionsPaymentCashController('div#payment_cash');
+    this.store_credit_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_store_credit');
+    this.cash_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);
     this.gift_card_controller.addObserver(this.updatePayment, this);
     this.check_controller.addObserver(this.updatePayment, this);
@@ -2630,7 +2343,7 @@ String.prototype.truncate = function(length) {
   return this.substr(0, length - 1) + (this.length > length? '...' : '');
 }
 
-var ReviewController = new JS.Class(ViewController, {
+var TransactionsReviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -2703,7 +2416,7 @@ var ReviewController = new JS.Class(ViewController, {
   }
 });
 
-var TransactionSummaryController = new JS.Class(ViewController, {
+var TransactionsSummaryController = new JS.Class(ViewController, {
 
   reset: function() {
     this.setCustomer(new Customer());
@@ -2743,7 +2456,7 @@ var TransactionSummaryController = new JS.Class(ViewController, {
   }
 });
 
-var TransactionFinishController = new JS.Class(ViewController, {
+var TransactionsFinishController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -2782,71 +2495,36 @@ var TransactionFinishController = new JS.Class(ViewController, {
   }
 });
 
-var TransactionNavController = new JS.Class(ViewController, {
+var TransactionsNavController = new JS.Class(ViewController, {
 
   update: function(till) {
-    $('li#transaction_nav_till', this.view).html(till.title);
+    $('li#transactions_nav_till', this.view).html(till.title);
     this.view.show();
   }
 });
 
-var SectionController = new JS.Class(ViewController, {
+var TransactionsController = new JS.Class(ViewController, {
   include: JS.Observable,
 
-  initialize: function(view, controllers) {
-    this.callSuper();
-    this._controllers = controllers;
-    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
-  },
-
-  doClick: function(event) {
-    index = $('li > a', event.data.view).index(this);
-    event.data.instance.showController(index);
-    event.data.instance.notifyObservers(index);
-    event.preventDefault();
-  },
-
-  showController: function(index) {
-    this.hideControllers();
-    this._controllers[index].show();
-    $('li > a', this.view).removeClass('selected');
-    $('li', this.view).eq(index).find('a').addClass('selected');
-  },
-
-  hideControllers: function() {
-    for(controller in this._controllers) {
-      this._controllers[controller].hide();
-    }
-  },
-
-  reset: function() {
-    this.view.show();
-    this.showController(0);
-  }
-});
-
-var TransactionController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function() {
+  initialize: function(view) {
     this.callSuper();
     this.till_id = null;
-    this.user_id = null;
+    this.employee_id = null;
     this.transaction = null;
 
-    this.transaction_nav_controller = new TransactionNavController('ul#transaction_nav');
-    this.customer_controller = new CustomerController('section#customer');
-    this.cart_controller = new CartController('section#cart');
-    this.payment_controller = new PaymentController('section#payment');
-    this.review_controller = new ReviewController('section#review');
+    this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
+    this.customer_controller = new TransactionsCustomerController('section#customer');
+    this.cart_controller = new TransactionsCartController('section#cart');
+    this.payment_controller = new TransactionsPaymentController('section#payment');
+    this.review_controller = new TransactionsReviewController('section#review');
     this.section_controller = new SectionController('ul#transactions_nav', [
       this.cart_controller,
       this.customer_controller,
       this.payment_controller,
       this.review_controller
     ]);
-    this.summary_controller = new TransactionSummaryController('ul#summary');
-    this.finish_controller = new TransactionFinishController('ul#finish');
+    this.summary_controller = new TransactionsSummaryController('ul#summary');
+    this.finish_controller = new TransactionsFinishController('ul#finish');
 
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);
@@ -2854,9 +2532,9 @@ var TransactionController = new JS.Class(ViewController, {
     this.payment_controller.scale_controller.addObserver(this.updatePayoutRatio, this);
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
-    this.finish_controller.addObserver(this.saveTransaction, this);
+    this.finish_controller.addObserver(this.saveTransactions, this);
 
-    $('ul#transaction_nav a.reset').bind('click', {instance: this}, this.onReset);
+    $('ul#transactions_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
 
   reset: function() {
@@ -2870,7 +2548,7 @@ var TransactionController = new JS.Class(ViewController, {
   },
 
   onReset: function(event) {
-    event.data.instance.newTransaction(event.data.instance.till_id, event.data.instance.user_id);
+    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.employee_id);
     event.preventDefault();
   },
 
@@ -2934,26 +2612,26 @@ var TransactionController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
 
-  newTransaction: function(till_id, user_id) {
+  newTransactions: function(till_id, employee_id) {
     this.reset();
     this.till_id = till_id;
-    this.user_id = user_id;
-    this.setTransaction(new Transaction({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
+    this.employee_id = employee_id;
+    this.setTransactions(new Transactions({employee_id: employee_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
   },
 
-  setTransaction: function(transaction) {
+  setTransactions: function(transaction) {
     this.transaction = transaction;
     this.notifyControllers(transaction);
   },
 
-  saveTransaction: function() {
+  saveTransactions: function() {
     if(this.transaction.finishable() && this.transaction.save()) {
       credit_adjustment = 0;
       till_adjustment = 0;
 
       lines = this.transaction.lines();
       for(line in lines) {
-        lines[line].transaction_id = this.transaction.id;
+        lines[line].transactions_id = this.transaction.id;
         if(!lines[line].save()) {
           console.error('Line not saved.');
         }
@@ -2967,7 +2645,7 @@ var TransactionController = new JS.Class(ViewController, {
         if(payments[payment].form == 'cash') {
           till_adjustment += payments[payment].amount;
         }
-        payments[payment].transaction_id = this.transaction.id;
+        payments[payment].transactions_id = this.transaction.id;
         if(!payments[payment].save()) {
           console.error('Payment not saved.');
         }
@@ -2989,8 +2667,8 @@ var TransactionController = new JS.Class(ViewController, {
       if(till_adjustment != 0) {
         entry = new Entry({
           till_id: this.till_id,
-          user_id: this.user_id,
-          title: 'Transaction: ' + this.transaction.id,
+          employee_id: this.employee_id,
+          title: 'Transactions: ' + this.transaction.id,
           amount: till_adjustment
         });
         if(!entry.save()) {
@@ -2999,44 +2677,574 @@ var TransactionController = new JS.Class(ViewController, {
       }
 
       this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-      this.newTransaction(this.till_id, this.user_id);
+      this.newTransactions(this.till_id, this.employee_id);
     }
   }
 });
 
-var TerminalController = new JS.Class({
+var InventoryItemController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
-  initialize: function() {
-    this.transaction_controller = new TransactionController('div#transaction');
-    this.receipt_controller = new ReceiptController('div#receipt');
-    this.till_controller = new TillController('div#till');
+  initialize: function(view) {
+    this.callSuper();
+    this.item = null;
 
-    this.till_controller.addObserver(this.updateTill, this);
-    this.transaction_controller.addObserver(this.presentReceipt, this);
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $('input#taxable', this.view).attr('checked', true);
+    $('input#discountable', this.view).attr('checked', true);
+    $('input#active', this.view).attr('checked', true);
+  },
+
+  setItem: function(item) {
+    this.item = item;
+
+    if(item != null) {
+      $('input#title', this.view).val(item.title);
+      $('textarea#description', this.view).val(item.description);
+      $('textarea#tags', this.view).val(item.tags);
+      $('input#sku', this.view).val(item.sku);
+      $('input#price', this.view).val(Currency.format(item.price));
+      $('input#credit', this.view).val(Currency.format(item.credit));
+      $('input#cash', this.view).val(Currency.format(item.cash));
+      $('input#taxable', this.view).attr('checked', item.taxable);
+      $('input#discountable', this.view).attr('checked', item.discountable);
+      $('input#active', this.view).attr('checked', item.active);
+    } else {
+      this.reset();
+    }
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    title = $('input#title', this.view).val();
+    description = $('textarea#description', this.view).val();
+    tags = $('textarea#tags', this.view).val();
+    sku = $('input#sku', this.view).val();
+    price = parseInt(Currency.toPennies($('input#price', this.view).val()));
+    credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
+    cash = parseInt(Currency.toPennies($('input#cash', this.view).val()));
+    taxable = $('input#taxable', this.view).attr('checked');
+    discountable = $('input#discountable', this.view).attr('checked');
+    active = $('input#active', this.view).attr('checked');
+
+    if(event.data.instance.item == null) {
+      item = Item.create({
+        title: title,
+        description: description,
+        tags: tags,
+        sku: sku,
+        price: price,
+        credit: credit,
+        cash: cash,
+        taxable: taxable,
+        discountable: discountable,
+        active: active
+      });
+    } else {
+      item = Item.find(event.data.instance.item.id);
+      item.title = title;
+      item.description = description;
+      item.tags = tags;
+      item.sku = sku;
+      item.price = price;
+      item.credit = credit;
+      item.cash = cash;
+      item.taxable = taxable;
+      item.discountable = discountable;
+      item.active = active;
+      item.save();
+    }
+
+    event.data.instance.setItem(item);
+    event.data.instance.notifyObservers(event.data.instance.item.sku, 1);
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.item = null;
+
+    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
+    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+  },
+
+  set: function(item) {
+    this.item = item;
+
+    if(item.description == null || item.description == undefined) {
+      item.description = '';
+    }
+
+    $('h3.items_line_title', this.view).html(item.title);
+    $('h4.items_line_description', this.view).html(item.description.truncate(30));
+    $('h3.items_line_sku', this.view).html(item.sku);
+    $('h3.items_line_price', this.view).html(Currency.pretty(item.price));
+  },
+
+  onDelete: function(event) {
+    event.data.instance.item.destroy();
+    event.data.instance.notifyObservers('delete', event.data.instance.item);
+    event.preventDefault();
+  },
+
+  onEdit: function(event) {
+    event.data.instance.notifyObservers('edit', event.data.instance.item);
+    event.preventDefault();
+  }
+});
+
+var InventoryOverviewResultsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.items = [];
+    this.item_controllers = [];
+    this.item = $('li.items_line', this.view).detach();
+  },
+
+  reset: function() {
+    this.items = [];
+    this.item_controllers = [];
+    this.clearItems();
+  },
+
+  update: function(items) {
+    this.setItems(items);
+  },
+
+  clearItems: function() {
+    $('ul#items_lines > li').remove();
+  },
+
+  setItems: function(items) {
+    this.clearItems();
+    this.items = items;
+    this.item_controllers = [];
+    for(item in items) {
+      new_item = new InventoryOverviewResultsItemController(this.item.clone());
+      new_item.set(items[item]);
+      new_item.addObserver(this.updateItem, this);
+      this.item_controllers.push(new_item);
+      $('ul#items_lines', this.view).append(new_item.view);
+    }
+    if(items.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  updateItem: function(action, item) {
+    switch(action) {
+      case 'edit':
+        this.notifyObservers(item);
+        break;
+      case 'delete':
+        this.removeItem(item);
+        break;
+    }
+  },
+
+  removeItem: function(remove_item) {
+    for(item in this.items) {
+      if(remove_item.id == this.items[item].id) {
+        this.items.splice(item, 1);
+      }
+    }
+    this.setItems(this.items);
+  },
+
+  showNotice: function() {
+    $('h2#items_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#items_notice', this.view).hide();
+  }
+});
+
+var InventoryOverviewController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.query = null;
+    this.page = null;
+
+    this.item_controller = new InventoryItemController('div#item');
+    this.overview_search_controller = new SearchController('div#overview_search');
+    this.overview_results_controller = new InventoryOverviewResultsController('div#overview_results');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_results_controller
+    ]);
+
+    this.item_controller.addObserver(this.search, this);
+    this.overview_results_controller.addObserver(this.edit, this);
+    this.overview_search_controller.addObserver(this.search, this);
+
+    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+  },
+
+  reset: function() {
+    this.query = null;
+    this.page = null;
+    this.overview_results_controller.reset();
+  },
+
+  search: function(query, page) {
+    if(page == undefined || page == null) {
+      page = 1;
+    }
+    if(query.length > 1) {
+      keywords = query.split('|');
+      if(keywords.length > 1) {
+        pairs = [];
+        for(keyword in keywords) {
+          pair = keywords[keyword].split('~');
+          if(pair.length > 1) {
+            pairs.push(pair);
+          }
+        }
+        statement = '';
+        match_statements = [];
+        params = [];
+        for(pair in pairs) {
+          match_statements.push(pairs[pair][0] + ' LIKE ?');
+          params.push('%' + pairs[pair][1] + '%');
+        }
+        statement = match_statements.join(' AND ');
+        console.log(statement);
+        this.overview_results_controller.update(Item.where(statement, params, page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
+      } else {
+        pattern = 'title_or_description_or_sku_contains_all';
+        this.overview_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
+      }
+    } else {
+      pattern = 'title_starts_with';
+      this.overview_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
+    }
+  },
+
+  edit: function(item) {
+    this.item_controller.setItem(item);
+    this.item_controller.view.show();
+  },
+
+  onNew: function(event) {
+    event.data.instance.item_controller.setItem(null);
+    event.data.instance.item_controller.view.show();
+    event.preventDefault();
+  }
+});
+
+var InventoryController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.overview_controller = new InventoryOverviewController('section#overview');
+    this.section_controller = new SectionController('ul#inventory_nav', [
+      this.overview_controller
+    ]);
+    this.reset();
+  },
+
+  reset: function() {
+    this.overview_controller.reset();
+    this.section_controller.reset();
+  }
+});
+
+var ReportsController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
 
     this.reset();
   },
 
   reset: function() {
-    this.transaction_controller.view.hide();
-    this.receipt_controller.view.hide();
-    this.till_controller.view.show();
-  },
 
-  presentReceipt: function(url) {
-    this.receipt_controller.update(url);
-    this.receipt_controller.view.show();
-  },
-
-  updateTill: function(till) {
-    this.transaction_controller.newTransaction(till.id, parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')));
-    this.transaction_controller.transaction_nav_controller.update(till);
-    this.till_controller.view.hide();
-    this.transaction_controller.view.show();
   }
 });
 
-var ClockInOutController = new JS.Class(ViewController, {
+var TillsAuditController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+    this.reset();
+
+    $('a.calculate', this.view).bind('click', {instance: this}, this.onCalculate);
+    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+    $(':input', this.view).val(0);
+    $('input#balance', this.view).val(null);
+  },
+
+  update: function(till) {
+    this.till = till;
+  },
+
+  onCalculate: function(event) {
+    pennies = $('input#pennies', event.data.instance.view).val();
+    nickels = $('input#nickels', event.data.instance.view).val();
+    dimes = $('input#dimes', event.data.instance.view).val();
+    quarters = $('input#quarters', event.data.instance.view).val();
+    ones = $('input#ones', event.data.instance.view).val();
+    fives = $('input#fives', event.data.instance.view).val();
+    tens = $('input#tens', event.data.instance.view).val();
+    twenties = $('input#twenties', event.data.instance.view).val();
+    fifties = $('input#fifties', event.data.instance.view).val();
+    hundreds = $('input#hundreds', event.data.instance.view).val();
+    penny_rolls = $('input#penny_rolls', event.data.instance.view).val();
+    nickel_rolls = $('input#nickel_rolls', event.data.instance.view).val();
+    dime_rolls = $('input#dime_rolls', event.data.instance.view).val();
+    quarter_rolls = $('input#quarter_rolls', event.data.instance.view).val();
+    total = (pennies * 0.01) + (nickels * 0.05) + (dimes * 0.1) + (quarters * 0.25) + (ones * 1) + (fives * 5) + (tens * 10) +
+      (twenties * 20) + (fifties * 50) + (hundreds * 100) + (penny_rolls * 0.50) + (nickel_rolls * 2) + (dime_rolls * 5) + (quarter_rolls * 10);
+
+    $('input#balance', event.data.instance.view).val(total);
+    event.preventDefault();
+  },
+
+  onClose: function(event) {
+    event.data.instance.view.hide();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    till_balance = event.data.instance.till.balance();
+    new_balance = Currency.toPennies($('input#balance', event.data.instance.view).val());
+    amount = new_balance - till_balance;
+
+    Entry.create({
+      till_id: event.data.instance.till.id,
+      employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
+      title: 'Audit - ' + new Date(),
+      description: '',
+      amount: amount
+    });
+
+    event.data.instance.notifyObservers();
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var TillsOverviewTillsTillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.till = null;
+
+    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
+  },
+
+  set: function(till) {
+    this.till = till;
+
+    $('h3.overview_tills_line_title', this.view).html(till.title);
+    $('h4.overview_tills_line_description', this.view).html(till.description);
+  },
+
+  onAudit: function(event) {
+    event.data.instance.notifyObservers('audit', event.data.instance.till);
+    event.preventDefault();
+  }
+});
+
+var TillsOverviewTillsController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+    this.tills = [];
+    this.till_controllers = [];
+    this.till = $('li.overview_tills_line', this.view).detach();
+
+    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+  },
+
+  reset: function() {
+    this.tills = [];
+    this.till_controllers = [];
+    this.clearTills();
+  },
+
+  loadTills: function() {
+    this.setTills(Till.all());
+  },
+
+  clearTills: function() {
+    $('ul#overview_tills_lines > li.overview_tills_line').remove();
+  },
+
+  setTills: function(tills) {
+    this.clearTills();
+    this.till_controllers = [];
+    for(till in tills) {
+      new_till = new TillsOverviewTillsTillController(this.till.clone());
+      new_till.set(tills[till]);
+      new_till.addObserver(this.actionTill, this);
+      this.till_controllers.push(new_till);
+      $('ul#overview_tills_lines', this.view).append(new_till.view);
+    }
+    if(tills.length > 0) {
+      this.hideNotice();
+    } else {
+      this.showNotice();
+    }
+  },
+
+  actionTill: function(action, till) {
+    switch(action) {
+      case 'audit':
+        this.notifyObservers(till);
+        break;
+    }
+  },
+
+  onRefresh: function(event) {
+    event.data.instance.loadTills();
+    event.preventDefault();
+  },
+
+  showNotice: function() {
+    $('h2#overview_tills_notice', this.view).show();
+  },
+
+  hideNotice: function() {
+    $('h2#overview_tills_notice', this.view).hide();
+  }
+});
+
+var TillsOverviewController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.overview_tills_controller = new TillsOverviewTillsController('div#overview_tills');
+    this.overview_section_controller = new SectionController('ul#overview_nav', [
+      this.overview_tills_controller
+    ]);
+
+    this.overview_tills_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.overview_section_controller.reset();
+    this.overview_tills_controller.reset();
+    this.update();
+  },
+
+  update: function() {
+    this.overview_tills_controller.loadTills();
+  },
+
+  auditTill: function(till) {
+    this.notifyObservers(till);
+  }
+});
+
+var TillsAdminController = new JS.Class(ViewController, {
+  include: [JS.Observable, Sectionable],
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.admin_tills_controller = new TillsAdminTillsController('div#admin_tills');
+    this.admin_section_controller = new SectionController('ul#admin_nav', [
+      this.admin_tills_controller
+    ]);
+
+    this.admin_tills_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.admin_section_controller.reset();
+    this.admin_tills_controller.reset();
+    this.update();
+  },
+
+  update: function() {
+    this.admin_tills_controller.loadTills();
+  },
+
+  auditTill: function(till) {
+    this.notifyObservers(till);
+  }
+});
+
+var TillsController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.audit_controller = new TillsAuditController('div#audit');
+    this.overview_controller = new TillsOverviewController('section#overview');
+    this.admin_controller = new TillsAdminController('section#admin');
+    this.section_controller = new SectionController('ul#tills_nav', [
+      this.overview_controller,
+      this.admin_controller
+    ]);
+    this.reset();
+
+    this.audit_controller.addObserver(this.loadTills, this);
+    this.overview_controller.addObserver(this.auditTill, this);
+    this.admin_controller.addObserver(this.auditTill, this);
+  },
+
+  reset: function() {
+    this.audit_controller.reset();
+    this.overview_controller.reset();
+    this.admin_controller.reset();
+    this.section_controller.reset();
+  },
+
+  loadTills: function() {
+    this.overview_controller.update();
+    this.admin_controller.update();
+  },
+
+  auditTill: function(till) {
+    this.audit_controller.update(till);
+    this.audit_controller.reset();
+    this.audit_controller.view.show();
+  }
+});
+
+var TimeclockClockInOutController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -3050,13 +3258,13 @@ var ClockInOutController = new JS.Class(ViewController, {
   },
 
   doClockInOut: function(event) {
-    id = $('select#user', event.data.instance.view).val();
+    id = $('select#employee', event.data.instance.view).val();
     pin = $('input#pin', event.data.instance.view).val();
-    user = User.find(id);
+    employee = Employee.find(id);
 
-    event.data.instance.validateUser(user, pin, function(valid) {
+    event.data.instance.validateEmployee(employee, pin, function(valid) {
       if(valid) {
-        event.data.instance.timestampUser(user, function(stamped) {
+        event.data.instance.timestampEmployee(employee, function(stamped) {
           event.data.instance.clearInput();
           event.data.instance.view.hide();
           event.data.instance.notifyObservers();
@@ -3077,20 +3285,20 @@ var ClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  timestampUser: function(user, callback) {
-    if(user.stamp()) {
+  timestampEmployee: function(employee, callback) {
+    if(employee.stamp()) {
       callback(true);
     } else {
       callback(false);
     }
   },
 
-  validateUser: function(user, pin, callback) {
-    person = user.person();
-    if(person.user() != undefined) {
-      user = person.user();
+  validateEmployee: function(employee, pin, callback) {
+    person = employee.person();
+    if(person.employee() != undefined) {
+      employee = person.employee();
 
-      if(user.pin == pin) {
+      if(employee.pin == pin) {
         callback(true);
       } else {
         callback(false);
@@ -3101,7 +3309,7 @@ var ClockInOutController = new JS.Class(ViewController, {
   }
 });
 
-var OverviewChartHeaderController = new JS.Class(ViewController, {
+var TimeclockOverviewChartHeaderController = new JS.Class(ViewController, {
 
   draw: function() {
     canvas = {
@@ -3166,14 +3374,14 @@ var OverviewChartHeaderController = new JS.Class(ViewController, {
   }
 });
 
-var OverviewChartController = new JS.Class(ViewController, {
+var TimeclockOverviewChartController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.lines = [];
 
-    this.overview_chart_header_controller = new OverviewChartHeaderController($('canvas.overview_chart_header', this.view));
+    this.overview_chart_header_controller = new TimeclockOverviewChartHeaderController($('canvas.overview_chart_header', this.view));
 
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },
@@ -3191,7 +3399,7 @@ var OverviewChartController = new JS.Class(ViewController, {
   }
 });
 
-var OverviewInController = new JS.Class(OverviewChartController, {
+var TimeclockOverviewInController = new JS.Class(TimeclockOverviewChartController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -3213,7 +3421,7 @@ var OverviewInController = new JS.Class(OverviewChartController, {
   }
 });
 
-var OverviewOutController = new JS.Class(OverviewChartController, {
+var TimeclockOverviewOutController = new JS.Class(TimeclockOverviewChartController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -3232,6 +3440,14 @@ var OverviewOutController = new JS.Class(OverviewChartController, {
       this.lines.push(lines[line]);
       $('ul.overview_chart_out', this.view).append(lines[line].view);
     }
+  }
+});
+
+var Timecard = new JS.Class(Model, {
+  extend: {
+    resource: 'timecard',
+    columns: ['id', 'employee_id', 'begin', 'end'],
+    belongs_to: ['employee']
   }
 });
 /*
@@ -3974,11 +4190,11 @@ Date.prototype.setISO8601 = function(dString){
   return this;
 };
 
-var OverviewChartCanvasController = new JS.Class(ViewController, {
+var TimeclockOverviewChartCanvasController = new JS.Class(ViewController, {
 
-  initialize: function(view, user) {
+  initialize: function(view, employee) {
     this.callSuper();
-    this.user = user;
+    this.employee = employee;
     this.timecards = [];
 
     $(this.view).bind('click', {instance: this}, this.onClick);
@@ -4018,44 +4234,44 @@ var OverviewChartCanvasController = new JS.Class(ViewController, {
   },
 
   onClick: function(event) {
-    event.data.instance.timecards = event.data.instance._findTimecards(event.data.instance.user);
+    event.data.instance.timecards = event.data.instance._findTimecards(event.data.instance.employee);
     event.data.instance.draw();
   },
 
-  _findTimecards: function(user) {
+  _findTimecards: function(employee) {
     day_begin = new Date();
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
-    return Timecard.where('user_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [user.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
+    return Timecard.where('employee_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [employee.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
   }
 });
 
-var OverviewChartLineController = new JS.Class(ViewController, {
+var TimeclockOverviewChartLineController = new JS.Class(ViewController, {
 
-  initialize: function(view, user) {
+  initialize: function(view, employee) {
     this.callSuper();
-    this.canvas = new OverviewChartCanvasController($('canvas', this.view), user);
-    this.setName(user);
+    this.canvas = new TimeclockOverviewChartCanvasController($('canvas', this.view), employee);
+    this.setName(employee);
   },
 
   update: function() {
     this.canvas.draw();
   },
 
-  setName: function(user) {
-    $('h3', this.view).html(user.login);
+  setName: function(employee) {
+    $('h3', this.view).html(employee.login);
   }
 });
 
-var OverviewController = new JS.Class(ViewController, {
+var TimeclockOverviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
 
-    this.clock_in_out_controller = new ClockInOutController('div#clock_in_out');
-    this.overview_in_controller = new OverviewInController('div#overview_in');
-    this.overview_out_controller = new OverviewOutController('div#overview_out');
+    this.clock_in_out_controller = new TimeclockClockInOutController('div#clock_in_out');
+    this.overview_in_controller = new TimeclockOverviewInController('div#overview_in');
+    this.overview_out_controller = new TimeclockOverviewOutController('div#overview_out');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
       this.overview_in_controller,
       this.overview_out_controller
@@ -4102,24 +4318,24 @@ var OverviewController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  findUsers: function() {
-    users_in = User._in();
-    users_out = User._out();
-    return { users_in: users_in, users_out: users_out }
+  findEmployees: function() {
+    employees_in = Employee._in();
+    employees_out = Employee._out();
+    return { employees_in: employees_in, employees_out: employees_out }
   },
 
   updateCharts: function() {
-    users_in_lines = [];
-    users_out_lines = [];
-    users = this.findUsers();
-    for(user in users.users_in) {
-      users_in_lines.push(new OverviewChartLineController(this.overview_in_controller.line.clone(), users.users_in[user]));
+    employees_in_lines = [];
+    employees_out_lines = [];
+    employees = this.findEmployees();
+    for(employee in employees.employees_in) {
+      employees_in_lines.push(new TimeclockOverviewChartLineController(this.overview_in_controller.line.clone(), employees.employees_in[employee]));
     }
-    for(user in users.users_out) {
-      users_out_lines.push(new OverviewChartLineController(this.overview_out_controller.line.clone(), users.users_out[user]));
+    for(employee in employees.employees_out) {
+      employees_out_lines.push(new TimeclockOverviewChartLineController(this.overview_out_controller.line.clone(), employees.employees_out[employee]));
     }
-    this.overview_in_controller.setLines(users_in_lines);
-    this.overview_out_controller.setLines(users_out_lines);
+    this.overview_in_controller.setLines(employees_in_lines);
+    this.overview_out_controller.setLines(employees_out_lines);
     this.updateCanvas();
   },
 
@@ -4185,25 +4401,25 @@ var DateController = new JS.Class(ViewController, {
   }
 });
 
-var AdminUserController = new JS.Class(ViewController, {
+var TimeclockAdminEmployeeController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    $('select', this.view).bind('change', {instance: this}, this.onUser);
+    $('select', this.view).bind('change', {instance: this}, this.onEmployee);
   },
 
-  onUser: function(event) {
+  onEmployee: function(event) {
     id = parseInt($('select', this.view).val());
     if(!isNaN(id)) {
-      event.data.instance.notifyObservers(User.find(id));
+      event.data.instance.notifyObservers(Employee.find(id));
     }
     event.preventDefault();
   }
 });
 
-var AdminTimecardsTimecardController = new JS.Class(ViewController, {
+var TimeclockAdminTimecardsTimecardController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -4236,18 +4452,18 @@ var AdminTimecardsTimecardController = new JS.Class(ViewController, {
   }
 });
 
-var AdminTimecardsController = new JS.Class(ViewController, {
+var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
     this.date = null;
-    this.user = null;
+    this.employee = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.timecard = $('li.timecards_line', this.view).detach();
 
-    this.timecard_controller = new TimecardController('div#timecard');
+    this.timecard_controller = new TimeclockTimecardController('div#timecard');
     this.timecard_controller.addObserver(this.loadTimecards, this);
 
     $('a.add', this.view).bind('click', {instance: this}, this.onAdd);
@@ -4255,22 +4471,22 @@ var AdminTimecardsController = new JS.Class(ViewController, {
 
   reset: function() {
     this.date = null;
-    this.user = null;
+    this.employee = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.clearTimecards();
   },
 
-  update: function(date, user) {
+  update: function(date, employee) {
     this.date = date;
-    this.user = user;
+    this.employee = employee;
     this.loadTimecards();
   },
 
   loadTimecards: function() {
     tomorrow = new Date();
     tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
   },
 
   clearTimecards: function() {
@@ -4282,7 +4498,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
     this.setTimecardsTotal(timecards);
     this.timecard_controllers = [];
     for(timecard in timecards) {
-      new_timecard = new AdminTimecardsTimecardController(this.timecard.clone());
+      new_timecard = new TimeclockAdminTimecardsTimecardController(this.timecard.clone());
       new_timecard.set(timecards[timecard]);
       new_timecard.addObserver(this.updateTimecard, this);
       this.timecard_controllers.push(new_timecard);
@@ -4307,7 +4523,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
 
   updateTimecard: function(timecard) {
     if(timecard != undefined) {
-      this.timecard_controller.setUser(this.user);
+      this.timecard_controller.setEmployee(this.employee);
       this.timecard_controller.setTimecard(timecard);
       this.timecard_controller.view.show();
     } else {
@@ -4316,7 +4532,7 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   },
 
   onAdd: function(event) {
-    event.data.instance.timecard_controller.setUser(event.data.instance.user);
+    event.data.instance.timecard_controller.setEmployee(event.data.instance.employee);
     event.data.instance.timecard_controller.setTimecard(null);
     event.data.instance.timecard_controller.view.show();
     event.preventDefault();
@@ -4331,56 +4547,58 @@ var AdminTimecardsController = new JS.Class(ViewController, {
   }
 });
 
-var AdminController = new JS.Class(ViewController, {
+var TimeclockAdminController = new JS.Class(ViewController, {
   include: [JS.Observable, Sectionable],
 
   initialize: function(view) {
     this.callSuper();
-    this.user = null;
+    this.employee = null;
     this.date = new Date();
 
     this.admin_date_controller = new DateController('form#admin_date');
-    this.admin_user_controller = new AdminUserController('form#admin_user');
-    this.admin_timecards_controller = new AdminTimecardsController('div#admin_timecards');
+    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#admin_employee');
+    this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#admin_timecards');
     this.admin_section_controller = new SectionController('ul#admin_nav', [
       this.admin_timecards_controller
     ]);
 
     this.admin_date_controller.addObserver(this.updateDate, this);
-    this.admin_user_controller.addObserver(this.updateUser, this);
+    this.admin_employee_controller.addObserver(this.updateEmployee, this);
   },
 
   reset: function() {
     this.admin_date_controller.reset();
     this.admin_timecards_controller.reset();
-    $('select', this.admin_user_controller.view).trigger('change');
+    $('select', this.admin_employee_controller.view).trigger('change');
   },
 
   show: function() {
     this.callSuper();
-    this.updateTimecards(this.date, this.user);
+    this.updateTimecards(this.date, this.employee);
   },
 
   updateDate: function(date) {
     this.date = date;
-    this.updateTimecards(this.date, this.user);
+    this.updateTimecards(this.date, this.employee);
   },
 
-  updateUser: function(user) {
-    this.user = user;
-    this.updateTimecards(this.date, this.user);
+  updateEmployee: function(employee) {
+    this.employee = employee;
+    this.updateTimecards(this.date, this.employee);
   },
 
-  updateTimecards: function(date, user) {
-    this.admin_timecards_controller.update(date, user);
+  updateTimecards: function(date, employee) {
+    this.admin_timecards_controller.update(date, employee);
   }
 });
 
-var TimeclockController = new JS.Class({
+var TimeclockController = new JS.Class(ViewController, {
 
-  initialize: function() {
-    this.overview_controller = new OverviewController('section#overview');
-    this.admin_controller = new AdminController('section#admin');
+  initialize: function(view) {
+    this.callSuper();
+
+    this.overview_controller = new TimeclockOverviewController('section#overview');
+    this.admin_controller = new TimeclockAdminController('section#admin');
     this.section_controller = new SectionController('ul#timeclock_nav', [
       this.overview_controller,
       this.admin_controller
@@ -4399,21 +4617,21 @@ var TimeclockController = new JS.Class({
   }
 });
 
-var OverviewFormController = new JS.Class(FormController, {
+var EmployeesOverviewFormController = new JS.Class(FormController, {
 
-  update: function(user) {
+  update: function(employee) {
     this.reset();
 
-    $('input#id', this.view).val(user.id);
-    $('input#login', this.view).val(user.login);
-    $('input#pin', this.view).val(user.pin);
-    $('input#address', this.view).val(user.email);
-    $('input#administrator', this.view).attr('checked', user.administrator);
-    $('input#active', this.view).attr('checked', user.active);
-    $('input#job_title', this.view).val(user.title);
-    $('input#rate', this.view).val(Currency.format(user.rate));
+    $('input#id', this.view).val(employee.id);
+    $('input#login', this.view).val(employee.login);
+    $('input#pin', this.view).val(employee.pin);
+    $('input#address', this.view).val(employee.email);
+    $('input#administrator', this.view).attr('checked', employee.administrator);
+    $('input#active', this.view).attr('checked', employee.active);
+    $('input#job_title', this.view).val(employee.title);
+    $('input#rate', this.view).val(Currency.format(employee.rate));
 
-    person = user.person();
+    person = employee.person();
     if(person != undefined) {
       $('input#first_name', this.view).val(person.first_name);
       $('input#last_name', this.view).val(person.last_name);
@@ -4449,22 +4667,22 @@ var OverviewFormController = new JS.Class(FormController, {
   save: function() {
     if(this.valid()) {
       if($('input#id', this.view).val() > 0) {
-        user = User.find($('input#id', this.view).val());
-        user.login = $('input#login', this.view).val();
-        user.pin = $('input#pin', this.view).val();
-        user.email = $('input#address', this.view).val();
-        user.title = $('input#job_title', this.view).val();
-        user.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
+        employee = Employee.find($('input#id', this.view).val());
+        employee.login = $('input#login', this.view).val();
+        employee.pin = $('input#pin', this.view).val();
+        employee.email = $('input#address', this.view).val();
+        employee.title = $('input#job_title', this.view).val();
+        employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
         if($('input#password', this.view).val() != '') {
-          user.password = $('input#password', this.view).val();
-          user.password_confirmation = $('input#password_confirmation', this.view).val();
+          employee.password = $('input#password', this.view).val();
+          employee.password_confirmation = $('input#password_confirmation', this.view).val();
         }
-        user.administrator = $('input#administrator', this.view).is(':checked');
-        user.active = $('input#active', this.view).is(':checked');
-        user.save();
+        employee.administrator = $('input#administrator', this.view).is(':checked');
+        employee.active = $('input#active', this.view).is(':checked');
+        employee.save();
 
-        if(user != undefined) {
-          person = user.person();
+        if(employee != undefined) {
+          person = employee.person();
           if(person != undefined) {
             date_of_birth_year = $('select#date_of_birth_year').val();
             date_of_birth_month = $('select#date_of_birth_month').val() - 1;
@@ -4511,7 +4729,7 @@ var OverviewFormController = new JS.Class(FormController, {
               person._phones.push(phone);
             }
 
-            user.setPerson(person);
+            employee.setPerson(person);
           }
         }
       } else {
@@ -4544,7 +4762,7 @@ var OverviewFormController = new JS.Class(FormController, {
           phone.save();
         }
 
-        user = new User({
+        employee = new Employee({
           login: $('input#login', this.view).val(),
           email: $('input#address', this.view).val(),
           password: $('input#password', this.view).val(),
@@ -4555,11 +4773,11 @@ var OverviewFormController = new JS.Class(FormController, {
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')
         });
-        user.setPerson(person);
+        employee.setPerson(person);
       }
-      if(user.save()) {
-        this.update(user);
-        this.notifyObservers(user);
+      if(employee.save()) {
+        this.update(employee);
+        this.notifyObservers(employee);
       }
     } else {
       this.error();
@@ -4620,25 +4838,25 @@ var OverviewFormController = new JS.Class(FormController, {
   }
 });
 
-var OverviewSelectController = new JS.Class(ViewController, {
+var EmployeesOverviewSelectController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    $('select', this.view).bind('change', {instance: this}, this.onUser);
+    $('select', this.view).bind('change', {instance: this}, this.onEmployee);
   },
 
-  onUser: function(event) {
+  onEmployee: function(event) {
     id = parseInt($('select', this.view).val());
     if(!isNaN(id)) {
-      event.data.instance.notifyObservers(User.find(id));
+      event.data.instance.notifyObservers(Employee.find(id));
     }
     event.preventDefault();
   }
 });
 
-var OverviewUserController = new JS.Class(ViewController, {
+var EmployeesOverviewEmployeeController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -4649,45 +4867,47 @@ var OverviewUserController = new JS.Class(ViewController, {
   }
 });
 
-var UsersOverviewController = new JS.Class(ViewController, {
+var EmployeesOverviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
-    this.user = null;
+    this.employee = null;
 
-    this.overview_select_controller = new OverviewSelectController('form#overview_select');
-    this.overview_form_controller = new OverviewFormController('form#overview_user');
-    this.overview_user_controller = new OverviewUserController('div#overview_user');
+    this.overview_select_controller = new EmployeesOverviewSelectController('form#overview_select');
+    this.overview_form_controller = new EmployeesOverviewFormController('form#overview_employee');
+    this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#overview_employee');
     this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_user_controller
+      this.overview_employee_controller
     ]);
 
-    $('a.new', this.view).bind('click', {instance: this}, this.newUser);
+    $('a.new', this.view).bind('click', {instance: this}, this.newEmployee);
 
-    this.overview_select_controller.addObserver(this.updateUser, this);
+    this.overview_select_controller.addObserver(this.updateEmployee, this);
   },
 
   reset: function() {
     this.overview_form_controller.reset();
   },
 
-  updateUser: function(user) {
-    this.user = user;
-    this.overview_form_controller.update(user);
+  updateEmployee: function(employee) {
+    this.employee = employee;
+    this.overview_form_controller.update(employee);
   },
 
-  newUser: function(event) {
+  newEmployee: function(event) {
     event.data.instance.reset();
     event.preventDefault();
   }
 });
 
-var UsersController = new JS.Class({
+var EmployeesController = new JS.Class(ViewController, {
 
-  initialize: function() {
-    this.overview_controller = new UsersOverviewController('section#overview');
-    this.section_controller = new SectionController('ul#users_nav', [
+  initialize: function(view) {
+    this.callSuper();
+
+    this.overview_controller = new EmployeesOverviewController('section#overview');
+    this.section_controller = new SectionController('ul#employees_nav', [
       this.overview_controller
     ]);
     this.reset();
@@ -4699,66 +4919,37 @@ var UsersController = new JS.Class({
   }
 });
 
-var transactions = {
+var TerminalController = new JS.Class({
+
+  initialize: function() {
+    this.login_controller = new LoginController('div#login');
+    this.dashboard_controller = new DashboardController('div#dashboard');
+    this.transactions_controller = new TransactionsController('div#transactions');
+    this.inventory_controller = new InventoryController('div#inventory');
+    this.reports_controller = new ReportsController('div#reports');
+    this.tills_controller = new TillsController('div#tills');
+    this.timeclock_controller = new TimeclockController('div#timeclock');
+    this.employees_controller = new EmployeesController('div#employees');
+
+    this.reset();
+  },
+
+  reset: function() {
+    this.login_controller.view.hide();
+    this.dashboard_controller.view.hide();
+    this.transactions_controller.view.hide();
+    this.inventory_controller.view.hide();
+    this.reports_controller.view.hide();
+    this.tills_controller.view.hide();
+    this.timeclock_controller.view.hide();
+    this.employees_controller.view.hide();
+  }
+});
+
+var terminal = {
 
   run: function() {
     new TerminalController();
-  }
-
-};
-
-var dashboard = {
-
-  run: function() {
-
-  }
-
-};
-
-var inventory = {
-
-  run: function() {
-    new InventoryController();
-  }
-
-};
-
-var repairs = {
-
-  run: function() {
-    new RepairsController();
-  }
-
-};
-
-var reports = {
-
-  run: function() {
-
-  }
-
-};
-
-var timeclock = {
-
-  run: function() {
-    new TimeclockController();
-  }
-
-};
-
-var tills = {
-
-  run: function() {
-    new TillsController();
-  }
-
-};
-
-var users = {
-
-  run: function() {
-    new UsersController();
   }
 
 };
@@ -4773,708 +4964,6 @@ var AlphabetController = new JS.Class(ViewController, {
 
   onSelect: function(event) {
     event.data.instance.notifyObservers($(this).html());
-    event.preventDefault();
-  }
-});
-
-var InventoryItemController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.item = null;
-
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-  },
-
-  reset: function() {
-    $(':input', this.view)
-      .not(':button, :submit, :reset')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected');
-    $('input#taxable', this.view).attr('checked', true);
-    $('input#discountable', this.view).attr('checked', true);
-    $('input#active', this.view).attr('checked', true);
-  },
-
-  setItem: function(item) {
-    this.item = item;
-
-    if(item != null) {
-      $('input#title', this.view).val(item.title);
-      $('textarea#description', this.view).val(item.description);
-      $('textarea#tags', this.view).val(item.tags);
-      $('input#sku', this.view).val(item.sku);
-      $('input#price', this.view).val(Currency.format(item.price));
-      $('input#credit', this.view).val(Currency.format(item.credit));
-      $('input#cash', this.view).val(Currency.format(item.cash));
-      $('input#taxable', this.view).attr('checked', item.taxable);
-      $('input#discountable', this.view).attr('checked', item.discountable);
-      $('input#active', this.view).attr('checked', item.active);
-    } else {
-      this.reset();
-    }
-  },
-
-  onClose: function(event) {
-    event.data.instance.view.hide();
-    event.preventDefault();
-  },
-
-  onSave: function(event) {
-    title = $('input#title', this.view).val();
-    description = $('textarea#description', this.view).val();
-    tags = $('textarea#tags', this.view).val();
-    sku = $('input#sku', this.view).val();
-    price = parseInt(Currency.toPennies($('input#price', this.view).val()));
-    credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
-    cash = parseInt(Currency.toPennies($('input#cash', this.view).val()));
-    taxable = $('input#taxable', this.view).attr('checked');
-    discountable = $('input#discountable', this.view).attr('checked');
-    active = $('input#active', this.view).attr('checked');
-
-    if(event.data.instance.item == null) {
-      item = Item.create({
-        title: title,
-        description: description,
-        tags: tags,
-        sku: sku,
-        price: price,
-        credit: credit,
-        cash: cash,
-        taxable: taxable,
-        discountable: discountable,
-        active: active
-      });
-    } else {
-      item = Item.find(event.data.instance.item.id);
-      item.title = title;
-      item.description = description;
-      item.tags = tags;
-      item.sku = sku;
-      item.price = price;
-      item.credit = credit;
-      item.cash = cash;
-      item.taxable = taxable;
-      item.discountable = discountable;
-      item.active = active;
-      item.save();
-    }
-
-    event.data.instance.setItem(item);
-    event.data.instance.notifyObservers(event.data.instance.item.sku, 1);
-    event.data.instance.view.hide();
-    event.preventDefault();
-  }
-});
-
-var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.item = null;
-
-    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
-  },
-
-  set: function(item) {
-    this.item = item;
-
-    if(item.description == null || item.description == undefined) {
-      item.description = '';
-    }
-
-    $('h3.items_line_title', this.view).html(item.title);
-    $('h4.items_line_description', this.view).html(item.description.truncate(30));
-    $('h3.items_line_sku', this.view).html(item.sku);
-    $('h3.items_line_price', this.view).html(Currency.pretty(item.price));
-  },
-
-  onDelete: function(event) {
-    event.data.instance.item.destroy();
-    event.data.instance.notifyObservers('delete', event.data.instance.item);
-    event.preventDefault();
-  },
-
-  onEdit: function(event) {
-    event.data.instance.notifyObservers('edit', event.data.instance.item);
-    event.preventDefault();
-  }
-});
-
-var InventoryOverviewResultsController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.items = [];
-    this.item_controllers = [];
-    this.item = $('li.items_line', this.view).detach();
-  },
-
-  reset: function() {
-    this.items = [];
-    this.item_controllers = [];
-    this.clearItems();
-  },
-
-  update: function(items) {
-    this.setItems(items);
-  },
-
-  clearItems: function() {
-    $('ul#items_lines > li').remove();
-  },
-
-  setItems: function(items) {
-    this.clearItems();
-    this.items = items;
-    this.item_controllers = [];
-    for(item in items) {
-      new_item = new InventoryOverviewResultsItemController(this.item.clone());
-      new_item.set(items[item]);
-      new_item.addObserver(this.updateItem, this);
-      this.item_controllers.push(new_item);
-      $('ul#items_lines', this.view).append(new_item.view);
-    }
-    if(items.length > 0) {
-      this.hideNotice();
-    } else {
-      this.showNotice();
-    }
-  },
-
-  updateItem: function(action, item) {
-    switch(action) {
-      case 'edit':
-        this.notifyObservers(item);
-        break;
-      case 'delete':
-        this.removeItem(item);
-        break;
-    }
-  },
-
-  removeItem: function(remove_item) {
-    for(item in this.items) {
-      if(remove_item.id == this.items[item].id) {
-        this.items.splice(item, 1);
-      }
-    }
-    this.setItems(this.items);
-  },
-
-  showNotice: function() {
-    $('h2#items_notice', this.view).show();
-  },
-
-  hideNotice: function() {
-    $('h2#items_notice', this.view).hide();
-  }
-});
-
-var InventoryOverviewController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.query = null;
-    this.page = null;
-
-    this.item_controller = new InventoryItemController('div#item');
-    this.overview_search_controller = new SearchController('div#overview_search');
-    this.overview_results_controller = new InventoryOverviewResultsController('div#overview_results');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_results_controller
-    ]);
-
-    this.item_controller.addObserver(this.search, this);
-    this.overview_results_controller.addObserver(this.edit, this);
-    this.overview_search_controller.addObserver(this.search, this);
-
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
-  },
-
-  reset: function() {
-    this.query = null;
-    this.page = null;
-    this.overview_results_controller.reset();
-  },
-
-  search: function(query, page) {
-    if(page == undefined || page == null) {
-      page = 1;
-    }
-    if(query.length > 1) {
-      keywords = query.split('|');
-      if(keywords.length > 1) {
-        pairs = [];
-        for(keyword in keywords) {
-          pair = keywords[keyword].split('~');
-          if(pair.length > 1) {
-            pairs.push(pair);
-          }
-        }
-        statement = '';
-        match_statements = [];
-        params = [];
-        for(pair in pairs) {
-          match_statements.push(pairs[pair][0] + ' LIKE ?');
-          params.push('%' + pairs[pair][1] + '%');
-        }
-        statement = match_statements.join(' AND ');
-        console.log(statement);
-        this.overview_results_controller.update(Item.where(statement, params, page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
-      } else {
-        pattern = 'title_or_description_or_sku_contains_all';
-        this.overview_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
-      }
-    } else {
-      pattern = 'title_starts_with';
-      this.overview_results_controller.update(Item.search(pattern, query.split(' '), page, 10, this.overview_results_controller.showLoading, this.overview_results_controller.hideLoading));
-    }
-  },
-
-  edit: function(item) {
-    this.item_controller.setItem(item);
-    this.item_controller.view.show();
-  },
-
-  onNew: function(event) {
-    event.data.instance.item_controller.setItem(null);
-    event.data.instance.item_controller.view.show();
-    event.preventDefault();
-  }
-});
-
-var InventoryController = new JS.Class({
-
-  initialize: function() {
-    this.overview_controller = new InventoryOverviewController('section#overview');
-    this.section_controller = new SectionController('ul#inventory_nav', [
-      this.overview_controller
-    ]);
-    this.reset();
-  },
-
-  reset: function() {
-    this.overview_controller.reset();
-    this.section_controller.reset();
-  }
-});
-
-var RepairsRepairController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.repair = null;
-
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-  },
-
-  reset: function() {
-    $(':input', this.view)
-      .not(':button, :submit, :reset')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected');
-    $('input#contacted', this.view).attr('checked', false);
-    $('input#active', this.view).attr('checked', true);
-
-    now = new Date();
-    started_year = now.getFullYear();
-    started_month = now.getMonth() + 1;
-    started_day = now.getDate();
-    started_hour = now.getHours();
-    started_minute = now.getMinutes();
-    started_second = now.getSeconds();
-    finished_year = now.getFullYear();
-    finished_month = now.getMonth() + 1;
-    finished_day = now.getDate();
-    finished_hour = now.getHours();
-    finished_minute = now.getMinutes();
-    finished_second = now.getSeconds();
-
-    $('select#started_year').val(started_year);
-    $('select#started_month').val(started_month);
-    $('select#started_day').val(started_day);
-    $('select#started_hour').val(this._padNumber(started_hour));
-    $('select#started_minute').val(this._padNumber(started_minute));
-    $('select#started_second').val(this._padNumber(started_second));
-    $('select#finished_year').val(finished_year);
-    $('select#finished_month').val(finished_month);
-    $('select#finished_day').val(finished_day);
-    $('select#finished_hour').val(this._padNumber(finished_hour));
-    $('select#finished_minute').val(this._padNumber(finished_minute));
-    $('select#finished_second').val(this._padNumber(finished_second));
-  },
-
-  setRepair: function(repair) {
-    this.repair = repair;
-
-    if(repair != null) {
-      started = (new Date()).setISO8601(repair.started);
-      finished = (new Date()).setISO8601(repair.finished);
-      started_year = started.getFullYear();
-      started_month = started.getMonth() + 1;
-      started_day = started.getDate();
-      started_hour = started.getHours();
-      started_minute = started.getMinutes();
-      started_second = started.getSeconds();
-      finished_year = finished.getFullYear();
-      finished_month = finished.getMonth() + 1;
-      finished_day = finished.getDate();
-      finished_hour = finished.getHours();
-      finished_minute = finished.getMinutes();
-      finished_second = finished.getSeconds();
-
-      $('input#name', this.view).val(repair.name);
-      $('input#phone', this.view).val(repair.phone);
-      $('input#item', this.view).val(repair.item);
-      $('input#serial', this.view).val(repair.serial);
-      $('textarea#description', this.view).val(repair.description);
-      $('textarea#symptoms', this.view).val(repair.symptoms);
-      $('textarea#notes', this.view).val(repair.notes);
-      $('input#warranty', this.view).val(repair.warranty);
-      $('input#cost', this.view).val(Currency.format(repair.cost));
-      $('input#receiver', this.view).val(repair.receiver);
-      $('input#technician', this.view).val(repair.technician);
-      $('input#status', this.view).val(repair.status);
-      $('input#contacted', this.view).attr('checked', repair.contacted);
-      $('input#active', this.view).attr('checked', repair.active);
-
-      $('select#started_year').val(started_year);
-      $('select#started_month').val(started_month);
-      $('select#started_day').val(started_day);
-      $('select#started_hour').val(this._padNumber(started_hour));
-      $('select#started_minute').val(this._padNumber(started_minute));
-      $('select#started_second').val(this._padNumber(started_second));
-      $('select#finished_year').val(finished_year);
-      $('select#finished_month').val(finished_month);
-      $('select#finished_day').val(finished_day);
-      $('select#finished_hour').val(this._padNumber(finished_hour));
-      $('select#finished_minute').val(this._padNumber(finished_minute));
-      $('select#finished_second').val(this._padNumber(finished_second));
-    } else {
-      this.reset();
-    }
-  },
-
-  onClose: function(event) {
-    event.data.instance.view.hide();
-    event.preventDefault();
-  },
-
-  onSave: function(event) {
-    started_year = $('select#started_year').val();
-    started_month = $('select#started_month').val() - 1;
-    started_day = $('select#started_day').val();
-    started_hour = $('select#started_hour').val();
-    started_minute = $('select#started_minute').val();
-    started_second = $('select#started_second').val();
-    finished_year = $('select#finished_year').val();
-    finished_month = $('select#finished_month').val() - 1;
-    finished_day = $('select#finished_day').val();
-    finished_hour = $('select#finished_hour').val();
-    finished_minute = $('select#finished_minute').val();
-    finished_second = $('select#finished_second').val();
-
-    started = new Date(started_year, started_month, started_day, started_hour, started_minute, started_second);
-    finished = new Date(finished_year, finished_month, finished_day, finished_hour, finished_minute, finished_second);
-
-    name = $('input#name', this.view).val();
-    phone = $('input#phone', this.view).val();
-    item = $('input#item', this.view).val();
-    serial = $('input#serial', this.view).val();
-    description = $('textarea#description', this.view).val();
-    symptoms = $('textarea#symptoms', this.view).val();
-    notes = $('textarea#notes', this.view).val();
-    warranty = $('input#warranty', this.view).val();
-    cost = parseInt(Currency.toPennies($('input#cost', this.view).val()));
-    receiver = $('input#receiver', this.view).val();
-    technician = $('input#technician', this.view).val();
-    status = $('input#status', this.view).val();
-    contacted = $('input#contacted', this.view).attr('checked');
-    active = $('input#active', this.view).attr('checked');
-
-    if(event.data.instance.repair == null) {
-      repair = Repair.create({
-        name: name,
-        phone: phone,
-        item: item,
-        serial: serial,
-        description: description,
-        symptoms: symptoms,
-        notes: notes,
-        warranty: warranty,
-        cost: cost,
-        receiver: receiver,
-        technician: technician,
-        started: started,
-        finished: finished,
-        contacted: contacted,
-        active: active
-      });
-    } else {
-      repair = Repair.find(event.data.instance.repair.id);
-      repair.name = name;
-      repair.phone = phone;
-      repair.item = item;
-      repair.serial = serial;
-      repair.description = description;
-      repair.symptoms = symptoms;
-      repair.notes = notes;
-      repair.warranty = warranty;
-      repair.cost = cost;
-      repair.receiver = receiver;
-      repair.technician = technician;
-      repair.started = started;
-      repair.finished = finished;
-      repair.contacted = contacted;
-      repair.active = active;
-      repair.save();
-    }
-
-    event.data.instance.setRepair(repair);
-    event.data.instance.notifyObservers(event.data.instance.repair.name, 1);
-    event.data.instance.view.hide();
-    event.preventDefault();
-  },
-
-  _padNumber: function(number) {
-    if(number < 10) {
-      return '0' + number;
-    } else {
-      return number;
-    }
-  }
-});
-
-var RepairsOverviewResultsRepairController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.repair = null;
-
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
-    $('a.print', this.view).bind('click', {instance: this}, this.onPrint);
-  },
-
-  set: function(repair) {
-    this.repair = repair;
-
-    $('td.id', this.view).html(repair.id);
-    $('td.name', this.view).html(repair.name);
-    $('td.phone', this.view).html(repair.phone);
-    $('td.item', this.view).html(repair.item);
-    $('td.serial', this.view).html(repair.serial);
-    $('td.description', this.view).html(repair.description);
-    $('td.symptoms', this.view).html(repair.symptoms);
-    $('td.notes', this.view).html(repair.notes);
-    $('td.warranty', this.view).html(repair.warranty);
-    $('td.cost', this.view).html(Currency.pretty(repair.cost));
-  },
-
-  onEdit: function(event) {
-    event.data.instance.notifyObservers('edit', event.data.instance.repair);
-    event.preventDefault();
-  },
-
-  onPrint: function(event) {
-    event.data.instance.notifyObservers('print', event.data.instance.repair);
-    event.preventDefault();
-  }
-});
-
-var RepairsOverviewResultsController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.repairs = [];
-    this.repair_controllers = [];
-    this.repair = $('tr.repair_line', this.view).detach();
-  },
-
-  reset: function() {
-    this.repairs = [];
-    this.repair_controllers = [];
-    this.clearRepairs();
-  },
-
-  update: function(repairs) {
-    this.setRepairs(repairs);
-  },
-
-  clearRepairs: function() {
-    $('table#repair_lines > tbody > tr.repair_line').remove();
-  },
-
-  setRepairs: function(repairs) {
-    this.clearRepairs();
-    this.repairs = repairs;
-    this.repair_controllers = [];
-    for(repair in repairs) {
-      new_repair = new RepairsOverviewResultsRepairController(this.repair.clone());
-      new_repair.set(repairs[repair]);
-      new_repair.addObserver(this.updateRepair, this);
-      this.repair_controllers.push(new_repair);
-      $('table#repair_lines tbody', this.view).append(new_repair.view);
-    }
-    if(repairs.length > 0) {
-      this.hideNotice();
-    } else {
-      this.showNotice();
-    }
-  },
-
-  updateRepair: function(action, repair) {
-    switch(action) {
-      case 'edit':
-        this.notifyObservers('edit', repair);
-        break;
-      case 'print':
-        this.notifyObservers('print', repair);
-        break;
-    }
-  },
-
-  showNotice: function() {
-    $('h2#repair_notice', this.view).show();
-    $('table#repair_lines', this.view).hide();
-  },
-
-  hideNotice: function() {
-    $('h2#repair_notice', this.view).hide();
-    $('table#repair_lines', this.view).show();
-  }
-});
-
-var RepairsOverviewController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.query = null;
-    this.page = null;
-
-    this.repair_controller = new RepairsRepairController('div#repair');
-    this.order_controller = new RepairsOrderController('div#order');
-    this.overview_search_controller = new SearchController('div#overview_search');
-    this.overview_results_controller = new RepairsOverviewResultsController('div#overview_results');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_results_controller
-    ]);
-
-    this.repair_controller.addObserver(this.search, this);
-    this.overview_results_controller.addObserver(this.handle, this);
-    this.overview_search_controller.addObserver(this.search, this);
-
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
-  },
-
-  reset: function() {
-    this.query = null;
-    this.page = null;
-    this.overview_results_controller.reset();
-  },
-
-  search: function(query, page) {
-    this.query = query;
-    this.page = page;
-
-    if(isNaN(query)) {
-      if(page == undefined || page == null) {
-        page = 1;
-      }
-      if(query.length > 1) {
-        pattern = 'name_or_serial_or_phone_contains_any';
-      } else {
-        pattern = 'name_starts_with';
-      }
-      this.overview_results_controller.update(Repair.search(pattern, query.toString().split(' '), page, 10, this.overview_search_controller.showLoading, this.overview_search_controller.hideLoading));
-    } else {
-      repair = Repair.find(query);
-      if(repair != undefined) {
-        this.overview_results_controller.update([repair]);
-      } else {
-        this.overview_results_controller.update([]);
-      }
-    }
-  },
-
-  handle: function(action, repair) {
-    switch(action) {
-      case 'edit':
-        this.edit(repair);
-        break;
-      case 'print':
-        this.print(repair);
-        break;
-    }
-  },
-
-  edit: function(repair) {
-    this.repair_controller.setRepair(repair);
-    this.repair_controller.view.show();
-  },
-
-  print: function(repair) {
-    this.order_controller.update('/api/repairs/' + repair.id + '/receipt');
-    this.order_controller.view.show();
-  },
-
-  onNew: function(event) {
-    event.data.instance.repair_controller.setRepair(null);
-    event.data.instance.repair_controller.view.show();
-    event.preventDefault();
-  }
-});
-
-var RepairsController = new JS.Class({
-
-  initialize: function() {
-    this.overview_controller = new RepairsOverviewController('section#overview');
-    this.section_controller = new SectionController('ul#repairs_nav', [
-      this.overview_controller
-    ]);
-    this.reset();
-  },
-
-  reset: function() {
-    this.overview_controller.reset();
-    this.section_controller.reset();
-  }
-});
-
-var RepairsOrderController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-
-    $('ul#order_nav a.close', this.view).bind('click', {instance: this}, this.doClose);
-    $('ul#order_nav a.print', this.view).bind('click', {instance: this}, this.doPrint);
-  },
-
-  update: function(url) {
-    $('object#order_window', this.view).attr('data', url);
-  },
-
-  doClose: function(event) {
-    event.data.instance.view.hide();
-    event.preventDefault();
-  },
-
-  doPrint: function(event) {
-    window.frames['order_window'].print();
     event.preventDefault();
   }
 });
@@ -5509,7 +4998,7 @@ var TillsAdjustController = new JS.Class(ViewController, {
     if(amount != 0) {
       Entry.create({
         till_id: event.data.instance.till.id,
-        user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
+        employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
         title: 'Adjustment - ' + new Date(),
         description: $('textarea#description', event.data.instance.view).val(),
         amount: amount
@@ -5519,35 +5008,6 @@ var TillsAdjustController = new JS.Class(ViewController, {
       event.data.instance.view.hide();
     }
     event.preventDefault();
-  }
-});
-
-var TillsAdminController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-
-    this.admin_tills_controller = new TillsAdminTillsController('div#admin_tills');
-    this.admin_section_controller = new SectionController('ul#admin_nav', [
-      this.admin_tills_controller
-    ]);
-
-    this.admin_tills_controller.addObserver(this.auditTill, this);
-  },
-
-  reset: function() {
-    this.admin_section_controller.reset();
-    this.admin_tills_controller.reset();
-    this.update();
-  },
-
-  update: function() {
-    this.admin_tills_controller.loadTills();
-  },
-
-  auditTill: function(till) {
-    this.notifyObservers(till);
   }
 });
 
@@ -5625,7 +5085,7 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
     $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
     $('a.adjust', this.view).bind('click', {instance: this}, this.onAdjust);
-    $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
+    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
   },
 
   set: function(till) {
@@ -5651,8 +5111,8 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  onUsers: function(event) {
-    event.data.instance.notifyObservers('users', event.data.instance.till);
+  onEmployees: function(event) {
+    event.data.instance.notifyObservers('employees', event.data.instance.till);
     event.preventDefault();
   }
 });
@@ -5743,246 +5203,20 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
   }
 });
 
-var TillsAuditController = new JS.Class(ViewController, {
+var TimeclockTimecardController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
-    this.till = null;
-    this.reset();
-
-    $('a.calculate', this.view).bind('click', {instance: this}, this.onCalculate);
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-  },
-
-  reset: function() {
-    $(':input', this.view)
-      .not(':button, :submit, :reset')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected');
-    $(':input', this.view).val(0);
-    $('input#balance', this.view).val(null);
-  },
-
-  update: function(till) {
-    this.till = till;
-  },
-
-  onCalculate: function(event) {
-    pennies = $('input#pennies', event.data.instance.view).val();
-    nickels = $('input#nickels', event.data.instance.view).val();
-    dimes = $('input#dimes', event.data.instance.view).val();
-    quarters = $('input#quarters', event.data.instance.view).val();
-    ones = $('input#ones', event.data.instance.view).val();
-    fives = $('input#fives', event.data.instance.view).val();
-    tens = $('input#tens', event.data.instance.view).val();
-    twenties = $('input#twenties', event.data.instance.view).val();
-    fifties = $('input#fifties', event.data.instance.view).val();
-    hundreds = $('input#hundreds', event.data.instance.view).val();
-    penny_rolls = $('input#penny_rolls', event.data.instance.view).val();
-    nickel_rolls = $('input#nickel_rolls', event.data.instance.view).val();
-    dime_rolls = $('input#dime_rolls', event.data.instance.view).val();
-    quarter_rolls = $('input#quarter_rolls', event.data.instance.view).val();
-    total = (pennies * 0.01) + (nickels * 0.05) + (dimes * 0.1) + (quarters * 0.25) + (ones * 1) + (fives * 5) + (tens * 10) +
-      (twenties * 20) + (fifties * 50) + (hundreds * 100) + (penny_rolls * 0.50) + (nickel_rolls * 2) + (dime_rolls * 5) + (quarter_rolls * 10);
-
-    $('input#balance', event.data.instance.view).val(total);
-    event.preventDefault();
-  },
-
-  onClose: function(event) {
-    event.data.instance.view.hide();
-    event.preventDefault();
-  },
-
-  onSave: function(event) {
-    till_balance = event.data.instance.till.balance();
-    new_balance = Currency.toPennies($('input#balance', event.data.instance.view).val());
-    amount = new_balance - till_balance;
-
-    Entry.create({
-      till_id: event.data.instance.till.id,
-      user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
-      title: 'Audit - ' + new Date(),
-      description: '',
-      amount: amount
-    });
-
-    event.data.instance.notifyObservers();
-    event.data.instance.view.hide();
-    event.preventDefault();
-  }
-});
-
-var TillsOverviewTillsTillController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.till = null;
-
-    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
-  },
-
-  set: function(till) {
-    this.till = till;
-
-    $('h3.overview_tills_line_title', this.view).html(till.title);
-    $('h4.overview_tills_line_description', this.view).html(till.description);
-  },
-
-  onAudit: function(event) {
-    event.data.instance.notifyObservers('audit', event.data.instance.till);
-    event.preventDefault();
-  }
-});
-
-var TillsOverviewTillsController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-    this.tills = [];
-    this.till_controllers = [];
-    this.till = $('li.overview_tills_line', this.view).detach();
-
-    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
-  },
-
-  reset: function() {
-    this.tills = [];
-    this.till_controllers = [];
-    this.clearTills();
-  },
-
-  loadTills: function() {
-    this.setTills(Till.all());
-  },
-
-  clearTills: function() {
-    $('ul#overview_tills_lines > li.overview_tills_line').remove();
-  },
-
-  setTills: function(tills) {
-    this.clearTills();
-    this.till_controllers = [];
-    for(till in tills) {
-      new_till = new TillsOverviewTillsTillController(this.till.clone());
-      new_till.set(tills[till]);
-      new_till.addObserver(this.actionTill, this);
-      this.till_controllers.push(new_till);
-      $('ul#overview_tills_lines', this.view).append(new_till.view);
-    }
-    if(tills.length > 0) {
-      this.hideNotice();
-    } else {
-      this.showNotice();
-    }
-  },
-
-  actionTill: function(action, till) {
-    switch(action) {
-      case 'audit':
-        this.notifyObservers(till);
-        break;
-    }
-  },
-
-  onRefresh: function(event) {
-    event.data.instance.loadTills();
-    event.preventDefault();
-  },
-
-  showNotice: function() {
-    $('h2#overview_tills_notice', this.view).show();
-  },
-
-  hideNotice: function() {
-    $('h2#overview_tills_notice', this.view).hide();
-  }
-});
-
-var TillsOverviewController = new JS.Class(ViewController, {
-  include: [JS.Observable, Sectionable],
-
-  initialize: function(view) {
-    this.callSuper();
-
-    this.overview_tills_controller = new TillsOverviewTillsController('div#overview_tills');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
-      this.overview_tills_controller
-    ]);
-
-    this.overview_tills_controller.addObserver(this.auditTill, this);
-  },
-
-  reset: function() {
-    this.overview_section_controller.reset();
-    this.overview_tills_controller.reset();
-    this.update();
-  },
-
-  update: function() {
-    this.overview_tills_controller.loadTills();
-  },
-
-  auditTill: function(till) {
-    this.notifyObservers(till);
-  }
-});
-
-var TillsController = new JS.Class({
-
-  initialize: function() {
-    this.audit_controller = new TillsAuditController('div#audit');
-    this.overview_controller = new TillsOverviewController('section#overview');
-    this.admin_controller = new TillsAdminController('section#admin');
-    this.section_controller = new SectionController('ul#tills_nav', [
-      this.overview_controller,
-      this.admin_controller
-    ]);
-    this.reset();
-
-    this.audit_controller.addObserver(this.loadTills, this);
-    this.overview_controller.addObserver(this.auditTill, this);
-    this.admin_controller.addObserver(this.auditTill, this);
-  },
-
-  reset: function() {
-    this.audit_controller.reset();
-    this.overview_controller.reset();
-    this.admin_controller.reset();
-    this.section_controller.reset();
-  },
-
-  loadTills: function() {
-    this.overview_controller.update();
-    this.admin_controller.update();
-  },
-
-  auditTill: function(till) {
-    this.audit_controller.update(till);
-    this.audit_controller.reset();
-    this.audit_controller.view.show();
-  }
-});
-
-var TimecardController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-    this.user = null;
+    this.employee = null;
     this.timecard = null;
 
     $('a.close', this.view).bind('click', {instance: this}, this.onClose);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
-  setUser: function(user) {
-    this.user = user;
+  setEmployee: function(employee) {
+    this.employee = employee;
   },
 
   setTimecard: function(timecard) {
@@ -6054,7 +5288,7 @@ var TimecardController = new JS.Class(ViewController, {
     end = new Date(end_year, end_month, end_day, end_hour, end_minute, end_second);
     if(event.data.instance.timecard == null) {
       timecard = Timecard.create({
-        user_id: event.data.instance.user.id,
+        employee_id: event.data.instance.employee.id,
         begin: begin,
         end: end
       });
@@ -6078,7 +5312,7 @@ var TimecardController = new JS.Class(ViewController, {
   }
 });
 
-var CustomerReviewController = new JS.Class(ViewController, {
+var TransactionsCustomerReviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -6149,7 +5383,7 @@ var CustomerReviewController = new JS.Class(ViewController, {
   }
 });
 
-var ReceiptController = new JS.Class(ViewController, {
+var TransactionsReceiptController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
@@ -6173,20 +5407,48 @@ var ReceiptController = new JS.Class(ViewController, {
   }
 });
 
-Factory.define('User', {
-  id: {
-    sequence: 'id'
+var TransactionsTillController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
   },
-  person: {
-    factory: 'Person'
-  },
-  rate: 0,
-  active: true
+
+  doSelect: function(event) {
+    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
+    event.preventDefault();
+  }
 });
 
-var Repair = new JS.Class(Model, {
-  extend: {
-    resource: 'repair',
-    columns: ['id', 'name', 'phone', 'title', 'description', 'serial', 'symptoms', 'notes', 'warranty', 'cost', 'receiver', 'technician', 'started', 'finished', 'status', 'contacted', 'active']
+var TransactionsSessionController = new JS.Class({
+
+  initialize: function() {
+    this.transactions_controller = new TransactionsController('div#transaction');
+    this.receipt_controller = new TransactionsReceiptController('div#receipt');
+    this.till_controller = new TransactionsTillController('div#till');
+
+    this.till_controller.addObserver(this.updateTill, this);
+    this.transactions_controller.addObserver(this.presentReceipt, this);
+
+    this.reset();
+  },
+
+  reset: function() {
+    this.transactions_controller.view.hide();
+    this.receipt_controller.view.hide();
+    this.till_controller.view.show();
+  },
+
+  presentReceipt: function(url) {
+    this.receipt_controller.update(url);
+    this.receipt_controller.view.show();
+  },
+
+  updateTill: function(till) {
+    this.transactions_controller.newTransactions(till.id, parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')));
+    this.transactions_controller.transactions_nav_controller.update(till);
+    this.till_controller.view.hide();
+    this.transactions_controller.view.show();
   }
 });

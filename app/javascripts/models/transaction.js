@@ -3,14 +3,13 @@
 //= require "customer"
 //= require "item"
 //= require "line"
-//= require "payment"
 
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
-    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
-    belongs_to: ['customer', 'till', 'user'],
-    has_many: ['lines', 'payments']
+    columns: ['id', 'till_id', 'customer_id', 'employee_id', 'tax_rate', 'complete', 'locked'],
+    belongs_to: ['customer', 'till', 'employee'],
+    has_many: ['lines']
   },
   
   subtotal: function() {

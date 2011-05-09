@@ -7,18 +7,14 @@ var TimeclockController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.overview_controller = new TimeclockOverviewController('section#overview');
-    this.admin_controller = new TimeclockAdminController('section#admin');
+    this.overview_controller = new TimeclockOverviewController('section#timeclock_overview');
+    this.admin_controller = new TimeclockAdminController('section#timeclock_admin');
     this.section_controller = new SectionController('ul#timeclock_nav', [
       this.overview_controller,
       this.admin_controller
     ]);
     
     this.reset();
-    
-    this.overview_controller.updateClock();
-    this.overview_controller.updateCanvas();
-    this.overview_controller.updateCharts();
   },
   
   reset: function() {
@@ -28,10 +24,20 @@ var TimeclockController = new JS.Class(ViewController, {
   },
   
   activate: function() {
+    employees = Employee.all();
+    
     this.view.show();
+    this.overview_controller.setEmployees(employees);
+    this.admin_controller.setEmployees(employees);
+    this.section_controller.view.show();
+    
+    this.overview_controller.updateClock();
+    this.overview_controller.updateCanvas();
+    this.overview_controller.updateCharts();
   },
   
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   }
 });

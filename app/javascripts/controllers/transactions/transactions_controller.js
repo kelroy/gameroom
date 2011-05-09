@@ -20,18 +20,18 @@ var TransactionsController = new JS.Class(ViewController, {
     this.transaction = null;
     
     this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
-    this.customer_controller = new TransactionsCustomerController('section#customer');
-    this.cart_controller = new TransactionsCartController('section#cart');
-    this.payment_controller = new TransactionsPaymentController('section#payment');
-    this.review_controller = new TransactionsReviewController('section#review');
+    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
+    this.cart_controller = new TransactionsCartController('section#transactions_cart');
+    this.payment_controller = new TransactionsPaymentController('section#transactions_payment');
+    this.review_controller = new TransactionsReviewController('section#transactions_review');
     this.section_controller = new SectionController('ul#transactions_nav', [
       this.cart_controller,
       this.customer_controller,
       this.payment_controller,
       this.review_controller
     ]);
-    this.summary_controller = new TransactionsSummaryController('ul#summary');
-    this.finish_controller = new TransactionsFinishController('ul#finish');
+    this.summary_controller = new TransactionsSummaryController('ul#transactions_summary');
+    this.finish_controller = new TransactionsFinishController('ul#transactions_finish');
     
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);

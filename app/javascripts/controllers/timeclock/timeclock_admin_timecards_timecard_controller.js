@@ -17,8 +17,8 @@ var TimeclockAdminTimecardsTimecardController = new JS.Class(ViewController, {
     end = (new Date()).setISO8601(this.timecard.end);
     total = ((end.valueOf() - begin.valueOf()) / 3600000).toFixed(2);
     
-    $('h3.timecards_line_total', this.view).html(total + ' hours');
-    $('h4.timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
+    $('h3.timeclock_timecards_line_total', this.view).html(total + ' hours');
+    $('h4.timeclock_timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
   },
   
   onDelete: function(event) {

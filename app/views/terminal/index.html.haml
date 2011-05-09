@@ -9,28 +9,28 @@
     %li{:id => 'transactions_nav_till'}
     %li
       %a{:href => '#reset', :class => 'button reset'} Reset
-  %section{:id => 'cart'}
+  %section{:id => 'transactions_cart'}
     = render :partial => 'transactions_cart'
-  %section{:id => 'customer'}
+  %section{:id => 'transactions_customer'}
     = render :partial => 'transactions_customer'
-  %section{:id => 'payment'}
+  %section{:id => 'transactions_payment'}
     = render :partial => 'transactions_payment'
-  %section{:id => 'review'}
+  %section{:id => 'transactions_review'}
     = render :partial => 'transactions_review'
 %div{:id => 'inventory', :class => 'section_container'}
-  %section{:id => 'overview'}
+  %section{:id => 'inventory_overview'}
     = render :partial => 'inventory_overview'
 %div{:id => 'reports', :class => 'section_container'}
 %div{:id => 'tills', :class => 'section_container'}
-  %section{:id => 'overview'}
+  %section{:id => 'tills_overview'}
     = render :partial => 'tills_overview'
-  %section{:id => 'admin'}
+  %section{:id => 'tills_admin'}
     = render :partial => 'tills_admin'
 %div{:id => 'timeclock', :class => 'section_container'}
-  %section{:id => 'overview'}
+  %section{:id => 'timeclock_overview'}
     = render :partial => 'timeclock_overview'
-  %section{:id => 'admin'}
+  %section{:id => 'timeclock_admin'}
     = render :partial => 'timeclock_admin'
 %div{:id => 'employees', :class => 'section_container'}
-  %section{:id => 'overview'}
+  %section{:id => 'employees_overview'}
     = render :partial => 'employees_overview'

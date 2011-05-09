@@ -1,8 +1,8 @@
-%div{:id => 'admin_header', :class => 'header_container'}
-  %form{:action => '#employee', :id => 'admin_employee', :method => 'get'}
+%div{:id => 'timeclock_admin_header', :class => 'header_container'}
+  %form{:action => '#employee', :id => 'timeclock_admin_employee', :method => 'get'}
     %ul
-      %li= #select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
-  %form{:action => '#date', :id => 'admin_date', :method => 'get'}
+      %li= select_tag :employee, options_for_select([])
+  %form{:action => '#date', :id => 'timeclock_admin_date', :method => 'get'}
     %ul
       %li
         = select_date Date.today
@@ -12,9 +12,9 @@
         %a{:href => '#next', :class => 'button next'} >
       %li
         %a{:href => '#today', :class => 'button today'} Today
-%ul{:id => 'admin_nav', :class => 'tab_nav'}
+%ul{:id => 'timeclock_admin_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#admin_timecards', :class => 'admin_timecards selected'} Timecards
-%div{:id => 'admin_pages', :class => 'page_container'}
-  %div{:id => 'admin_timecards'}
+    %a{:href => '#admin_timecards', :class => 'timeclock_admin_timecards selected'} Timecards
+%div{:id => 'timeclock_admin_pages', :class => 'page_container'}
+  %div{:id => 'timeclock_admin_timecards'}
     = render :partial => 'timeclock_admin_timecards'

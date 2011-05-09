@@ -6,10 +6,10 @@ var SectionController = new JS.Class(ViewController, {
   initialize: function(view, controllers) {
     this.callSuper();
     this._controllers = controllers;
-    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
+    $('a', view).bind('click', {instance: this, view: this.view}, this.onClick);
   },
   
-  doClick: function(event) {
+  onClick: function(event) {
     index = $('li > a', event.data.view).index(this);
     event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);

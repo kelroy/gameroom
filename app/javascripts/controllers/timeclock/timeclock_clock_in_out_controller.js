@@ -6,29 +6,22 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    $('a.cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
-    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
+    $('a.timeclock_cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
+    $('a.timeclock_clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
   },
   
   doClockInOut: function(event) {
-    id = $('select#employee', event.data.instance.view).val();
+    username = $('select#employee', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.find(id);
+    employee = Employee.authenticate(username, password);
     
-    event.data.instance.validateEmployee(employee, password, function(valid) {
-      if(valid) {
-        event.data.instance.timestampEmployee(employee, function(stamped) {
-          event.data.instance.clearInput();
-          event.data.instance.view.hide();
-          event.data.instance.notifyObservers();
-        });
-      } else {
-        // Invalid. Do something?
-      }
-    });
+    if(employee != null) {
+      event.data.instance.timestampEmployee(employee, function(stamped) {
+        event.data.instance.clearInput();
+        event.data.instance.view.hide();
+        event.data.instance.notifyObservers();
+      });
+    }
     event.preventDefault();
   },
   
@@ -42,24 +35,16 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  timestampEmployee: function(employee, callback) {
-    if(employee.stamp()) {
-      callback(true);
-    } else {
-      callback(false);
+  setEmployees: function(employees) {
+    $('select#employee', this.view).empty();
+    for(employee in employees) {
+      $('select#employee', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].token));
     }
   },
   
-  validateEmployee: function(employee, password, callback) {
-    person = employee.person();
-    if(person.employee() != undefined) {
-      employee = person.employee();
-
-      if(employee.password == password) {
-        callback(true);
-      } else {
-        callback(false);
-      }
+  timestampEmployee: function(employee, callback) {
+    if(employee.stamp()) {
+      callback(true);
     } else {
       callback(false);
     }

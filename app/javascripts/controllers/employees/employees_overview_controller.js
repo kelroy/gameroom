@@ -14,7 +14,7 @@ var EmployeesOverviewController = new JS.Class(ViewController, {
     this.overview_select_controller = new EmployeesOverviewSelectController('form#overview_select');
     this.overview_form_controller = new EmployeesOverviewFormController('form#overview_employee');
     this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#overview_employee');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.overview_section_controller = new SectionController('ul#employees_overview_nav', [
       this.overview_employee_controller
     ]);
     

@@ -11,9 +11,9 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
     this.employee = null;
     this.timecards = [];
     this.timecard_controllers = [];
-    this.timecard = $('li.timecards_line', this.view).detach();
+    this.timecard = $('li.timeclock_timecards_line', this.view).detach();
     
-    this.timecard_controller = new TimeclockTimecardController('div#timecard');
+    this.timecard_controller = new TimeclockTimecardController('div#timeclock_timecard');
     this.timecard_controller.addObserver(this.loadTimecards, this);
     
     $('a.add', this.view).bind('click', {instance: this}, this.onAdd);
@@ -34,13 +34,17 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   },
   
   loadTimecards: function() {
-    tomorrow = new Date();
-    tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+    if(this.employee != null) {
+      tomorrow = new Date();
+      tomorrow.setDate(this.date.getDate() + 1);
+      this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+    } else {
+      this.setTimecards([]);
+    }
   },
   
   clearTimecards: function() {
-    $('ul#timecards_lines > li').remove();
+    $('ul#timeclock_timecards_lines > li').remove();
   },
   
   setTimecards: function(timecards) {
@@ -52,7 +56,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
       new_timecard.set(timecards[timecard]);
       new_timecard.addObserver(this.updateTimecard, this);
       this.timecard_controllers.push(new_timecard);
-      $('ul#timecards_lines', this.view).append(new_timecard.view);
+      $('ul#timeclock_timecards_lines', this.view).append(new_timecard.view);
     }
     if(timecards.length > 0) {
       this.hideNotice();
@@ -68,7 +72,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
       end = (new Date()).setISO8601(timecards[timecard].end);
       total += (end.valueOf() - begin.valueOf()) / 3600000
     }
-    $('h3#timecards_total').html(total.toFixed(2) + ' hours');
+    $('h3#timeclock_timecards_total').html(total.toFixed(2) + ' hours');
   },
   
   updateTimecard: function(timecard) {
@@ -89,10 +93,10 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   },
   
   showNotice: function() {
-    $('h2#timecards_notice', this.view).show();
+    $('h2#timeclock_timecards_notice', this.view).show();
   },
   
   hideNotice: function() {
-    $('h2#timecards_notice', this.view).hide();
+    $('h2#timeclock_timecards_notice', this.view).hide();
   }
 });

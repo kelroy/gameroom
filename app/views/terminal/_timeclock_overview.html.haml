@@ -1,15 +1,15 @@
-%div{:id => 'overview_header', :class => 'header_container'}
-  %h2{:id => 'overview_datetime'}
-  %ul{:id => 'overview_action_nav'}
+%div{:id => 'timeclock_overview_header', :class => 'header_container'}
+  %h2{:id => 'timeclock_overview_datetime'}
+  %ul{:id => 'timeclock_overview_action_nav'}
     %li
-      %a{:href => '#clock_in_out', :class => 'clock_in_out button big'} Clock In / Out
-%ul{:id => 'overview_nav', :class => 'tab_nav'}
+      %a{:href => '#clock_in_out', :class => 'timeclock_clock_in_out button big'} Clock In / Out
+%ul{:id => 'timeclock_overview_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#overview_in', :class => 'overview_in selected'} In
+    %a{:href => '#overview_in', :class => 'timeclock_overview_in selected'} In
   %li
-    %a{:href => '#overview_out', :class => 'overview_out selected'} Out
-%div{:id => 'overview_pages', :class => 'page_container'}
-  %div{:id => 'overview_in'}
-    = render :partial => 'timeclock_overview_chart', :locals => {:chart_class => 'overview_chart_in', :chart_line_class => 'overview_chart_in_item'}
-  %div{:id => 'overview_out'}
-    = render :partial => 'timeclock_overview_chart', :locals => {:chart_class => 'overview_chart_out', :chart_line_class => 'overview_chart_out_item'}
+    %a{:href => '#overview_out', :class => 'timeclock_overview_out selected'} Out
+%div{:id => 'timeclock_overview_pages', :class => 'page_container'}
+  %div{:id => 'timeclock_overview_in'}
+    = render :partial => 'timeclock_overview_chart', :locals => {:chart_class => 'timeclock_overview_chart_in', :chart_line_class => 'timeclock_overview_chart_in_item'}
+  %div{:id => 'timeclock_overview_out'}
+    = render :partial => 'timeclock_overview_chart', :locals => {:chart_class => 'timeclock_overview_chart_out', :chart_line_class => 'timeclock_overview_chart_out_item'}

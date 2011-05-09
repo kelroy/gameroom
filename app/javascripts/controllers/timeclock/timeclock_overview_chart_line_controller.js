@@ -15,6 +15,6 @@ var TimeclockOverviewChartLineController = new JS.Class(ViewController, {
   },
   
   setName: function(employee) {
-    $('h3', this.view).html(employee.login);
+    $('h3', this.view).html(employee.token);
   }
 });

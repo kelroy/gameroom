@@ -5,7 +5,7 @@
 var TransactionsSessionController = new JS.Class({
   
   initialize: function() {
-    this.transactions_controller = new TransactionsController('div#transaction');
+    this.transactions_controller = new TransactionsController('div#transactions');
     this.receipt_controller = new TransactionsReceiptController('div#receipt');
     this.till_controller = new TransactionsTillController('div#till');
     

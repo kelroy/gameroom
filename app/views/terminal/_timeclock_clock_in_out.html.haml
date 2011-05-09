@@ -1,18 +1,18 @@
-%div{:id => 'clock_in_out', :class => 'modal'}
+%div{:id => 'timeclock_clock_in_out', :class => 'modal'}
   %h2 Clock In / Out
-  %form{:action => '#clock_in_out', :id => 'clock_in_out', :method => 'get'}
+  %form{:action => '#timeclock_clock_in_out', :id => 'timeclock_clock_in_out', :method => 'get'}
     %ul
       %li
         = label_tag :employee
-        = #select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
+        = select_tag :employee, options_for_select([])
     %ul
       %li
         = label_tag :password, "PIN"
         = password_field_tag :password
     %ul
       %li
-        %ul{:id => 'clock_in_out_nav', :class => 'button_nav'}
+        %ul{:id => 'timeclock_clock_in_out_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#cancel', :class => 'cancel button'} Cancel
+            %a{:href => '#timeclock_cancel', :class => 'timeclock_cancel button'} Cancel
           %li
-            %a{:href => '#clock_in_out', :class => 'clock_in_out button'} Clock In / Out
+            %a{:href => '#timeclock_clock_in_out', :class => 'timeclock_clock_in_out button'} Clock In / Out

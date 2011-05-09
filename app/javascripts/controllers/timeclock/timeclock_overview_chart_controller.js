@@ -8,7 +8,7 @@ var TimeclockOverviewChartController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
     
-    this.overview_chart_header_controller = new TimeclockOverviewChartHeaderController($('canvas.overview_chart_header', this.view));
+    this.overview_chart_header_controller = new TimeclockOverviewChartHeaderController($('canvas.timeclock_overview_chart_header', this.view));
     
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },

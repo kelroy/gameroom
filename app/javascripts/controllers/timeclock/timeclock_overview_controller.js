@@ -13,10 +13,10 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.clock_in_out_controller = new TimeclockClockInOutController('div#clock_in_out');
-    this.overview_in_controller = new TimeclockOverviewInController('div#overview_in');
-    this.overview_out_controller = new TimeclockOverviewOutController('div#overview_out');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.clock_in_out_controller = new TimeclockClockInOutController('div#timeclock_clock_in_out');
+    this.overview_in_controller = new TimeclockOverviewInController('div#timeclock_overview_in');
+    this.overview_out_controller = new TimeclockOverviewOutController('div#timeclock_overview_out');
+    this.overview_section_controller = new SectionController('ul#timeclock_overview_nav', [
       this.overview_in_controller,
       this.overview_out_controller
     ]);
@@ -35,7 +35,7 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
       controller.updateCanvas();
     }, 60000);
     
-    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
+    $('a.timeclock_clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
   },
   
   reset: function() {
@@ -60,6 +60,10 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   showClockInOut: function(event) {
     event.data.instance.clock_in_out_controller.view.show();
     event.preventDefault();
+  },
+  
+  setEmployees: function(employees) {
+    this.clock_in_out_controller.setEmployees(employees);
   },
   
   findEmployees: function() {
@@ -89,6 +93,6 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   },
   
   updateClock: function() {
-    $('h2#overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %I:%M:%S %P'));
+    $('h2#timeclock_overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %I:%M:%S %P'));
   }
 });

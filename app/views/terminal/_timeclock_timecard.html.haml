@@ -1,6 +1,6 @@
-%div{:id => 'timecard', :class => 'modal'}
+%div{:id => 'timeclock_timecard', :class => 'modal'}
   %h2 Timecard
-  %form{:action => '#timecard', :id => 'admin_timecard', :method => 'get'}
+  %form{:action => '#timecard', :id => 'timeclock_admin_timecard', :method => 'get'}
     %ul
       %li
         = label_tag :begin
@@ -15,7 +15,7 @@
         = select_time Time.now, :prefix => 'end', :include_seconds => true, :ignore_date => true
     %ul
       %li
-        %ul{:id => 'timecard_nav', :class => 'button_nav'}
+        %ul{:id => 'timeclock_timecard_nav', :class => 'button_nav'}
           %li
             %a{:href => '#close', :class => 'close button'} Close
           %li

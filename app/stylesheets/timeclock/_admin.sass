@@ -1,11 +1,11 @@
-section#admin
+section#timeclock_admin
 
-  div#admin_header
-    form#admin_employee
+  div#timeclock_admin_header
+    form#timeclock_admin_employee
       float: left
       margin: 20px 0px
       
-    form#admin_date
+    form#timeclock_admin_date
       float: right
       margin: 20px 0px
     
@@ -24,13 +24,13 @@ section#admin
         li:last-child
           margin-right: 0px
           
-  div#admin_timecards
-    ul#timecards_nav
+  div#timeclock_admin_timecards
+    ul#timeclock_timecards_nav
       float: left
       height: 24px
       margin-bottom: 10px
       
-    h3#timecards_total
+    h3#timeclock_timecards_total
       float: right
       height: 24px
       line-height: 24px
@@ -41,16 +41,16 @@ section#admin
       color: $white
       @include border-radius(5px)
       
-    h2#timecards_notice
+    h2#timeclock_timecards_notice
       clear: both
       font-size: 20px
       text-align: center
       margin: 20px 0px
       
-    ul#timecards_lines
+    ul#timeclock_timecards_lines
       clear: both
 
-      > li.timecards_line
+      > li.timeclock_timecards_line
         height: 24px
         line-height: 24px
         margin-bottom: 10px
@@ -61,7 +61,7 @@ section#admin
         &:last-child
           margin-bottom: 0px
 
-        hgroup.timecards_line_information
+        hgroup.timeclock_timecards_line_information
           float: left
           
           h3

@@ -14,10 +14,10 @@ var TimeclockAdminController = new JS.Class(ViewController, {
     this.employee = null;
     this.date = new Date();
     
-    this.admin_date_controller = new DateController('form#admin_date');
-    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#admin_employee');
-    this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#admin_timecards');
-    this.admin_section_controller = new SectionController('ul#admin_nav', [
+    this.admin_date_controller = new DateController('form#timeclock_admin_date');
+    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#timeclock_admin_employee');
+    this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#timeclock_admin_timecards');
+    this.admin_section_controller = new SectionController('ul#timeclock_admin_nav', [
       this.admin_timecards_controller
     ]);
     
@@ -28,12 +28,15 @@ var TimeclockAdminController = new JS.Class(ViewController, {
   reset: function() {
     this.admin_date_controller.reset();
     this.admin_timecards_controller.reset();
-    $('select', this.admin_employee_controller.view).trigger('change');
   },
   
   show: function() {
     this.callSuper();
     this.updateTimecards(this.date, this.employee);
+  },
+  
+  setEmployees: function(employees) {
+    this.admin_employee_controller.setEmployees(employees);
   },
   
   updateDate: function(date) {

@@ -250,10 +250,10 @@ var SectionController = new JS.Class(ViewController, {
   initialize: function(view, controllers) {
     this.callSuper();
     this._controllers = controllers;
-    $('a', view).bind('click', {instance: this, view: this.view}, this.doClick);
+    $('a', view).bind('click', {instance: this, view: this.view}, this.onClick);
   },
 
-  doClick: function(event) {
+  onClick: function(event) {
     index = $('li > a', event.data.view).index(this);
     event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);
@@ -2617,18 +2617,18 @@ var TransactionsController = new JS.Class(ViewController, {
     this.transaction = null;
 
     this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
-    this.customer_controller = new TransactionsCustomerController('section#customer');
-    this.cart_controller = new TransactionsCartController('section#cart');
-    this.payment_controller = new TransactionsPaymentController('section#payment');
-    this.review_controller = new TransactionsReviewController('section#review');
+    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
+    this.cart_controller = new TransactionsCartController('section#transactions_cart');
+    this.payment_controller = new TransactionsPaymentController('section#transactions_payment');
+    this.review_controller = new TransactionsReviewController('section#transactions_review');
     this.section_controller = new SectionController('ul#transactions_nav', [
       this.cart_controller,
       this.customer_controller,
       this.payment_controller,
       this.review_controller
     ]);
-    this.summary_controller = new TransactionsSummaryController('ul#summary');
-    this.finish_controller = new TransactionsFinishController('ul#finish');
+    this.summary_controller = new TransactionsSummaryController('ul#transactions_summary');
+    this.finish_controller = new TransactionsFinishController('ul#transactions_finish');
 
     this.customer_controller.addObserver(this.updateCustomer, this);
     this.cart_controller.addObserver(this.updateCart, this);
@@ -3384,28 +3384,22 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    $('a.cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
-    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
+    $('a.timeclock_cancel', this.view).bind('click', {instance: this}, this.hideClockInOut);
+    $('a.timeclock_clock_in_out', this.view).bind('click', {instance: this}, this.doClockInOut);
   },
 
   doClockInOut: function(event) {
-    id = $('select#employee', event.data.instance.view).val();
+    username = $('select#employee', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.find(id);
+    employee = Employee.authenticate(username, password);
 
-    event.data.instance.validateEmployee(employee, password, function(valid) {
-      if(valid) {
-        event.data.instance.timestampEmployee(employee, function(stamped) {
-          event.data.instance.clearInput();
-          event.data.instance.view.hide();
-          event.data.instance.notifyObservers();
-        });
-      } else {
-      }
-    });
+    if(employee != null) {
+      event.data.instance.timestampEmployee(employee, function(stamped) {
+        event.data.instance.clearInput();
+        event.data.instance.view.hide();
+        event.data.instance.notifyObservers();
+      });
+    }
     event.preventDefault();
   },
 
@@ -3419,24 +3413,16 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  timestampEmployee: function(employee, callback) {
-    if(employee.stamp()) {
-      callback(true);
-    } else {
-      callback(false);
+  setEmployees: function(employees) {
+    $('select#employee', this.view).empty();
+    for(employee in employees) {
+      $('select#employee', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].token));
     }
   },
 
-  validateEmployee: function(employee, password, callback) {
-    person = employee.person();
-    if(person.employee() != undefined) {
-      employee = person.employee();
-
-      if(employee.password == password) {
-        callback(true);
-      } else {
-        callback(false);
-      }
+  timestampEmployee: function(employee, callback) {
+    if(employee.stamp()) {
+      callback(true);
     } else {
       callback(false);
     }
@@ -3515,7 +3501,7 @@ var TimeclockOverviewChartController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
 
-    this.overview_chart_header_controller = new TimeclockOverviewChartHeaderController($('canvas.overview_chart_header', this.view));
+    this.overview_chart_header_controller = new TimeclockOverviewChartHeaderController($('canvas.timeclock_overview_chart_header', this.view));
 
     $('a.refresh', this.view).bind('click', {instance: this}, this.doRefresh);
   },
@@ -3538,11 +3524,11 @@ var TimeclockOverviewInController = new JS.Class(TimeclockOverviewChartControlle
 
   initialize: function(view) {
     this.callSuper();
-    this.line = $('ul.overview_chart_in > li.overview_chart_in_item', this.view).detach();
+    this.line = $('ul.timeclock_overview_chart_in > li.timeclock_overview_chart_in_item', this.view).detach();
   },
 
   clearLines: function() {
-    $('ul.overview_chart_in > li.overview_chart_in_item', this.view).remove();
+    $('ul.timeclock_overview_chart_in > li.timeclock_overview_chart_in_item', this.view).remove();
   },
 
   setLines: function(lines) {
@@ -3550,7 +3536,7 @@ var TimeclockOverviewInController = new JS.Class(TimeclockOverviewChartControlle
     this.lines = [];
     for(line in lines) {
       this.lines.push(lines[line]);
-      $('ul.overview_chart_in', this.view).append(lines[line].view);
+      $('ul.timeclock_overview_chart_in', this.view).append(lines[line].view);
     }
   }
 });
@@ -3560,11 +3546,11 @@ var TimeclockOverviewOutController = new JS.Class(TimeclockOverviewChartControll
 
   initialize: function(view) {
     this.callSuper();
-    this.line = $('ul.overview_chart_out > li.overview_chart_out_item', this.view).detach();
+    this.line = $('ul.timeclock_overview_chart_out > li.timeclock_overview_chart_out_item', this.view).detach();
   },
 
   clearLines: function() {
-    $('ul.overview_chart_out > li.overview_chart_out_item', this.view).remove();
+    $('ul.timeclock_overview_chart_out > li.timeclock_overview_chart_out_item', this.view).remove();
   },
 
   setLines: function(lines) {
@@ -3572,7 +3558,7 @@ var TimeclockOverviewOutController = new JS.Class(TimeclockOverviewChartControll
     this.lines = [];
     for(line in lines) {
       this.lines.push(lines[line]);
-      $('ul.overview_chart_out', this.view).append(lines[line].view);
+      $('ul.timeclock_overview_chart_out', this.view).append(lines[line].view);
     }
   }
 });
@@ -4393,7 +4379,7 @@ var TimeclockOverviewChartLineController = new JS.Class(ViewController, {
   },
 
   setName: function(employee) {
-    $('h3', this.view).html(employee.login);
+    $('h3', this.view).html(employee.token);
   }
 });
 
@@ -4403,10 +4389,10 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.clock_in_out_controller = new TimeclockClockInOutController('div#clock_in_out');
-    this.overview_in_controller = new TimeclockOverviewInController('div#overview_in');
-    this.overview_out_controller = new TimeclockOverviewOutController('div#overview_out');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.clock_in_out_controller = new TimeclockClockInOutController('div#timeclock_clock_in_out');
+    this.overview_in_controller = new TimeclockOverviewInController('div#timeclock_overview_in');
+    this.overview_out_controller = new TimeclockOverviewOutController('div#timeclock_overview_out');
+    this.overview_section_controller = new SectionController('ul#timeclock_overview_nav', [
       this.overview_in_controller,
       this.overview_out_controller
     ]);
@@ -4425,7 +4411,7 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
       controller.updateCanvas();
     }, 60000);
 
-    $('a.clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
+    $('a.timeclock_clock_in_out', this.view).bind('click', {instance: this}, this.showClockInOut);
   },
 
   reset: function() {
@@ -4450,6 +4436,10 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   showClockInOut: function(event) {
     event.data.instance.clock_in_out_controller.view.show();
     event.preventDefault();
+  },
+
+  setEmployees: function(employees) {
+    this.clock_in_out_controller.setEmployees(employees);
   },
 
   findEmployees: function() {
@@ -4479,7 +4469,7 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
   },
 
   updateClock: function() {
-    $('h2#overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %I:%M:%S %P'));
+    $('h2#timeclock_overview_datetime', this.view).html(new Date().strftime('%A %B %d %Y %I:%M:%S %P'));
   }
 });
 
@@ -4544,8 +4534,17 @@ var TimeclockAdminEmployeeController = new JS.Class(ViewController, {
     $('select', this.view).bind('change', {instance: this}, this.onEmployee);
   },
 
+  setEmployees: function(employees) {
+    $('select', this.view).empty();
+    $('select', this.view).append($('<option></option>'));
+    for(employee in employees) {
+      $('select', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].id));
+    }
+  },
+
   onEmployee: function(event) {
-    id = parseInt($('select', this.view).val());
+    id = parseInt($('select', event.data.instance.view).val());
+    console.log(id);
     if(!isNaN(id)) {
       event.data.instance.notifyObservers(Employee.find(id));
     }
@@ -4570,8 +4569,8 @@ var TimeclockAdminTimecardsTimecardController = new JS.Class(ViewController, {
     end = (new Date()).setISO8601(this.timecard.end);
     total = ((end.valueOf() - begin.valueOf()) / 3600000).toFixed(2);
 
-    $('h3.timecards_line_total', this.view).html(total + ' hours');
-    $('h4.timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
+    $('h3.timeclock_timecards_line_total', this.view).html(total + ' hours');
+    $('h4.timeclock_timecards_line_time', this.view).html(begin.toString() + ' - ' + end.toString());
   },
 
   onDelete: function(event) {
@@ -4595,9 +4594,9 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
     this.employee = null;
     this.timecards = [];
     this.timecard_controllers = [];
-    this.timecard = $('li.timecards_line', this.view).detach();
+    this.timecard = $('li.timeclock_timecards_line', this.view).detach();
 
-    this.timecard_controller = new TimeclockTimecardController('div#timecard');
+    this.timecard_controller = new TimeclockTimecardController('div#timeclock_timecard');
     this.timecard_controller.addObserver(this.loadTimecards, this);
 
     $('a.add', this.view).bind('click', {instance: this}, this.onAdd);
@@ -4618,13 +4617,17 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   },
 
   loadTimecards: function() {
-    tomorrow = new Date();
-    tomorrow.setDate(this.date.getDate() + 1);
-    this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+    if(this.employee != null) {
+      tomorrow = new Date();
+      tomorrow.setDate(this.date.getDate() + 1);
+      this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+    } else {
+      this.setTimecards([]);
+    }
   },
 
   clearTimecards: function() {
-    $('ul#timecards_lines > li').remove();
+    $('ul#timeclock_timecards_lines > li').remove();
   },
 
   setTimecards: function(timecards) {
@@ -4636,7 +4639,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
       new_timecard.set(timecards[timecard]);
       new_timecard.addObserver(this.updateTimecard, this);
       this.timecard_controllers.push(new_timecard);
-      $('ul#timecards_lines', this.view).append(new_timecard.view);
+      $('ul#timeclock_timecards_lines', this.view).append(new_timecard.view);
     }
     if(timecards.length > 0) {
       this.hideNotice();
@@ -4652,7 +4655,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
       end = (new Date()).setISO8601(timecards[timecard].end);
       total += (end.valueOf() - begin.valueOf()) / 3600000
     }
-    $('h3#timecards_total').html(total.toFixed(2) + ' hours');
+    $('h3#timeclock_timecards_total').html(total.toFixed(2) + ' hours');
   },
 
   updateTimecard: function(timecard) {
@@ -4673,11 +4676,11 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   },
 
   showNotice: function() {
-    $('h2#timecards_notice', this.view).show();
+    $('h2#timeclock_timecards_notice', this.view).show();
   },
 
   hideNotice: function() {
-    $('h2#timecards_notice', this.view).hide();
+    $('h2#timeclock_timecards_notice', this.view).hide();
   }
 });
 
@@ -4689,10 +4692,10 @@ var TimeclockAdminController = new JS.Class(ViewController, {
     this.employee = null;
     this.date = new Date();
 
-    this.admin_date_controller = new DateController('form#admin_date');
-    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#admin_employee');
-    this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#admin_timecards');
-    this.admin_section_controller = new SectionController('ul#admin_nav', [
+    this.admin_date_controller = new DateController('form#timeclock_admin_date');
+    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#timeclock_admin_employee');
+    this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#timeclock_admin_timecards');
+    this.admin_section_controller = new SectionController('ul#timeclock_admin_nav', [
       this.admin_timecards_controller
     ]);
 
@@ -4703,12 +4706,15 @@ var TimeclockAdminController = new JS.Class(ViewController, {
   reset: function() {
     this.admin_date_controller.reset();
     this.admin_timecards_controller.reset();
-    $('select', this.admin_employee_controller.view).trigger('change');
   },
 
   show: function() {
     this.callSuper();
     this.updateTimecards(this.date, this.employee);
+  },
+
+  setEmployees: function(employees) {
+    this.admin_employee_controller.setEmployees(employees);
   },
 
   updateDate: function(date) {
@@ -4731,18 +4737,14 @@ var TimeclockController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.overview_controller = new TimeclockOverviewController('section#overview');
-    this.admin_controller = new TimeclockAdminController('section#admin');
+    this.overview_controller = new TimeclockOverviewController('section#timeclock_overview');
+    this.admin_controller = new TimeclockAdminController('section#timeclock_admin');
     this.section_controller = new SectionController('ul#timeclock_nav', [
       this.overview_controller,
       this.admin_controller
     ]);
 
     this.reset();
-
-    this.overview_controller.updateClock();
-    this.overview_controller.updateCanvas();
-    this.overview_controller.updateCharts();
   },
 
   reset: function() {
@@ -4752,11 +4754,21 @@ var TimeclockController = new JS.Class(ViewController, {
   },
 
   activate: function() {
+    employees = Employee.all();
+
     this.view.show();
+    this.overview_controller.setEmployees(employees);
+    this.admin_controller.setEmployees(employees);
+    this.section_controller.view.show();
+
+    this.overview_controller.updateClock();
+    this.overview_controller.updateCanvas();
+    this.overview_controller.updateCharts();
   },
 
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   }
 });
 
@@ -5020,7 +5032,7 @@ var EmployeesOverviewController = new JS.Class(ViewController, {
     this.overview_select_controller = new EmployeesOverviewSelectController('form#overview_select');
     this.overview_form_controller = new EmployeesOverviewFormController('form#overview_employee');
     this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#overview_employee');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.overview_section_controller = new SectionController('ul#employees_overview_nav', [
       this.overview_employee_controller
     ]);
 
@@ -5635,7 +5647,7 @@ var TransactionsTillController = new JS.Class(ViewController, {
 var TransactionsSessionController = new JS.Class({
 
   initialize: function() {
-    this.transactions_controller = new TransactionsController('div#transaction');
+    this.transactions_controller = new TransactionsController('div#transactions');
     this.receipt_controller = new TransactionsReceiptController('div#receipt');
     this.till_controller = new TransactionsTillController('div#till');
 

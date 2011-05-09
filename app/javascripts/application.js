@@ -1,9 +1,9 @@
 /* Gameroom */
-//= require "controllers/terminal_controller"
+//= require "controllers/terminal/terminal_controller"
 
 var terminal = {
   
-  run: function() {
+  run: function() {    
     new TerminalController();
   }
   

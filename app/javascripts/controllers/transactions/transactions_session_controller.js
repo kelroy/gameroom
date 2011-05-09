@@ -21,13 +21,26 @@ var TransactionsSessionController = new JS.Class({
     this.till_controller.view.show();
   },
   
+  activate: function(employee) {
+    this.updateEmployee(employee);
+    this.transactions_controller.view.show();
+  },
+  
+  deactivate: function() {
+    this.transactions_controller.view.hide();
+  },
+  
   presentReceipt: function(url) {
     this.receipt_controller.update(url);
     this.receipt_controller.view.show();
   },
   
+  updateEmployee: function(employee) {
+    this.employee = employee;
+  },
+  
   updateTill: function(till) {
-    this.transactions_controller.newTransactions(till.id, parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')));
+    this.transactions_controller.newTransactions(till.id, this.employee.id);
     this.transactions_controller.transactions_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transactions_controller.view.show();

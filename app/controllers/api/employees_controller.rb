@@ -84,6 +84,17 @@ class Api::EmployeesController < ApiController
     end
   end
   
+  # POST /employees/authenticate.xml
+  # POST /employees/authenticate.json
+  def authenticate
+    @employee = Employee.authenticate(params[:token], params[:password])
+
+    respond_to do |format|
+      format.json  { render :json => @employee.to_json, :status => :ok }
+      format.xml  { render :xml => @employee.to_xml, :status => :ok }
+    end
+  end
+  
   # POST /employees.xml
   # POST /employees.json
   def create

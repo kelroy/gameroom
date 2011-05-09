@@ -30,7 +30,7 @@ var SectionController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    this.view.show();
+    this.view.hide();
     this.showController(0);
   }
 });

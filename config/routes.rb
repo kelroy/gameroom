@@ -106,6 +106,7 @@ Gameroom::Application.routes.draw do
         match 'out' => 'employees#out', :via => [:get]
         match 'search' => 'employees#search', :via => [:get, :post]
         match 'where' => 'employees#where', :via => [:get, :post]
+        match 'authenticate' => 'employees#authenticate', :via => [:post]
       end
       resources :entries,       :only => [:index]
       resources :timecards, :only => [:index]

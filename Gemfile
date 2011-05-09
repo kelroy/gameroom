@@ -15,6 +15,7 @@ gem 'meta_where'
 gem 'meta_search'
 gem "will_paginate", "~> 3.0.pre2"
 gem 'prawn_rails'
+gem 'bcrypt-ruby', :require => 'bcrypt'
 
 # Use unicorn as the web server
 # gem 'unicorn'

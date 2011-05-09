@@ -1,5 +1,9 @@
 class Employee < ActiveRecord::Base
-  validates_presence_of     :rate, :pin_hash, :pin_salt
+  attr_accessor :password
+  
+  validates_confirmation_of :password
+  validates_presence_of     :password, :on => :create
+  validates_presence_of     :rate
   validates_inclusion_of    :manager, :in => [true, false]
   validates_inclusion_of    :active, :in => [true, false]
   validates_uniqueness_of   :token
@@ -7,6 +11,7 @@ class Employee < ActiveRecord::Base
                                     :message => "Token must contain only letters, numbers and underscores."
                                     
   after_initialize          :_default
+  before_save               :_encrypt_password
   
   belongs_to  :account
   belongs_to  :person
@@ -17,6 +22,15 @@ class Employee < ActiveRecord::Base
   
   def self.find_by_id_or_token(param)
     find_by_id(param) || find_by_token(param)
+  end
+  
+  def self.authenticate(token, password)
+    employee = find_by_token(token)
+    if employee && employee.password_hash = BCrypt::Engine.hash_secret(password, employee.password_salt)
+      employee
+    else
+      nil
+    end
   end
   
   def self.in
@@ -81,9 +95,14 @@ class Employee < ActiveRecord::Base
   
   def _default
     self.rate     ||= 0 if new_record?
-    self.pin_hash ||= '' if new_record?
-    self.pin_salt ||= '' if new_record?
     self.manager  ||= false if new_record?
     self.active   ||= true if new_record?
+  end
+  
+  def _encrypt_password
+    if self.password.present?
+      self.password_salt = BCrypt::Engine.generate_salt
+      self.password_hash = BCrypt::Engine.hash_secret(self.password, self.password_salt)
+    end
   end
 end

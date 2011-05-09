@@ -20,12 +20,14 @@
         %hgroup
           %h1 GAMEROOM
           %h2 1713 O St. Lincoln NE 68508 402-438-7161
-        %ul{:id => 'employee_nav', :class => 'link_nav'}
-          %li Joe Example
+        %ul{:id => 'terminal_nav', :class => 'link_nav'}
+          %li{:id => 'terminal_nav_employee'} Joe Example
           %li &#124;
-          %li Dashboard
+          %li
+            %a{:href => '#dashboard', :class => 'button dashboard'} Dashboard
           %li &#124;
-          %li Logout
+          %li
+            %a{:href => '#logout', :class => 'button logout'} Logout
       = yield
     %footer
       = render :partial => 'footer'

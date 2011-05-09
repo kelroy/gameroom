@@ -5,8 +5,8 @@ class CreateEmployees < ActiveRecord::Migration
       t.integer :person_id
       t.string  :title
       t.string  :token
-      t.string  :pin_hash
-      t.string  :pin_salt
+      t.string  :password_hash
+      t.string  :password_salt
       t.integer :rate
       t.boolean :manager
       t.boolean :active

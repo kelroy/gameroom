@@ -7,8 +7,8 @@
         = #select_tag :employee, options_for_select(@employees.map { |employee| ["#{employee.person.first_name} #{employee.person.last_name}", employee.id] })
     %ul
       %li
-        = label_tag :pin, "PIN"
-        = password_field_tag :pin
+        = label_tag :password, "PIN"
+        = password_field_tag :password
     %ul
       %li
         %ul{:id => 'clock_in_out_nav', :class => 'button_nav'}

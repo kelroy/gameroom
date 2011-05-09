@@ -15,10 +15,10 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   
   doClockInOut: function(event) {
     id = $('select#employee', event.data.instance.view).val();
-    pin = $('input#pin', event.data.instance.view).val();
+    password = $('input#password', event.data.instance.view).val();
     employee = Employee.find(id);
     
-    event.data.instance.validateEmployee(employee, pin, function(valid) {
+    event.data.instance.validateEmployee(employee, password, function(valid) {
       if(valid) {
         event.data.instance.timestampEmployee(employee, function(stamped) {
           event.data.instance.clearInput();
@@ -33,7 +33,7 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   },
   
   clearInput: function() {
-    $('input#pin', this.view).val(null);
+    $('input#password', this.view).val(null);
   },
   
   hideClockInOut: function(event) {
@@ -50,12 +50,12 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     }
   },
   
-  validateEmployee: function(employee, pin, callback) {
+  validateEmployee: function(employee, password, callback) {
     person = employee.person();
     if(person.employee() != undefined) {
       employee = person.employee();
 
-      if(employee.pin == pin) {
+      if(employee.password == password) {
         callback(true);
       } else {
         callback(false);

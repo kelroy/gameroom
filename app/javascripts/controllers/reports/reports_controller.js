@@ -10,5 +10,13 @@ var ReportsController = new JS.Class(ViewController, {
   
   reset: function() {
     
+  },
+  
+  activate: function() {
+    this.view.show();
+  },
+  
+  deactivate: function() {
+    this.view.hide();
   }
 });

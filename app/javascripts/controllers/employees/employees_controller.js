@@ -16,5 +16,13 @@ var EmployeesController = new JS.Class(ViewController, {
   reset: function() {
     this.overview_controller.reset();
     this.section_controller.reset();
+  },
+  
+  activate: function() {
+    this.view.show();
+  },
+  
+  deactivate: function() {
+    this.view.hide();
   }
 });

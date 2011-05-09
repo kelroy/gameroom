@@ -8,9 +8,6 @@ var FormController = new JS.Class(ViewController, {
     
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
   
   reset: function() {

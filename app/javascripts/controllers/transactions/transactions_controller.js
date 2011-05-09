@@ -58,6 +58,10 @@ var TransactionsController = new JS.Class(ViewController, {
     event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.employee_id);
     event.preventDefault();
   },
+  
+  updateEmployee: function(employee) {
+    this.employee_id = employee.id;
+  },
 
   updateCustomer: function(customer) {
     if(this.transaction) {

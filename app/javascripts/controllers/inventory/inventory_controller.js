@@ -10,11 +10,20 @@ var InventoryController = new JS.Class(ViewController, {
     this.section_controller = new SectionController('ul#inventory_nav', [
       this.overview_controller
     ]);
+    
     this.reset();
   },
   
   reset: function() {
     this.overview_controller.reset();
     this.section_controller.reset();
+  },
+  
+  activate: function() {
+    this.view.show();
+  },
+  
+  deactivate: function() {
+    this.view.hide();
   }
 });

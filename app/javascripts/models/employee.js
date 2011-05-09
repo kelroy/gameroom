@@ -3,7 +3,7 @@
 var Employee = new JS.Class(Model, {
   extend: {
     resource: 'employee',
-    columns: ['id', 'person_id', 'rate', 'login', 'pin', 'email', 'password', 'password_confirmation', 'administrator', 'active'],
+    columns: ['id', 'person_id', 'title', 'token', 'password', 'rate', 'manager', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
     
@@ -29,6 +29,22 @@ var Employee = new JS.Class(Model, {
         }
       });
       return resources;
+    },
+    
+    authenticate: function(username, password) {
+      resource = this.resource;
+      klass = null;
+      data = {
+        token: username,
+        password: password
+      };
+      url = '/api/' + this.resource.pluralize() + '/authenticate';
+      this._ajax(url, 'POST', data, function(result) {
+        if(result[resource] != null) {
+          klass = new window[resource.capitalize()](result[resource]);
+        }
+      });
+      return klass;
     }
   },
   

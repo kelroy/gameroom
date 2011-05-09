@@ -7,7 +7,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
     
     $('input#id', this.view).val(employee.id);
     $('input#login', this.view).val(employee.login);
-    $('input#pin', this.view).val(employee.pin);
+    $('input#password', this.view).val(employee.password);
     $('input#address', this.view).val(employee.email);
     $('input#administrator', this.view).attr('checked', employee.administrator);
     $('input#active', this.view).attr('checked', employee.active);
@@ -52,7 +52,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
       if($('input#id', this.view).val() > 0) {
         employee = Employee.find($('input#id', this.view).val());
         employee.login = $('input#login', this.view).val();
-        employee.pin = $('input#pin', this.view).val();
+        employee.password = $('input#password', this.view).val();
         employee.email = $('input#address', this.view).val();
         employee.title = $('input#job_title', this.view).val();
         employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
@@ -152,7 +152,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
           password_confirmation: $('input#password_confirmation', this.view).val(),
           title: $('input#job_title', this.view).val(),
           rate: parseInt(Currency.toPennies($('input#rate', this.view).val())),
-          pin: $('input#pin', this.view).val(),
+          password: $('input#password', this.view).val(),
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')
         });
@@ -195,7 +195,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
     if($('input#login', this.view).val() == '') {
       return false;
     }
-    if($('input#pin', this.view).val() == '') {
+    if($('input#password', this.view).val() == '') {
       return false;
     }
     if($('input#password', this.view).val() != $('input#password_confirmation', this.view).val()) {

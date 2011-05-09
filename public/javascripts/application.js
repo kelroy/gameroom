@@ -6,29 +6,155 @@ var ViewController = new JS.Class({
   }
 });
 
-var LoginController = new JS.Class(ViewController, {
+var TerminalNavController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
     this.reset();
+
+    $('a.dashboard', this.view).bind('click', {instance: this}, this.onDashboard);
+    $('a.logout', this.view).bind('click', {instance: this}, this.onLogout);
   },
 
   reset: function() {
+    $('li#terminal_nav_employee', this.view).html('');
+    this.view.hide();
+  },
 
+  update: function(employee) {
+    $('li#terminal_nav_employee', this.view).html(employee.token);
+    this.view.show();
+  },
+
+  onDashboard: function(event) {
+    event.data.instance.notifyObservers('dashboard');
+    event.preventDefault();
+  },
+
+  onLogout: function(event) {
+    event.data.instance.notifyObservers('logout');
+    event.preventDefault();
+  }
+});
+
+var FormController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
+    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+  },
+
+  reset: function() {
+    $(':input', this.view)
+      .not(':button, :submit, :reset')
+      .val(null)
+      .removeAttr('checked')
+      .removeAttr('selected');
+  },
+
+  update: function(data) {
+  },
+
+  save: function() {
+  },
+
+  onClear: function(event) {
+    event.data.instance.reset();
+    event.preventDefault();
+  },
+
+  onSave: function(event) {
+    event.data.instance.save();
+    event.preventDefault();
+  }
+});
+
+var LoginController = new JS.Class(FormController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+    this.reset();
+
+    $('a.login', this.view).bind('click', {instance: this}, this.onLogin);
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
+  },
+
+  onLogin: function(event) {
+    username = $('input#username', event.data.instance.view).val();
+    password = $('input#password', event.data.instance.view).val();
+    employee = Employee.authenticate(username, password);
+
+    if(employee != null) {
+      event.data.instance.notifyObservers(employee);
+      event.data.instance.reset();
+    }
+    event.preventDefault();
   }
 });
 
 var DashboardController = new JS.Class(ViewController, {
+  include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    this.reset();
+    $('a.transactions', this.view).bind('click', {instance: this}, this.onTransactions);
+    $('a.timeclock', this.view).bind('click', {instance: this}, this.onTimeclock);
+    $('a.tills', this.view).bind('click', {instance: this}, this.onTills);
+    $('a.inventory', this.view).bind('click', {instance: this}, this.onInventory);
+    $('a.reports', this.view).bind('click', {instance: this}, this.onReports);
+    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
   },
 
-  reset: function() {
+  activate: function() {
+    this.view.show();
+  },
 
-  }
+  deactivate: function() {
+    this.view.hide();
+  },
+
+  onTransactions: function(event) {
+    event.data.instance.notifyObservers('transactions');
+    event.preventDefault();
+  },
+
+  onTimeclock: function(event) {
+    event.data.instance.notifyObservers('timeclock');
+    event.preventDefault();
+  },
+
+  onTills: function(event) {
+    event.data.instance.notifyObservers('tills');
+    event.preventDefault();
+  },
+
+  onInventory: function(event) {
+    event.data.instance.notifyObservers('inventory');
+    event.preventDefault();
+  },
+
+  onReports: function(event) {
+    event.data.instance.notifyObservers('reports');
+    event.preventDefault();
+  },
+
+  onEmployees: function(event) {
+    event.data.instance.notifyObservers('employees');
+    event.preventDefault();
+  },
 });
 var Sectionable = new JS.Module({
 
@@ -148,46 +274,8 @@ var SectionController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    this.view.show();
+    this.view.hide();
     this.showController(0);
-  }
-});
-
-var FormController = new JS.Class(ViewController, {
-  include: JS.Observable,
-
-  initialize: function(view) {
-    this.callSuper();
-
-    $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
-  },
-
-  reset: function() {
-    $(':input', this.view)
-      .not(':button, :submit, :reset')
-      .val(null)
-      .removeAttr('checked')
-      .removeAttr('selected');
-  },
-
-  update: function(data) {
-  },
-
-  save: function() {
-  },
-
-  onClear: function(event) {
-    event.data.instance.reset();
-    event.preventDefault();
-  },
-
-  onSave: function(event) {
-    event.data.instance.save();
-    event.preventDefault();
   }
 });
 
@@ -843,7 +931,7 @@ var Model = new JS.Class({
 var Employee = new JS.Class(Model, {
   extend: {
     resource: 'employee',
-    columns: ['id', 'person_id', 'rate', 'login', 'pin', 'email', 'password', 'password_confirmation', 'administrator', 'active'],
+    columns: ['id', 'person_id', 'title', 'token', 'password', 'rate', 'manager', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
 
@@ -869,6 +957,22 @@ var Employee = new JS.Class(Model, {
         }
       });
       return resources;
+    },
+
+    authenticate: function(username, password) {
+      resource = this.resource;
+      klass = null;
+      data = {
+        token: username,
+        password: password
+      };
+      url = '/api/' + this.resource.pluralize() + '/authenticate';
+      this._ajax(url, 'POST', data, function(result) {
+        if(result[resource] != null) {
+          klass = new window[resource.capitalize()](result[resource]);
+        }
+      });
+      return klass;
     }
   },
 
@@ -2552,6 +2656,10 @@ var TransactionsController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
+  updateEmployee: function(employee) {
+    this.employee_id = employee.id;
+  },
+
   updateCustomer: function(customer) {
     if(this.transaction) {
       this.transaction.setCustomer(customer);
@@ -2965,12 +3073,21 @@ var InventoryController = new JS.Class(ViewController, {
     this.section_controller = new SectionController('ul#inventory_nav', [
       this.overview_controller
     ]);
+
     this.reset();
   },
 
   reset: function() {
     this.overview_controller.reset();
     this.section_controller.reset();
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   }
 });
 
@@ -2984,6 +3101,14 @@ var ReportsController = new JS.Class(ViewController, {
 
   reset: function() {
 
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   }
 });
 
@@ -3218,6 +3343,7 @@ var TillsController = new JS.Class(ViewController, {
       this.overview_controller,
       this.admin_controller
     ]);
+
     this.reset();
 
     this.audit_controller.addObserver(this.loadTills, this);
@@ -3230,6 +3356,14 @@ var TillsController = new JS.Class(ViewController, {
     this.overview_controller.reset();
     this.admin_controller.reset();
     this.section_controller.reset();
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   },
 
   loadTills: function() {
@@ -3259,10 +3393,10 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
 
   doClockInOut: function(event) {
     id = $('select#employee', event.data.instance.view).val();
-    pin = $('input#pin', event.data.instance.view).val();
+    password = $('input#password', event.data.instance.view).val();
     employee = Employee.find(id);
 
-    event.data.instance.validateEmployee(employee, pin, function(valid) {
+    event.data.instance.validateEmployee(employee, password, function(valid) {
       if(valid) {
         event.data.instance.timestampEmployee(employee, function(stamped) {
           event.data.instance.clearInput();
@@ -3276,7 +3410,7 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   },
 
   clearInput: function() {
-    $('input#pin', this.view).val(null);
+    $('input#password', this.view).val(null);
   },
 
   hideClockInOut: function(event) {
@@ -3293,12 +3427,12 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     }
   },
 
-  validateEmployee: function(employee, pin, callback) {
+  validateEmployee: function(employee, password, callback) {
     person = employee.person();
     if(person.employee() != undefined) {
       employee = person.employee();
 
-      if(employee.pin == pin) {
+      if(employee.password == password) {
         callback(true);
       } else {
         callback(false);
@@ -4603,6 +4737,7 @@ var TimeclockController = new JS.Class(ViewController, {
       this.overview_controller,
       this.admin_controller
     ]);
+
     this.reset();
 
     this.overview_controller.updateClock();
@@ -4614,6 +4749,14 @@ var TimeclockController = new JS.Class(ViewController, {
     this.overview_controller.reset();
     this.admin_controller.reset();
     this.section_controller.reset();
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   }
 });
 
@@ -4624,7 +4767,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
 
     $('input#id', this.view).val(employee.id);
     $('input#login', this.view).val(employee.login);
-    $('input#pin', this.view).val(employee.pin);
+    $('input#password', this.view).val(employee.password);
     $('input#address', this.view).val(employee.email);
     $('input#administrator', this.view).attr('checked', employee.administrator);
     $('input#active', this.view).attr('checked', employee.active);
@@ -4669,7 +4812,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
       if($('input#id', this.view).val() > 0) {
         employee = Employee.find($('input#id', this.view).val());
         employee.login = $('input#login', this.view).val();
-        employee.pin = $('input#pin', this.view).val();
+        employee.password = $('input#password', this.view).val();
         employee.email = $('input#address', this.view).val();
         employee.title = $('input#job_title', this.view).val();
         employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
@@ -4769,7 +4912,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
           password_confirmation: $('input#password_confirmation', this.view).val(),
           title: $('input#job_title', this.view).val(),
           rate: parseInt(Currency.toPennies($('input#rate', this.view).val())),
-          pin: $('input#pin', this.view).val(),
+          password: $('input#password', this.view).val(),
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')
         });
@@ -4812,7 +4955,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
     if($('input#login', this.view).val() == '') {
       return false;
     }
-    if($('input#pin', this.view).val() == '') {
+    if($('input#password', this.view).val() == '') {
       return false;
     }
     if($('input#password', this.view).val() != $('input#password_confirmation', this.view).val()) {
@@ -4916,33 +5059,101 @@ var EmployeesController = new JS.Class(ViewController, {
   reset: function() {
     this.overview_controller.reset();
     this.section_controller.reset();
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   }
 });
 
 var TerminalController = new JS.Class({
 
   initialize: function() {
+    this.employee = null;
+
+    this.nav_controller = new TerminalNavController('ul#terminal_nav');
     this.login_controller = new LoginController('div#login');
     this.dashboard_controller = new DashboardController('div#dashboard');
-    this.transactions_controller = new TransactionsController('div#transactions');
+    this.transactions_controller = new TransactionsSessionController();
     this.inventory_controller = new InventoryController('div#inventory');
     this.reports_controller = new ReportsController('div#reports');
     this.tills_controller = new TillsController('div#tills');
     this.timeclock_controller = new TimeclockController('div#timeclock');
     this.employees_controller = new EmployeesController('div#employees');
 
+    this.nav_controller.addObserver(this.onNav, this);
+    this.login_controller.addObserver(this.onLogin, this);
+    this.dashboard_controller.addObserver(this.onDashboard, this);
+
+    $('form', this.view).submit(function(event) {
+      event.preventDefault();
+    });
+
     this.reset();
   },
 
   reset: function() {
+    this.dashboard_controller.deactivate();
+    this.transactions_controller.deactivate();
+    this.inventory_controller.deactivate();
+    this.reports_controller.deactivate();
+    this.tills_controller.deactivate();
+    this.timeclock_controller.deactivate();
+    this.employees_controller.deactivate();
+  },
+
+  onNav: function(selection) {
+    switch(selection) {
+      case 'dashboard':
+        this.reset();
+        this.dashboard_controller.activate();
+        break;
+      case 'logout':
+        this.reset();
+        this.employee = null;
+        this.nav_controller.reset();
+        this.login_controller.activate();
+        break;
+      default:
+        break;
+    }
+  },
+
+  onLogin: function(employee) {
+    this.employee = employee;
+    this.nav_controller.update(employee);
     this.login_controller.view.hide();
-    this.dashboard_controller.view.hide();
-    this.transactions_controller.view.hide();
-    this.inventory_controller.view.hide();
-    this.reports_controller.view.hide();
-    this.tills_controller.view.hide();
-    this.timeclock_controller.view.hide();
-    this.employees_controller.view.hide();
+    this.dashboard_controller.activate();
+  },
+
+  onDashboard: function(application) {
+    this.reset()
+    switch(application) {
+      case 'transactions':
+        this.transactions_controller.activate(this.employee);
+        break;
+      case 'timeclock':
+        this.timeclock_controller.activate();
+        break;
+      case 'tills':
+        this.tills_controller.activate();
+        break;
+      case 'inventory':
+        this.inventory_controller.activate();
+        break;
+      case 'reports':
+        this.reports_controller.activate();
+        break;
+      case 'employees':
+        this.employees_controller.activate();
+        break;
+      default:
+        break;
+    }
   }
 });
 
@@ -5440,13 +5651,26 @@ var TransactionsSessionController = new JS.Class({
     this.till_controller.view.show();
   },
 
+  activate: function(employee) {
+    this.updateEmployee(employee);
+    this.transactions_controller.view.show();
+  },
+
+  deactivate: function() {
+    this.transactions_controller.view.hide();
+  },
+
   presentReceipt: function(url) {
     this.receipt_controller.update(url);
     this.receipt_controller.view.show();
   },
 
+  updateEmployee: function(employee) {
+    this.employee = employee;
+  },
+
   updateTill: function(till) {
-    this.transactions_controller.newTransactions(till.id, parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')));
+    this.transactions_controller.newTransactions(till.id, this.employee.id);
     this.transactions_controller.transactions_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transactions_controller.view.show();

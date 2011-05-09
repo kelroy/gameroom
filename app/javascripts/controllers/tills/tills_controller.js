@@ -15,6 +15,7 @@ var TillsController = new JS.Class(ViewController, {
       this.overview_controller,
       this.admin_controller
     ]);
+    
     this.reset();
     
     this.audit_controller.addObserver(this.loadTills, this);
@@ -27,6 +28,14 @@ var TillsController = new JS.Class(ViewController, {
     this.overview_controller.reset();
     this.admin_controller.reset();
     this.section_controller.reset();
+  },
+  
+  activate: function() {
+    this.view.show();
+  },
+  
+  deactivate: function() {
+    this.view.hide();
   },
   
   loadTills: function() {

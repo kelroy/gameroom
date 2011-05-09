@@ -3,8 +3,8 @@ Factory.define :employee do |f|
   f.association :person_id, :factory => :person
   f.title 'Title'
   f.sequence(:token) { |n| "employee_#{n}" }
-  f.pin_hash Digest::SHA256.hexdigest(Time.now.to_s)
-  f.pin_salt Digest::SHA256.hexdigest(Time.now.to_s)
+  f.password 'password'
+  f.password_confirmation 'password'
   f.rate 1000
   f.manager true
   f.active true

@@ -3,7 +3,7 @@
 var Employee = new JS.Class(Model, {
   extend: {
     resource: 'employee',
-    columns: ['id', 'person_id', 'title', 'token', 'password', 'rate', 'manager', 'active'],
+    columns: ['id', 'person_id', 'title', 'token', 'password', 'password_confirmation', 'rate', 'administrator', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
     

@@ -27,9 +27,10 @@ unless Rails.env.production?
     person.emails = ['example@example.com']
     person.addresses = ['555 Street Way, Lincoln, NE 68508']
     person.phones = ['444-5555']
+    person.save
     
     customer = Factory.create(:customer, :account => account, :person => person, :credit => (rand(9999) + 1), :notes => 'Lorem Ipsum...', :active => rand(2).even?)
-    employee = Factory.create(:employee, :account => account, :person => person, :rate => (rand(19) + 1), :manager => rand(2).even?)
+    employee = Factory.create(:employee, :account => account, :person => person, :rate => (rand(19) + 1), :administrator => rand(2).even?)
     (1..(rand(99) + 1)).each do
       employee.stamp()
       Factory.create(:shift, :account => account, :employee => employee)
@@ -37,6 +38,21 @@ unless Rails.env.production?
     
     customers.push(customer)
     employees.push(employee)
+  end
+  
+  first = 'Joe'
+  middle = 'Q'
+  last = 'Example'
+  person = Factory.create(:person, :account => account, :first_name => first, :middle_name => middle, :last_name => last, :date_of_birth => Time.now, :ssn => '555-55-5555', :drivers_license => (1...(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.upcase)
+  person.emails = ['example@example.com']
+  person.addresses = ['555 Street Way, Lincoln, NE 68508']
+  person.phones = ['444-5555']
+  person.save
+  
+  employee = Factory.create(:employee, :account => account, :person => person, :token => 'login', :rate => (rand(19) + 1), :administrator => rand(2).even?)
+  (1..(rand(99) + 1)).each do
+    employee.stamp()
+    Factory.create(:shift, :account => account, :employee => employee)
   end
   
   tills = []

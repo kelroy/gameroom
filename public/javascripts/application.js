@@ -931,7 +931,7 @@ var Model = new JS.Class({
 var Employee = new JS.Class(Model, {
   extend: {
     resource: 'employee',
-    columns: ['id', 'person_id', 'title', 'token', 'password', 'rate', 'manager', 'active'],
+    columns: ['id', 'person_id', 'title', 'token', 'password', 'password_confirmation', 'rate', 'administrator', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
 
@@ -990,7 +990,7 @@ var Employee = new JS.Class(Model, {
 var Person = new JS.Class(Model, {
   extend: {
     resource: 'person',
-    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth'],
+    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth', 'addresses', 'emails', 'phones'],
     has_one: ['customer', 'employee']
   }
 });
@@ -4778,12 +4778,11 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
     this.reset();
 
     $('input#id', this.view).val(employee.id);
-    $('input#login', this.view).val(employee.login);
+    $('input#token', this.view).val(employee.token);
     $('input#password', this.view).val(employee.password);
-    $('input#address', this.view).val(employee.email);
     $('input#administrator', this.view).attr('checked', employee.administrator);
     $('input#active', this.view).attr('checked', employee.active);
-    $('input#job_title', this.view).val(employee.title);
+    $('input#title', this.view).val(employee.title);
     $('input#rate', this.view).val(Currency.format(employee.rate));
 
     person = employee.person();
@@ -4803,18 +4802,17 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
         $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
       }
 
-      addresses = person.addresses();
+      addresses = person.addresses;
       if(addresses.length > 0) {
-        $('input#first_line', this.view).val(addresses[0].first_line);
-        $('input#second_line', this.view).val(addresses[0].second_line);
-        $('input#city', this.view).val(addresses[0].city);
-        $('input#state', this.view).val(addresses[0].state);
-        $('input#zip', this.view).val(addresses[0].zip);
+        $('input#address', this.view).val(addresses[0]);
       }
-
-      phones = person.phones();
+      emails = person.emails;
+      if(emails.length > 0){
+        $('input#email', this.view).val(emails[0]);
+      }
+      phones = person.phones;
       if(phones.length > 0){
-        $('input#number', this.view).val(phones[0].number);
+        $('input#phone', this.view).val(phones[0]);
       }
     }
   },
@@ -4823,10 +4821,8 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
     if(this.valid()) {
       if($('input#id', this.view).val() > 0) {
         employee = Employee.find($('input#id', this.view).val());
-        employee.login = $('input#login', this.view).val();
-        employee.password = $('input#password', this.view).val();
-        employee.email = $('input#address', this.view).val();
-        employee.title = $('input#job_title', this.view).val();
+        employee.token = $('input#token', this.view).val();
+        employee.title = $('input#title', this.view).val();
         employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
         if($('input#password', this.view).val() != '') {
           employee.password = $('input#password', this.view).val();
@@ -4839,100 +4835,52 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
         if(employee != undefined) {
           person = employee.person();
           if(person != undefined) {
-            date_of_birth_year = $('select#date_of_birth_year').val();
-            date_of_birth_month = $('select#date_of_birth_month').val() - 1;
-            date_of_birth_day = $('select#date_of_birth_day').val();
+            date_of_birth_year = $('select#date_of_birth_year', this.view).val();
+            date_of_birth_month = $('select#date_of_birth_month', this.view).val() - 1;
+            date_of_birth_day = $('select#date_of_birth_day', this.view).val();
             date_of_birth = new Date(date_of_birth_year, date_of_birth_month, date_of_birth_day);
 
             person.first_name = $('input#first_name', this.view).val();
             person.middle_name = $('input#middle_name', this.view).val();
             person.last_name = $('input#last_name', this.view).val();
             person.date_of_birth = date_of_birth;
+            person.addresses = [$('input#address', this.view).val()];
+            person.phones = [$('input#phone', this.view).val()];
+            person.emails = [$('input#email', this.view).val()];
             person.save();
-
-            addresses = person.addresses();
-            if(addresses.length > 0) {
-              addresses[0].first_line =  $('input#first_line', this.view).val();
-              addresses[0].second_line = $('input#second_line', this.view).val();
-              addresses[0].city = $('input#city', this.view).val();
-              addresses[0].state = $('input#state', this.view).val();
-              addresses[0].zip = $('input#zip', this.view).val();
-              addresses[0].save();
-            } else {
-              address = new Address({
-                first_line: $('input#first_line', this.view).val(),
-                second_line: $('input#second_line', this.view).val(),
-                city: $('input#city', this.view).val(),
-                state: $('input#state', this.view).val(),
-                zip: $('input#zip', this.view).val()
-              });
-              address.setPerson(person);
-              address.save();
-              person._addresses.push(address);
-            }
-
-            phones = person.phones();
-            if(phones.length > 0) {
-              phones[0].number =  $('input#number', this.view).val();
-              phones[0].save();
-            } else {
-              phone = new Phone({
-                number: $('input#number', this.view).val()
-              });
-              phone.setPerson(person);
-              phone.save();
-              person._phones.push(phone);
-            }
-
-            employee.setPerson(person);
           }
         }
       } else {
-        date_of_birth_year = $('select#date_of_birth_year').val();
-        date_of_birth_month = $('select#date_of_birth_month').val() - 1;
-        date_of_birth_day = $('select#date_of_birth_day').val();
+        date_of_birth_year = $('select#date_of_birth_year', this.view).val();
+        date_of_birth_month = $('select#date_of_birth_month', this.view).val() - 1;
+        date_of_birth_day = $('select#date_of_birth_day', this.view).val();
         date_of_birth = new Date(date_of_birth_year, date_of_birth_month, date_of_birth_day);
 
         person = new Person({
           first_name: $('input#first_name', this.view).val(),
           middle_name: $('input#middle_name', this.view).val(),
           last_name: $('input#last_name', this.view).val(),
+          addresses: [$('input#address', this.view).val()],
+          phones: [$('input#phone', this.view).val()],
+          emails: [$('input#email', this.view).val()],
           date_of_birth: date_of_birth
         });
-        if(person.save()) {
-          address = new Address({
-            first_line: $('input#first_line', this.view).val(),
-            second_line: $('input#second_line', this.view).val(),
-            city: $('input#city', this.view).val(),
-            state: $('input#state', this.view).val(),
-            zip: $('input#zip', this.view).val(),
-          });
-          address.setPerson(person);
-          address.save();
-
-          phone = new Phone({
-            number: $('input#number', this.view).val()
-          });
-          phone.setPerson(person);
-          phone.save();
-        }
+        person.save();
 
         employee = new Employee({
-          login: $('input#login', this.view).val(),
-          email: $('input#address', this.view).val(),
+          token: $('input#token', this.view).val(),
           password: $('input#password', this.view).val(),
           password_confirmation: $('input#password_confirmation', this.view).val(),
-          title: $('input#job_title', this.view).val(),
+          title: $('input#title', this.view).val(),
           rate: parseInt(Currency.toPennies($('input#rate', this.view).val())),
-          password: $('input#password', this.view).val(),
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')
         });
         employee.setPerson(person);
       }
       if(employee.save()) {
-        this.update(employee);
-        this.notifyObservers(employee);
+        this.notifyObservers();
+        this.reset();
       }
     } else {
       this.error();
@@ -4940,37 +4888,34 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
   },
 
   valid: function() {
+    if($('input#id', this.view).val() == 0) {
+      if($('input#password', this.view).val() == '') {
+        $('input#password', this.view).addClass('error');
+        $('input#password_confirmation', this.view).addClass('error');
+        return false;
+      }
+      if($('input#password', this.view).val() != $('input#password_confirmation', this.view).val()) {
+        $('input#password', this.view).addClass('error');
+        $('input#password_confirmation', this.view).addClass('error');
+        return false;
+      }
+    }
     if($('input#first_name', this.view).val() == '') {
       return false;
     }
     if($('input#last_name', this.view).val() == '') {
       return false;
     }
-    if($('input#first_line', this.view).val() == '') {
-      return false;
-    }
-    if($('input#city', this.view).val() == '') {
-      return false;
-    }
-    if($('input#state', this.view).val() == '') {
-      return false;
-    }
-    if($('input#zip', this.view).val() == '') {
-      return false;
-    }
-    if($('input#number', this.view).val() == '') {
-      return false;
-    }
     if($('input#address', this.view).val() == '') {
       return false;
     }
-    if($('input#login', this.view).val() == '') {
+    if($('input#phone', this.view).val() == '') {
       return false;
     }
-    if($('input#password', this.view).val() == '') {
+    if($('input#email', this.view).val() == '') {
       return false;
     }
-    if($('input#password', this.view).val() != $('input#password_confirmation', this.view).val()) {
+    if($('input#token', this.view).val() == '') {
       return false;
     }
     return true;
@@ -4983,6 +4928,8 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
   reset: function() {
     this.callSuper();
     $('input#id', this.view).val(0);
+    $('input#password', this.view).removeClass('error');
+    $('input#password_confirmation', this.view).removeClass('error');
     $(':required', this.view).removeClass('error');
     date_of_birth = new Date();
     $('select#date_of_birth_year', this.view).val(date_of_birth.getFullYear());
@@ -5002,8 +4949,20 @@ var EmployeesOverviewSelectController = new JS.Class(ViewController, {
     $('select', this.view).bind('change', {instance: this}, this.onEmployee);
   },
 
+  reset: function() {
+    $('select', this.view).val(0);
+  },
+
+  setEmployees: function(employees) {
+    $('select', this.view).empty();
+    $('select', this.view).append($('<option></option>'));
+    for(employee in employees) {
+      $('select', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].id));
+    }
+  },
+
   onEmployee: function(event) {
-    id = parseInt($('select', this.view).val());
+    id = parseInt($('select', event.data.instance.view).val());
     if(!isNaN(id)) {
       event.data.instance.notifyObservers(Employee.find(id));
     }
@@ -5029,20 +4988,25 @@ var EmployeesOverviewController = new JS.Class(ViewController, {
     this.callSuper();
     this.employee = null;
 
-    this.overview_select_controller = new EmployeesOverviewSelectController('form#overview_select');
-    this.overview_form_controller = new EmployeesOverviewFormController('form#overview_employee');
-    this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#overview_employee');
+    this.overview_select_controller = new EmployeesOverviewSelectController('form#employees_select_form');
+    this.overview_form_controller = new EmployeesOverviewFormController('form#employees_overview_employee');
+    this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#employees_overview_employee');
     this.overview_section_controller = new SectionController('ul#employees_overview_nav', [
       this.overview_employee_controller
     ]);
 
     $('a.new', this.view).bind('click', {instance: this}, this.newEmployee);
 
+    this.overview_form_controller.addObserver(this.updateEmployees, this);
     this.overview_select_controller.addObserver(this.updateEmployee, this);
   },
 
   reset: function() {
     this.overview_form_controller.reset();
+  },
+
+  setEmployees: function(employees) {
+    this.overview_select_controller.setEmployees(employees);
   },
 
   updateEmployee: function(employee) {
@@ -5051,8 +5015,13 @@ var EmployeesOverviewController = new JS.Class(ViewController, {
   },
 
   newEmployee: function(event) {
+    event.data.instance.overview_select_controller.reset();
     event.data.instance.reset();
     event.preventDefault();
+  },
+
+  updateEmployees: function() {
+    this.setEmployees(Employee.all());
   }
 });
 
@@ -5061,7 +5030,7 @@ var EmployeesController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.overview_controller = new EmployeesOverviewController('section#overview');
+    this.overview_controller = new EmployeesOverviewController('section#employees_overview');
     this.section_controller = new SectionController('ul#employees_nav', [
       this.overview_controller
     ]);
@@ -5075,6 +5044,7 @@ var EmployeesController = new JS.Class(ViewController, {
 
   activate: function() {
     this.view.show();
+    this.overview_controller.setEmployees(Employee.all());
   },
 
   deactivate: function() {

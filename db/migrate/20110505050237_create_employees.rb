@@ -8,7 +8,7 @@ class CreateEmployees < ActiveRecord::Migration
       t.string  :password_hash
       t.string  :password_salt
       t.integer :rate
-      t.boolean :manager
+      t.boolean :administrator
       t.boolean :active
 
       t.timestamps

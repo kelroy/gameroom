@@ -4,7 +4,7 @@ class Employee < ActiveRecord::Base
   validates_confirmation_of :password
   validates_presence_of     :password, :on => :create
   validates_presence_of     :rate
-  validates_inclusion_of    :manager, :in => [true, false]
+  validates_inclusion_of    :administrator, :in => [true, false]
   validates_inclusion_of    :active, :in => [true, false]
   validates_uniqueness_of   :token
   validates_format_of       :token, :with => /\A[a-z0-9_]+\z/, 
@@ -83,8 +83,8 @@ class Employee < ActiveRecord::Base
     return false
   end
   
-  def manager?
-    self.manager
+  def administrator?
+    self.administrator
   end
   
   def active?
@@ -95,7 +95,7 @@ class Employee < ActiveRecord::Base
   
   def _default
     self.rate     ||= 0 if new_record?
-    self.manager  ||= false if new_record?
+    self.administrator  ||= false if new_record?
     self.active   ||= true if new_record?
   end
   

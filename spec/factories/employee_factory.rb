@@ -6,6 +6,6 @@ Factory.define :employee do |f|
   f.password 'password'
   f.password_confirmation 'password'
   f.rate 1000
-  f.manager true
+  f.administrator true
   f.active true
 end

@@ -1,4 +1,4 @@
-%form{:action => '#overview_employee', :id => 'overview_employee', :method => 'get'}
+%form{:action => '#employees_overview_employee', :id => 'employees_overview_employee', :method => 'get'}
   %ul
     %li
       = label_tag :first_name, "First Name"
@@ -14,40 +14,25 @@
       = select_date Date.today, :prefix => :date_of_birth, :start_year => Time.now.year - 100, :end_year => Time.now.year
   %ul
     %li
-      = label_tag :first_line, "Address First Line"
-      = text_field_tag :first_line, nil, :required => true
-    %li
-      = label_tag :second_line, "Address Second Line"
-      = text_field_tag :second_line
-    %li
-      = label_tag :city
-      = text_field_tag :city, nil, :required => true
-    %li
-      = label_tag :state
-      = text_field_tag :state, nil, :required => true
-    %li
-      = label_tag :zip
-      = text_field_tag :zip, nil, :required => true
-  %ul
-    %li
-      = label_tag :number, "Phone Number"
-      = text_field_tag :number, nil, :required => true
-    %li
-      = label_tag :address, "Email Address"
+      = label_tag :address
       = text_field_tag :address, nil, :required => true
     %li
-      = label_tag :job_title, "Job Title"
-      = text_field_tag :job_title
+      = label_tag :phone, "Phone Number"
+      = text_field_tag :phone, nil, :required => true
     %li
-      = label_tag :rate, "Pay Rate"
-      = text_field_tag :rate, nil, :placeholder => '0.00'
+      = label_tag :email, "Email Address"
+      = text_field_tag :email, nil, :required => true
   %ul
     %li
-      = label_tag :login
-      = text_field_tag :login, nil, :required => true
+      = label_tag :title
+      = text_field_tag :title, nil, :required => true
     %li
-      = label_tag :password, "PIN"
-      = password_field_tag :password, nil, :required => true
+      = label_tag :rate
+      = text_field_tag :rate, nil, :required => true, :placeholder => '0.00'
+  %ul
+    %li
+      = label_tag :token, "Username"
+      = text_field_tag :token, nil, :required => true
     %li
       = label_tag :password
       = password_field_tag :password

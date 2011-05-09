@@ -6,7 +6,7 @@ var EmployeesController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.overview_controller = new EmployeesOverviewController('section#overview');
+    this.overview_controller = new EmployeesOverviewController('section#employees_overview');
     this.section_controller = new SectionController('ul#employees_nav', [
       this.overview_controller
     ]);
@@ -20,6 +20,7 @@ var EmployeesController = new JS.Class(ViewController, {
   
   activate: function() {
     this.view.show();
+    this.overview_controller.setEmployees(Employee.all());
   },
   
   deactivate: function() {

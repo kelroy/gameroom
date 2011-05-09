@@ -40,7 +40,7 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
     t.string   "password_hash"
     t.string   "password_salt"
     t.integer  "rate"
-    t.boolean  "manager"
+    t.boolean  "administrator"
     t.boolean  "active"
     t.datetime "created_at"
     t.datetime "updated_at"

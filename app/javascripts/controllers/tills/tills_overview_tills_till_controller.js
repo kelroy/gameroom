@@ -7,14 +7,14 @@ var TillsOverviewTillsTillController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
     
-    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
+    $('a.tills_audit', this.view).bind('click', {instance: this}, this.onAudit);
   },
   
   set: function(till) {
     this.till = till;
     
-    $('h3.overview_tills_line_title', this.view).html(till.title);
-    $('h4.overview_tills_line_description', this.view).html(till.description);
+    $('h3.tills_overview_tills_line_title', this.view).html(till.title);
+    $('h4.tills_overview_tills_line_description', this.view).html(till.description);
   },
   
   onAudit: function(event) {

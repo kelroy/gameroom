@@ -8,8 +8,8 @@ var TillsOverviewController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.overview_tills_controller = new TillsOverviewTillsController('div#overview_tills');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.overview_tills_controller = new TillsOverviewTillsController('div#tills_overview_tills');
+    this.overview_section_controller = new SectionController('ul#tills_overview_nav', [
       this.overview_tills_controller
     ]);
     
@@ -17,7 +17,6 @@ var TillsOverviewController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    this.overview_section_controller.reset();
     this.overview_tills_controller.reset();
     this.update();
   },

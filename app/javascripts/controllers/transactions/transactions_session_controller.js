@@ -7,7 +7,7 @@ var TransactionsSessionController = new JS.Class({
   initialize: function() {
     this.transactions_controller = new TransactionsController('div#transactions');
     this.receipt_controller = new TransactionsReceiptController('div#receipt');
-    this.till_controller = new TransactionsTillController('div#till');
+    this.till_controller = new TransactionsTillController('div#transactions_till');
     
     this.till_controller.addObserver(this.updateTill, this);
     this.transactions_controller.addObserver(this.presentReceipt, this);
@@ -18,7 +18,7 @@ var TransactionsSessionController = new JS.Class({
   reset: function() {
     this.transactions_controller.view.hide();
     this.receipt_controller.view.hide();
-    this.till_controller.view.show();
+    this.till_controller.view.hide();
   },
   
   activate: function(employee) {

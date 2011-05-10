@@ -1,6 +1,6 @@
-%div{:id => 'audit', :class => 'modal'}
+%div{:id => 'tills_audit', :class => 'modal'}
   %h2 Audit
-  %form{:action => '#audit', :id => 'audit', :method => 'get'}
+  %form{:action => '#tills_audit', :id => 'tills_audit', :method => 'get'}
     %ul
       %li
         = label_tag :pennies
@@ -53,10 +53,10 @@
         = text_field_tag :balance, nil, :placeholder => '0.00'
     %ul
       %li
-        %ul{:id => 'audit_nav', :class => 'button_nav'}
+        %ul{:id => 'tills_audit_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#calculate', :class => 'calculate button'} Calculate
+            %a{:href => '#tills_calculate', :class => 'tills_calculate button'} Calculate
           %li
-            %a{:href => '#close', :class => 'close button'} Close
+            %a{:href => '#tills_close', :class => 'tills_close button'} Close
           %li
-            %a{:href => '#save', :class => 'save button'} Save
+            %a{:href => '#tills_save', :class => 'tills_save button'} Save

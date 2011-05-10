@@ -1,6 +1,6 @@
-%div{:id => 'item', :class => 'modal'}
+%div{:id => 'inventory_item', :class => 'modal'}
   %h2 Item
-  %form{:action => '#item', :id => 'item', :method => 'get'}
+  %form{:action => '#inventory_item', :id => 'inventory_item', :method => 'get'}
     %ul
       %li
         = label_tag :title
@@ -17,7 +17,7 @@
       %li
         = label_tag :sku
         = text_field_tag :sku
-    %ul{:class => 'prices'}
+    %ul{:class => 'inventory_prices'}
       %li
         = label_tag :price
         = text_field_tag :price, nil, :placeholder => '0.00'
@@ -27,7 +27,7 @@
       %li
         = label_tag :cash
         = text_field_tag :cash, nil, :placeholder => '0.00'
-    %ul{:class => 'checkboxes'}
+    %ul{:class => 'inventory_checkboxes'}
       %li
         = label_tag :taxable
         = check_box_tag :taxable, 1, true
@@ -39,8 +39,8 @@
         = check_box_tag :active, 1, true
     %ul
       %li
-        %ul{:id => 'item_nav', :class => 'button_nav'}
+        %ul{:id => 'inventory_item_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#close', :class => 'close button'} Close
+            %a{:href => '#inventory_close', :class => 'inventory_close button'} Close
           %li
-            %a{:href => '#save', :class => 'save button'} Save
+            %a{:href => '#inventory_save', :class => 'inventory_save button'} Save

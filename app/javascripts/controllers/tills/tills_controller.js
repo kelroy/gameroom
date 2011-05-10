@@ -8,9 +8,9 @@ var TillsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.audit_controller = new TillsAuditController('div#audit');
-    this.overview_controller = new TillsOverviewController('section#overview');
-    this.admin_controller = new TillsAdminController('section#admin');
+    this.audit_controller = new TillsAuditController('div#tills_audit');
+    this.overview_controller = new TillsOverviewController('section#tills_overview');
+    this.admin_controller = new TillsAdminController('section#tills_admin');
     this.section_controller = new SectionController('ul#tills_nav', [
       this.overview_controller,
       this.admin_controller
@@ -32,10 +32,12 @@ var TillsController = new JS.Class(ViewController, {
   
   activate: function() {
     this.view.show();
+    this.section_controller.view.show();
   },
   
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   },
   
   loadTills: function() {

@@ -1,4 +1,5 @@
 //= require "../view_controller"
+//= require "../../models/item"
 
 var InventoryItemController = new JS.Class(ViewController, {
   include: JS.Observable,
@@ -7,8 +8,8 @@ var InventoryItemController = new JS.Class(ViewController, {
     this.callSuper();
     this.item = null;
     
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.inventory_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.inventory_save', this.view).bind('click', {instance: this}, this.onSave);
   },
   
   reset: function() {
@@ -28,7 +29,7 @@ var InventoryItemController = new JS.Class(ViewController, {
     if(item != null) {
       $('input#title', this.view).val(item.title);
       $('textarea#description', this.view).val(item.description);
-      $('textarea#tags', this.view).val(item.tags);
+      $('textarea#tags', this.view).val(item.tags.join(','));
       $('input#sku', this.view).val(item.sku);
       $('input#price', this.view).val(Currency.format(item.price));
       $('input#credit', this.view).val(Currency.format(item.credit));
@@ -47,16 +48,19 @@ var InventoryItemController = new JS.Class(ViewController, {
   },
   
   onSave: function(event) {
-    title = $('input#title', this.view).val();
-    description = $('textarea#description', this.view).val();
-    tags = $('textarea#tags', this.view).val();
-    sku = $('input#sku', this.view).val();
-    price = parseInt(Currency.toPennies($('input#price', this.view).val()));
-    credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
-    cash = parseInt(Currency.toPennies($('input#cash', this.view).val()));
-    taxable = $('input#taxable', this.view).attr('checked');
-    discountable = $('input#discountable', this.view).attr('checked');
-    active = $('input#active', this.view).attr('checked');
+    title = $('input#title', event.data.instance.view).val();
+    description = $('textarea#description', event.data.instance.view).val();
+    tags = $('textarea#tags', event.data.instance.view).val();
+    if(tags != "") {
+      tags = tags.split(',');
+    }
+    sku = $('input#sku', event.data.instance.view).val();
+    price = parseInt(Currency.toPennies($('input#price', event.data.instance.view).val()));
+    credit = parseInt(Currency.toPennies($('input#credit', event.data.instance.view).val()));
+    cash = parseInt(Currency.toPennies($('input#cash', event.data.instance.view).val()));
+    taxable = $('input#taxable', event.data.instance.view).attr('checked');
+    discountable = $('input#discountable', event.data.instance.view).attr('checked');
+    active = $('input#active', event.data.instance.view).attr('checked');
     
     if(event.data.instance.item == null) {
       item = Item.create({
@@ -83,7 +87,6 @@ var InventoryItemController = new JS.Class(ViewController, {
       item.taxable = taxable;
       item.discountable = discountable;
       item.active = active;
-      item.save();
     }
     
     event.data.instance.setItem(item);

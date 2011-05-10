@@ -7,8 +7,8 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
     this.callSuper();
     this.item = null;
     
-    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.inventory_delete', this.view).bind('click', {instance: this}, this.onDelete);
+    $('a.inventory_edit', this.view).bind('click', {instance: this}, this.onEdit);
   },
   
   set: function(item) {
@@ -18,10 +18,10 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
       item.description = '';
     }
     
-    $('h3.items_line_title', this.view).html(item.title);
-    $('h4.items_line_description', this.view).html(item.description.truncate(30));
-    $('h3.items_line_sku', this.view).html(item.sku);
-    $('h3.items_line_price', this.view).html(Currency.pretty(item.price));
+    $('h3.inventory_items_line_title', this.view).html(item.title);
+    $('h4.inventory_items_line_description', this.view).html(item.description.truncate(30));
+    $('h3.inventory_items_line_sku', this.view).html(item.sku);
+    $('h3.inventory_items_line_price', this.view).html(Currency.pretty(item.price));
   },
   
   onDelete: function(event) {

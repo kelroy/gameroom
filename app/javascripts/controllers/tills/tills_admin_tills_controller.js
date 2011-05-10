@@ -11,16 +11,16 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
     this.callSuper();
     this.tills = [];
     this.till_controllers = [];
-    this.till = $('li.admin_tills_line', this.view).detach();
+    this.till = $('li.tills_admin_tills_line', this.view).detach();
     
-    this.adjust_controller = new TillsAdjustController('div#adjust');
+    this.adjust_controller = new TillsAdjustController('div#tills_adjust');
     this.adjust_controller.addObserver(this.loadTills, this);
     
     this.till_controller = new TillsTillController('div#tills_till');
     this.till_controller.addObserver(this.loadTills, this);
     
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
-    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+    $('a.tills_new', this.view).bind('click', {instance: this}, this.onNew);
+    $('a.tills_refresh', this.view).bind('click', {instance: this}, this.onRefresh);
   },
   
   reset: function() {
@@ -34,7 +34,7 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
   },
   
   clearTills: function() {
-    $('ul#admin_tills_lines > li.admin_tills_line').remove();
+    $('ul#tills_admin_tills_lines > li.tills_admin_tills_line').remove();
   },
   
   setTills: function(tills) {
@@ -45,7 +45,7 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
       new_till.set(tills[till]);
       new_till.addObserver(this.actionTill, this);
       this.till_controllers.push(new_till);
-      $('ul#admin_tills_lines', this.view).append(new_till.view);
+      $('ul#tills_admin_tills_lines', this.view).append(new_till.view);
     }
     if(tills.length > 0) {
       this.hideNotice();
@@ -82,10 +82,10 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
   },
   
   showNotice: function() {
-    $('h2#admin_tills_notice', this.view).show();
+    $('h2#tills_admin_tills_notice', this.view).show();
   },
   
   hideNotice: function() {
-    $('h2#admin_tills_notice', this.view).hide();
+    $('h2#tills_admin_tills_notice', this.view).hide();
   }
 });

@@ -10,7 +10,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
     this.callSuper();
     this.items = [];
     this.item_controllers = [];
-    this.item = $('li.items_line', this.view).detach();
+    this.item = $('li.inventory_items_line', this.view).detach();
   },
   
   reset: function() {
@@ -24,7 +24,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
   },
   
   clearItems: function() {
-    $('ul#items_lines > li').remove();
+    $('ul#inventory_items_lines > li').remove();
   },
   
   setItems: function(items) {
@@ -36,7 +36,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
       new_item.set(items[item]);
       new_item.addObserver(this.updateItem, this);
       this.item_controllers.push(new_item);
-      $('ul#items_lines', this.view).append(new_item.view);
+      $('ul#inventory_items_lines', this.view).append(new_item.view);
     }
     if(items.length > 0) {
       this.hideNotice();
@@ -66,10 +66,10 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
   },
   
   showNotice: function() {
-    $('h2#items_notice', this.view).show();
+    $('h2#inventory_items_notice', this.view).show();
   },
   
   hideNotice: function() {
-    $('h2#items_notice', this.view).hide();
+    $('h2#inventory_items_notice', this.view).hide();
   }
 });

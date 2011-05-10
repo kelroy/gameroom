@@ -7,8 +7,8 @@ var TillsAdjustController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
     
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.tills_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.tills_save', this.view).bind('click', {instance: this}, this.onSave);
   },
   
   reset: function() {

@@ -6,7 +6,7 @@ var InventoryController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.overview_controller = new InventoryOverviewController('section#overview');
+    this.overview_controller = new InventoryOverviewController('section#inventory_overview');
     this.section_controller = new SectionController('ul#inventory_nav', [
       this.overview_controller
     ]);

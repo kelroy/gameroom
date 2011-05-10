@@ -12,10 +12,10 @@ var InventoryOverviewController = new JS.Class(ViewController, {
     this.query = null;
     this.page = null;
     
-    this.item_controller = new InventoryItemController('div#item');
-    this.overview_search_controller = new SearchController('div#overview_search');
-    this.overview_results_controller = new InventoryOverviewResultsController('div#overview_results');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.item_controller = new InventoryItemController('div#inventory_item');
+    this.overview_search_controller = new SearchController('div#inventory_overview_search');
+    this.overview_results_controller = new InventoryOverviewResultsController('div#inventory_overview_results');
+    this.overview_section_controller = new SectionController('ul#inventory_overview_nav', [
       this.overview_results_controller
     ]);
     
@@ -23,7 +23,7 @@ var InventoryOverviewController = new JS.Class(ViewController, {
     this.overview_results_controller.addObserver(this.edit, this);
     this.overview_search_controller.addObserver(this.search, this);
     
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+    $('a.inventory_new', this.view).bind('click', {instance: this}, this.onNew);
   },
   
   reset: function() {

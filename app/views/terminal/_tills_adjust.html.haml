@@ -1,6 +1,6 @@
-%div{:id => 'adjust', :class => 'modal'}
+%div{:id => 'tills_adjust', :class => 'modal'}
   %h2 Adjust
-  %form{:action => '#adjust', :id => 'adjust', :method => 'get'}
+  %form{:action => '#tills_adjust', :id => 'tills_adjust', :method => 'get'}
     %ul
       %li
         = label_tag :amount, "Credit / Debit Amount"
@@ -11,8 +11,8 @@
         = text_area_tag :description
     %ul
       %li
-        %ul{:id => 'adjust_nav', :class => 'button_nav'}
+        %ul{:id => 'tills_adjust_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#close', :class => 'close button'} Close
+            %a{:href => '#tills_close', :class => 'tills_close button'} Close
           %li
-            %a{:href => '#save', :class => 'save button'} Save
+            %a{:href => '#tills_save', :class => 'tills_save button'} Save

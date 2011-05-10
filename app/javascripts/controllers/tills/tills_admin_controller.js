@@ -7,8 +7,8 @@ var TillsAdminController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     
-    this.admin_tills_controller = new TillsAdminTillsController('div#admin_tills');
-    this.admin_section_controller = new SectionController('ul#admin_nav', [
+    this.admin_tills_controller = new TillsAdminTillsController('div#tills_admin_tills');
+    this.admin_section_controller = new SectionController('ul#tills_admin_nav', [
       this.admin_tills_controller
     ]);
     
@@ -16,7 +16,6 @@ var TillsAdminController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    this.admin_section_controller.reset();
     this.admin_tills_controller.reset();
     this.update();
   },

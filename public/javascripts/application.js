@@ -1229,7 +1229,7 @@ var Line = new JS.Class(Model, {
 var Item = new JS.Class(Model, {
   extend: {
     resource: 'item',
-    columns: ['id', 'title', 'description', 'tags', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
+    columns: ['id', 'title', 'description', 'image', 'tags', 'properties', 'sku', 'price', 'credit', 'cash', 'taxable', 'discountable', 'locked', 'active'],
     validations: {
       'title': {
         'presence_of': {}
@@ -2797,8 +2797,8 @@ var InventoryItemController = new JS.Class(ViewController, {
     this.callSuper();
     this.item = null;
 
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.inventory_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.inventory_save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
   reset: function() {
@@ -2818,7 +2818,7 @@ var InventoryItemController = new JS.Class(ViewController, {
     if(item != null) {
       $('input#title', this.view).val(item.title);
       $('textarea#description', this.view).val(item.description);
-      $('textarea#tags', this.view).val(item.tags);
+      $('textarea#tags', this.view).val(item.tags.join(','));
       $('input#sku', this.view).val(item.sku);
       $('input#price', this.view).val(Currency.format(item.price));
       $('input#credit', this.view).val(Currency.format(item.credit));
@@ -2837,16 +2837,19 @@ var InventoryItemController = new JS.Class(ViewController, {
   },
 
   onSave: function(event) {
-    title = $('input#title', this.view).val();
-    description = $('textarea#description', this.view).val();
-    tags = $('textarea#tags', this.view).val();
-    sku = $('input#sku', this.view).val();
-    price = parseInt(Currency.toPennies($('input#price', this.view).val()));
-    credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
-    cash = parseInt(Currency.toPennies($('input#cash', this.view).val()));
-    taxable = $('input#taxable', this.view).attr('checked');
-    discountable = $('input#discountable', this.view).attr('checked');
-    active = $('input#active', this.view).attr('checked');
+    title = $('input#title', event.data.instance.view).val();
+    description = $('textarea#description', event.data.instance.view).val();
+    tags = $('textarea#tags', event.data.instance.view).val();
+    if(tags != "") {
+      tags = tags.split(',');
+    }
+    sku = $('input#sku', event.data.instance.view).val();
+    price = parseInt(Currency.toPennies($('input#price', event.data.instance.view).val()));
+    credit = parseInt(Currency.toPennies($('input#credit', event.data.instance.view).val()));
+    cash = parseInt(Currency.toPennies($('input#cash', event.data.instance.view).val()));
+    taxable = $('input#taxable', event.data.instance.view).attr('checked');
+    discountable = $('input#discountable', event.data.instance.view).attr('checked');
+    active = $('input#active', event.data.instance.view).attr('checked');
 
     if(event.data.instance.item == null) {
       item = Item.create({
@@ -2873,7 +2876,6 @@ var InventoryItemController = new JS.Class(ViewController, {
       item.taxable = taxable;
       item.discountable = discountable;
       item.active = active;
-      item.save();
     }
 
     event.data.instance.setItem(item);
@@ -2890,8 +2892,8 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
     this.callSuper();
     this.item = null;
 
-    $('a.delete', this.view).bind('click', {instance: this}, this.onDelete);
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.inventory_delete', this.view).bind('click', {instance: this}, this.onDelete);
+    $('a.inventory_edit', this.view).bind('click', {instance: this}, this.onEdit);
   },
 
   set: function(item) {
@@ -2901,10 +2903,10 @@ var InventoryOverviewResultsItemController = new JS.Class(ViewController, {
       item.description = '';
     }
 
-    $('h3.items_line_title', this.view).html(item.title);
-    $('h4.items_line_description', this.view).html(item.description.truncate(30));
-    $('h3.items_line_sku', this.view).html(item.sku);
-    $('h3.items_line_price', this.view).html(Currency.pretty(item.price));
+    $('h3.inventory_items_line_title', this.view).html(item.title);
+    $('h4.inventory_items_line_description', this.view).html(item.description.truncate(30));
+    $('h3.inventory_items_line_sku', this.view).html(item.sku);
+    $('h3.inventory_items_line_price', this.view).html(Currency.pretty(item.price));
   },
 
   onDelete: function(event) {
@@ -2926,7 +2928,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
     this.callSuper();
     this.items = [];
     this.item_controllers = [];
-    this.item = $('li.items_line', this.view).detach();
+    this.item = $('li.inventory_items_line', this.view).detach();
   },
 
   reset: function() {
@@ -2940,7 +2942,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
   },
 
   clearItems: function() {
-    $('ul#items_lines > li').remove();
+    $('ul#inventory_items_lines > li').remove();
   },
 
   setItems: function(items) {
@@ -2952,7 +2954,7 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
       new_item.set(items[item]);
       new_item.addObserver(this.updateItem, this);
       this.item_controllers.push(new_item);
-      $('ul#items_lines', this.view).append(new_item.view);
+      $('ul#inventory_items_lines', this.view).append(new_item.view);
     }
     if(items.length > 0) {
       this.hideNotice();
@@ -2982,11 +2984,11 @@ var InventoryOverviewResultsController = new JS.Class(ViewController, {
   },
 
   showNotice: function() {
-    $('h2#items_notice', this.view).show();
+    $('h2#inventory_items_notice', this.view).show();
   },
 
   hideNotice: function() {
-    $('h2#items_notice', this.view).hide();
+    $('h2#inventory_items_notice', this.view).hide();
   }
 });
 
@@ -2998,10 +3000,10 @@ var InventoryOverviewController = new JS.Class(ViewController, {
     this.query = null;
     this.page = null;
 
-    this.item_controller = new InventoryItemController('div#item');
-    this.overview_search_controller = new SearchController('div#overview_search');
-    this.overview_results_controller = new InventoryOverviewResultsController('div#overview_results');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.item_controller = new InventoryItemController('div#inventory_item');
+    this.overview_search_controller = new SearchController('div#inventory_overview_search');
+    this.overview_results_controller = new InventoryOverviewResultsController('div#inventory_overview_results');
+    this.overview_section_controller = new SectionController('ul#inventory_overview_nav', [
       this.overview_results_controller
     ]);
 
@@ -3009,7 +3011,7 @@ var InventoryOverviewController = new JS.Class(ViewController, {
     this.overview_results_controller.addObserver(this.edit, this);
     this.overview_search_controller.addObserver(this.search, this);
 
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
+    $('a.inventory_new', this.view).bind('click', {instance: this}, this.onNew);
   },
 
   reset: function() {
@@ -3069,7 +3071,7 @@ var InventoryController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.overview_controller = new InventoryOverviewController('section#overview');
+    this.overview_controller = new InventoryOverviewController('section#inventory_overview');
     this.section_controller = new SectionController('ul#inventory_nav', [
       this.overview_controller
     ]);
@@ -3120,9 +3122,9 @@ var TillsAuditController = new JS.Class(ViewController, {
     this.till = null;
     this.reset();
 
-    $('a.calculate', this.view).bind('click', {instance: this}, this.onCalculate);
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.tills_calculate', this.view).bind('click', {instance: this}, this.onCalculate);
+    $('a.tills_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.tills_save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
   reset: function() {
@@ -3192,14 +3194,14 @@ var TillsOverviewTillsTillController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
 
-    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
+    $('a.tills_audit', this.view).bind('click', {instance: this}, this.onAudit);
   },
 
   set: function(till) {
     this.till = till;
 
-    $('h3.overview_tills_line_title', this.view).html(till.title);
-    $('h4.overview_tills_line_description', this.view).html(till.description);
+    $('h3.tills_overview_tills_line_title', this.view).html(till.title);
+    $('h4.tills_overview_tills_line_description', this.view).html(till.description);
   },
 
   onAudit: function(event) {
@@ -3215,9 +3217,9 @@ var TillsOverviewTillsController = new JS.Class(ViewController, {
     this.callSuper();
     this.tills = [];
     this.till_controllers = [];
-    this.till = $('li.overview_tills_line', this.view).detach();
+    this.till = $('li.tills_overview_tills_line', this.view).detach();
 
-    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+    $('a.tills_refresh', this.view).bind('click', {instance: this}, this.onRefresh);
   },
 
   reset: function() {
@@ -3231,7 +3233,7 @@ var TillsOverviewTillsController = new JS.Class(ViewController, {
   },
 
   clearTills: function() {
-    $('ul#overview_tills_lines > li.overview_tills_line').remove();
+    $('ul#tills_overview_tills_lines > li.tills_overview_tills_line').remove();
   },
 
   setTills: function(tills) {
@@ -3242,7 +3244,7 @@ var TillsOverviewTillsController = new JS.Class(ViewController, {
       new_till.set(tills[till]);
       new_till.addObserver(this.actionTill, this);
       this.till_controllers.push(new_till);
-      $('ul#overview_tills_lines', this.view).append(new_till.view);
+      $('ul#tills_overview_tills_lines', this.view).append(new_till.view);
     }
     if(tills.length > 0) {
       this.hideNotice();
@@ -3265,11 +3267,11 @@ var TillsOverviewTillsController = new JS.Class(ViewController, {
   },
 
   showNotice: function() {
-    $('h2#overview_tills_notice', this.view).show();
+    $('h2#tills_overview_tills_notice', this.view).show();
   },
 
   hideNotice: function() {
-    $('h2#overview_tills_notice', this.view).hide();
+    $('h2#tills_overview_tills_notice', this.view).hide();
   }
 });
 
@@ -3279,8 +3281,8 @@ var TillsOverviewController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.overview_tills_controller = new TillsOverviewTillsController('div#overview_tills');
-    this.overview_section_controller = new SectionController('ul#overview_nav', [
+    this.overview_tills_controller = new TillsOverviewTillsController('div#tills_overview_tills');
+    this.overview_section_controller = new SectionController('ul#tills_overview_nav', [
       this.overview_tills_controller
     ]);
 
@@ -3288,7 +3290,6 @@ var TillsOverviewController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    this.overview_section_controller.reset();
     this.overview_tills_controller.reset();
     this.update();
   },
@@ -3308,8 +3309,8 @@ var TillsAdminController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.admin_tills_controller = new TillsAdminTillsController('div#admin_tills');
-    this.admin_section_controller = new SectionController('ul#admin_nav', [
+    this.admin_tills_controller = new TillsAdminTillsController('div#tills_admin_tills');
+    this.admin_section_controller = new SectionController('ul#tills_admin_nav', [
       this.admin_tills_controller
     ]);
 
@@ -3317,7 +3318,6 @@ var TillsAdminController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    this.admin_section_controller.reset();
     this.admin_tills_controller.reset();
     this.update();
   },
@@ -3336,9 +3336,9 @@ var TillsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
 
-    this.audit_controller = new TillsAuditController('div#audit');
-    this.overview_controller = new TillsOverviewController('section#overview');
-    this.admin_controller = new TillsAdminController('section#admin');
+    this.audit_controller = new TillsAuditController('div#tills_audit');
+    this.overview_controller = new TillsOverviewController('section#tills_overview');
+    this.admin_controller = new TillsAdminController('section#tills_admin');
     this.section_controller = new SectionController('ul#tills_nav', [
       this.overview_controller,
       this.admin_controller
@@ -3360,10 +3360,12 @@ var TillsController = new JS.Class(ViewController, {
 
   activate: function() {
     this.view.show();
+    this.section_controller.view.show();
   },
 
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   },
 
   loadTills: function() {
@@ -5048,6 +5050,7 @@ var EmployeesController = new JS.Class(ViewController, {
   },
 
   deactivate: function() {
+    this.overview_controller.reset();
     this.view.hide();
   }
 });
@@ -5168,8 +5171,8 @@ var TillsAdjustController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
 
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.tills_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.tills_save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
   reset: function() {
@@ -5211,8 +5214,8 @@ var TillsTillController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
 
-    $('a.close', this.view).bind('click', {instance: this}, this.onClose);
-    $('a.save', this.view).bind('click', {instance: this}, this.onSave);
+    $('a.tills_close', this.view).bind('click', {instance: this}, this.onClose);
+    $('a.tills_save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
   reset: function() {
@@ -5254,7 +5257,7 @@ var TillsTillController = new JS.Class(ViewController, {
       till.save();
     } else {
       Till.create({
-        title: description,
+        title: title,
         description: description,
         minimum_transfer: 0,
         minimum_balance: 0,
@@ -5275,18 +5278,18 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
 
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
-    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
-    $('a.adjust', this.view).bind('click', {instance: this}, this.onAdjust);
-    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
+    $('a.tills_edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.tills_audit', this.view).bind('click', {instance: this}, this.onAudit);
+    $('a.tills_adjust', this.view).bind('click', {instance: this}, this.onAdjust);
+    $('a.tills_employees', this.view).bind('click', {instance: this}, this.onEmployees);
   },
 
   set: function(till) {
     this.till = till;
 
-    $('h3.admin_tills_line_title', this.view).html(till.title);
-    $('h4.admin_tills_line_description', this.view).html(till.description);
-    $('h3.admin_tills_line_balance', this.view).html(Currency.pretty(till.balance()));
+    $('h3.tills_admin_tills_line_title', this.view).html(till.title);
+    $('h4.tills_admin_tills_line_description', this.view).html(till.description);
+    $('h3.tills_admin_tills_line_balance', this.view).html(Currency.pretty(till.balance()));
   },
 
   onEdit: function(event) {
@@ -5317,16 +5320,16 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
     this.callSuper();
     this.tills = [];
     this.till_controllers = [];
-    this.till = $('li.admin_tills_line', this.view).detach();
+    this.till = $('li.tills_admin_tills_line', this.view).detach();
 
-    this.adjust_controller = new TillsAdjustController('div#adjust');
+    this.adjust_controller = new TillsAdjustController('div#tills_adjust');
     this.adjust_controller.addObserver(this.loadTills, this);
 
     this.till_controller = new TillsTillController('div#tills_till');
     this.till_controller.addObserver(this.loadTills, this);
 
-    $('a.new', this.view).bind('click', {instance: this}, this.onNew);
-    $('a.refresh', this.view).bind('click', {instance: this}, this.onRefresh);
+    $('a.tills_new', this.view).bind('click', {instance: this}, this.onNew);
+    $('a.tills_refresh', this.view).bind('click', {instance: this}, this.onRefresh);
   },
 
   reset: function() {
@@ -5340,7 +5343,7 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
   },
 
   clearTills: function() {
-    $('ul#admin_tills_lines > li.admin_tills_line').remove();
+    $('ul#tills_admin_tills_lines > li.tills_admin_tills_line').remove();
   },
 
   setTills: function(tills) {
@@ -5351,7 +5354,7 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
       new_till.set(tills[till]);
       new_till.addObserver(this.actionTill, this);
       this.till_controllers.push(new_till);
-      $('ul#admin_tills_lines', this.view).append(new_till.view);
+      $('ul#tills_admin_tills_lines', this.view).append(new_till.view);
     }
     if(tills.length > 0) {
       this.hideNotice();
@@ -5388,11 +5391,11 @@ var TillsAdminTillsController = new JS.Class(ViewController, {
   },
 
   showNotice: function() {
-    $('h2#admin_tills_notice', this.view).show();
+    $('h2#tills_admin_tills_notice', this.view).show();
   },
 
   hideNotice: function() {
-    $('h2#admin_tills_notice', this.view).hide();
+    $('h2#tills_admin_tills_notice', this.view).hide();
   }
 });
 
@@ -5619,7 +5622,7 @@ var TransactionsSessionController = new JS.Class({
   initialize: function() {
     this.transactions_controller = new TransactionsController('div#transactions');
     this.receipt_controller = new TransactionsReceiptController('div#receipt');
-    this.till_controller = new TransactionsTillController('div#till');
+    this.till_controller = new TransactionsTillController('div#transactions_till');
 
     this.till_controller.addObserver(this.updateTill, this);
     this.transactions_controller.addObserver(this.presentReceipt, this);
@@ -5630,7 +5633,7 @@ var TransactionsSessionController = new JS.Class({
   reset: function() {
     this.transactions_controller.view.hide();
     this.receipt_controller.view.hide();
-    this.till_controller.view.show();
+    this.till_controller.view.hide();
   },
 
   activate: function(employee) {

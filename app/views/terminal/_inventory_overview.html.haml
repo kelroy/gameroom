@@ -1,5 +1,5 @@
-%div{:id => 'overview_header', :class => 'header_container'}
-  %div{:id => 'overview_search'}
+%div{:id => 'inventory_overview_header', :class => 'header_container'}
+  %div{:id => 'inventory_overview_search'}
     %ul{:class => 'alphabet_nav'}
       - ('A'..'Z').each do |letter|
         %li
@@ -11,12 +11,12 @@
         %a{:href => '#next', :class => 'button next'} >
         %a{:href => '#prev', :class => 'button prev'} <
         %img{:src => 'images/loading.gif', :alt => 'Loading...', :class => 'loading'}
-  %ul{:class => 'overview_action_nav button_nav'}
+  %ul{:class => 'inventory_overview_action_nav button_nav'}
     %li
-      %a{:href => '#new', :class => 'button new'} New Item
-%ul{:id => 'overview_nav', :class => 'tab_nav'}
+      %a{:href => '#inventory_new', :class => 'button inventory_new'} New Item
+%ul{:id => 'inventory_overview_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#overview_results', :class => 'overview_results selected'} Search Results
-%div{:id => 'overview_pages', :class => 'page_container'}
-  %div{:id => 'overview_results'}
+    %a{:href => '#inventory_overview_results', :class => 'overview_results selected'} Search Results
+%div{:id => 'inventory_overview_pages', :class => 'page_container'}
+  %div{:id => 'inventory_overview_results'}
     = render :partial => 'inventory_overview_results'

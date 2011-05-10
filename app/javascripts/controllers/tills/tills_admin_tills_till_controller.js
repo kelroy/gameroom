@@ -7,18 +7,18 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     this.callSuper();
     this.till = null;
     
-    $('a.edit', this.view).bind('click', {instance: this}, this.onEdit);
-    $('a.audit', this.view).bind('click', {instance: this}, this.onAudit);
-    $('a.adjust', this.view).bind('click', {instance: this}, this.onAdjust);
-    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
+    $('a.tills_edit', this.view).bind('click', {instance: this}, this.onEdit);
+    $('a.tills_audit', this.view).bind('click', {instance: this}, this.onAudit);
+    $('a.tills_adjust', this.view).bind('click', {instance: this}, this.onAdjust);
+    $('a.tills_employees', this.view).bind('click', {instance: this}, this.onEmployees);
   },
   
   set: function(till) {
     this.till = till;
     
-    $('h3.admin_tills_line_title', this.view).html(till.title);
-    $('h4.admin_tills_line_description', this.view).html(till.description);
-    $('h3.admin_tills_line_balance', this.view).html(Currency.pretty(till.balance()));
+    $('h3.tills_admin_tills_line_title', this.view).html(till.title);
+    $('h4.tills_admin_tills_line_description', this.view).html(till.description);
+    $('h3.tills_admin_tills_line_balance', this.view).html(Currency.pretty(till.balance()));
   },
   
   onEdit: function(event) {

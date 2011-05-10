@@ -24,6 +24,7 @@ var EmployeesController = new JS.Class(ViewController, {
   },
   
   deactivate: function() {
+    this.overview_controller.reset();
     this.view.hide();
   }
 });

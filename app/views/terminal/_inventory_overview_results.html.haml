@@ -1,14 +1,14 @@
-%h2{:id => 'items_notice'} No items.
-%ul{:id => 'items_lines'}
-  %li{:class => 'items_line'}
-    %ul{:class => 'items_line_nav button_nav'}
+%h2{:id => 'inventory_items_notice'} No items.
+%ul{:id => 'inventory_items_lines'}
+  %li{:class => 'inventory_items_line'}
+    %ul{:class => 'inventory_items_line_nav button_nav'}
       %li
-        %a{:href => '#delete', :class => 'button delete'} X
+        %a{:href => '#inventory_delete', :class => 'button inventory_delete'} X
       %li
-        %a{:href => '#edit', :class => 'button edit'} Edit
-    %hgroup{:class => 'items_line_information'}
-      %h3{:class => 'items_line_title'}
-      %h4{:class => 'items_line_description'}
-    %hgroup{:class => 'items_line_properties'}
-      %h3{:class => 'items_line_sku'}
-      %h3{:class => 'items_line_price'}
+        %a{:href => '#inventory_edit', :class => 'button inventory_edit'} Edit
+    %hgroup{:class => 'inventory_items_line_information'}
+      %h3{:class => 'inventory_items_line_title'}
+      %h4{:class => 'inventory_items_line_description'}
+    %hgroup{:class => 'inventory_items_line_properties'}
+      %h3{:class => 'inventory_items_line_sku'}
+      %h3{:class => 'inventory_items_line_price'}

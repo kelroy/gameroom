@@ -1,6 +1,6 @@
 %div{:id => 'tills_till', :class => 'modal'}
   %h2 Till
-  %form{:action => '#till', :id => 'till', :method => 'get'}
+  %form{:action => '#tills_till', :id => 'tills_till', :method => 'get'}
     %ul
       %li
         = label_tag :title
@@ -15,8 +15,8 @@
         = check_box_tag :active, 1, true
     %ul
       %li
-        %ul{:id => 'till_nav', :class => 'button_nav'}
+        %ul{:id => 'tills_till_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#close', :class => 'close button'} Close
+            %a{:href => '#tills_close', :class => 'tills_close button'} Close
           %li
-            %a{:href => '#save', :class => 'save button'} Save
+            %a{:href => '#tills_save', :class => 'tills_save button'} Save

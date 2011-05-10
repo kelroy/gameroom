@@ -114,6 +114,7 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.timeclock', this.view).bind('click', {instance: this}, this.onTimeclock);
     $('a.tills', this.view).bind('click', {instance: this}, this.onTills);
     $('a.inventory', this.view).bind('click', {instance: this}, this.onInventory);
+    $('a.repairs', this.view).bind('click', {instance: this}, this.onRepairs);
     $('a.reports', this.view).bind('click', {instance: this}, this.onReports);
     $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
@@ -143,6 +144,11 @@ var DashboardController = new JS.Class(ViewController, {
 
   onInventory: function(event) {
     event.data.instance.notifyObservers('inventory');
+    event.preventDefault();
+  },
+
+  onRepairs: function(event) {
+    event.data.instance.notifyObservers('repairs');
     event.preventDefault();
   },
 
@@ -5065,6 +5071,7 @@ var TerminalController = new JS.Class({
     this.dashboard_controller = new DashboardController('div#dashboard');
     this.transactions_controller = new TransactionsSessionController();
     this.inventory_controller = new InventoryController('div#inventory');
+    this.repairs_controller = new RepairsController('div#repairs');
     this.reports_controller = new ReportsController('div#reports');
     this.tills_controller = new TillsController('div#tills');
     this.timeclock_controller = new TimeclockController('div#timeclock');
@@ -5085,6 +5092,7 @@ var TerminalController = new JS.Class({
     this.dashboard_controller.deactivate();
     this.transactions_controller.deactivate();
     this.inventory_controller.deactivate();
+    this.repairs_controller.deactivate();
     this.reports_controller.deactivate();
     this.tills_controller.deactivate();
     this.timeclock_controller.deactivate();
@@ -5130,6 +5138,9 @@ var TerminalController = new JS.Class({
       case 'inventory':
         this.inventory_controller.activate();
         break;
+      case 'repairs':
+        this.repairs_controller.activate();
+        break;
       case 'reports':
         this.reports_controller.activate();
         break;
@@ -5161,6 +5172,27 @@ var AlphabetController = new JS.Class(ViewController, {
   onSelect: function(event) {
     event.data.instance.notifyObservers($(this).html());
     event.preventDefault();
+  }
+});
+
+var RepairsController = new JS.Class(ViewController, {
+
+  initialize: function(view) {
+    this.callSuper();
+
+    this.reset();
+  },
+
+  reset: function() {
+
+  },
+
+  activate: function() {
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.view.hide();
   }
 });
 

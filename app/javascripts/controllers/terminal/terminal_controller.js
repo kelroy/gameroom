@@ -18,6 +18,7 @@ var TerminalController = new JS.Class({
     this.dashboard_controller = new DashboardController('div#dashboard');
     this.transactions_controller = new TransactionsSessionController();
     this.inventory_controller = new InventoryController('div#inventory');
+    this.repairs_controller = new RepairsController('div#repairs');
     this.reports_controller = new ReportsController('div#reports');
     this.tills_controller = new TillsController('div#tills');
     this.timeclock_controller = new TimeclockController('div#timeclock');
@@ -38,6 +39,7 @@ var TerminalController = new JS.Class({
     this.dashboard_controller.deactivate();
     this.transactions_controller.deactivate();
     this.inventory_controller.deactivate();
+    this.repairs_controller.deactivate();
     this.reports_controller.deactivate();
     this.tills_controller.deactivate();
     this.timeclock_controller.deactivate();
@@ -82,6 +84,9 @@ var TerminalController = new JS.Class({
         break;
       case 'inventory':
         this.inventory_controller.activate();
+        break;
+      case 'repairs':
+        this.repairs_controller.activate();
         break;
       case 'reports':
         this.reports_controller.activate();

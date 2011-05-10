@@ -10,6 +10,7 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.timeclock', this.view).bind('click', {instance: this}, this.onTimeclock);
     $('a.tills', this.view).bind('click', {instance: this}, this.onTills);
     $('a.inventory', this.view).bind('click', {instance: this}, this.onInventory);
+    $('a.repairs', this.view).bind('click', {instance: this}, this.onRepairs);
     $('a.reports', this.view).bind('click', {instance: this}, this.onReports);
     $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
@@ -39,6 +40,11 @@ var DashboardController = new JS.Class(ViewController, {
   
   onInventory: function(event) {
     event.data.instance.notifyObservers('inventory');
+    event.preventDefault();
+  },
+  
+  onRepairs: function(event) {
+    event.data.instance.notifyObservers('repairs');
     event.preventDefault();
   },
   

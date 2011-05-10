@@ -1,0 +1,13 @@
+%div{:id => 'users_overview_header', :class => 'header_container'}
+  %form{:action => '#users_select_form', :id => 'users_select_form', :method => 'get'}
+    %ul
+      %li= select_tag :user, options_for_select([])
+  %ul{:class => 'users_overview_action_nav button_nav'}
+    %li
+      %a{:href => '#new', :class => 'button new'} New User
+%ul{:id => 'users_overview_nav', :class => 'tab_nav'}
+  %li
+    %a{:href => '#useres_overview_form', :class => 'users_overview_form selected'} User
+%div{:id => 'users_overview_pages', :class => 'page_container'}
+  %div{:id => 'users_overview_form'}
+    = render :partial => 'users_overview_form'

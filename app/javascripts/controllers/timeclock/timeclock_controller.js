@@ -23,8 +23,14 @@ var TimeclockController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
   
-  activate: function() {
+  activate: function(user) {
     users = User.all();
+    
+    if(!user.administrator) {
+      $('li', this.section_controller.view).eq(1).hide();
+    } else {
+      $('li', this.section_controller.view).eq(1).show();
+    }
     
     this.view.show();
     this.overview_controller.setUsers(users);

@@ -50,13 +50,13 @@ var TerminalController = new JS.Class({
     switch(selection) {
       case 'dashboard':
         this.reset();
-        this.dashboard_controller.activate();
+        this.dashboard_controller.activate(this.user);
         break;
       case 'logout':
         this.reset();
         this.user = null;
         this.nav_controller.reset();
-        this.login_controller.activate();
+        this.login_controller.activate(user);
         break;
       default:
         break;
@@ -67,7 +67,7 @@ var TerminalController = new JS.Class({
     this.user = user;
     this.nav_controller.update(user);
     this.login_controller.view.hide();
-    this.dashboard_controller.activate();
+    this.dashboard_controller.activate(this.user);
   },
   
   onDashboard: function(application) {
@@ -77,22 +77,22 @@ var TerminalController = new JS.Class({
         this.transactions_controller.activate(this.user);
         break;
       case 'timeclock':
-        this.timeclock_controller.activate();
+        this.timeclock_controller.activate(this.user);
         break;
       case 'tills':
-        this.tills_controller.activate();
+        this.tills_controller.activate(this.user);
         break;
       case 'inventory':
-        this.inventory_controller.activate();
+        this.inventory_controller.activate(this.user);
         break;
       case 'repairs':
-        this.repairs_controller.activate();
+        this.repairs_controller.activate(this.user);
         break;
       case 'reports':
-        this.reports_controller.activate();
+        this.reports_controller.activate(this.user);
         break;
       case 'users':
-        this.users_controller.activate();
+        this.users_controller.activate(this.user);
         break;
       default:
         break;

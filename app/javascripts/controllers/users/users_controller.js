@@ -18,7 +18,7 @@ var UsersController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
   
-  activate: function() {
+  activate: function(user) {
     this.view.show();
     this.overview_controller.setUsers(User.all());
   },

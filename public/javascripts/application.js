@@ -83,7 +83,7 @@ var LoginController = new JS.Class(FormController, {
     $('a.login', this.view).bind('click', {instance: this}, this.onLogin);
   },
 
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
 
@@ -119,7 +119,16 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
 
-  activate: function() {
+  activate: function(user) {
+    if(!user.administrator) {
+      $('a.inventory', this.view).closest('li').hide();
+      $('a.reports', this.view).closest('li').hide();
+      $('a.users', this.view).closest('li').hide();
+    } else {
+      $('a.inventory', this.view).closest('li').show();
+      $('a.reports', this.view).closest('li').show();
+      $('a.users', this.view).closest('li').show();
+    }
     this.view.show();
   },
 
@@ -3090,7 +3099,7 @@ var InventoryController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
 
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
 
@@ -3111,7 +3120,7 @@ var ReportsController = new JS.Class(ViewController, {
 
   },
 
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
 
@@ -3364,7 +3373,13 @@ var TillsController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
 
-  activate: function() {
+  activate: function(user) {
+    if(!user.administrator) {
+      $('li', this.section_controller.view).eq(1).hide();
+    } else {
+      $('li', this.section_controller.view).eq(1).show();
+    }
+
     this.view.show();
     this.section_controller.view.show();
   },
@@ -4761,8 +4776,14 @@ var TimeclockController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
 
-  activate: function() {
+  activate: function(user) {
     users = User.all();
+
+    if(!user.administrator) {
+      $('li', this.section_controller.view).eq(1).hide();
+    } else {
+      $('li', this.section_controller.view).eq(1).show();
+    }
 
     this.view.show();
     this.overview_controller.setUsers(users);
@@ -5050,7 +5071,7 @@ var UsersController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
 
-  activate: function() {
+  activate: function(user) {
     this.view.show();
     this.overview_controller.setUsers(User.all());
   },
@@ -5103,13 +5124,13 @@ var TerminalController = new JS.Class({
     switch(selection) {
       case 'dashboard':
         this.reset();
-        this.dashboard_controller.activate();
+        this.dashboard_controller.activate(this.user);
         break;
       case 'logout':
         this.reset();
         this.user = null;
         this.nav_controller.reset();
-        this.login_controller.activate();
+        this.login_controller.activate(user);
         break;
       default:
         break;
@@ -5120,7 +5141,7 @@ var TerminalController = new JS.Class({
     this.user = user;
     this.nav_controller.update(user);
     this.login_controller.view.hide();
-    this.dashboard_controller.activate();
+    this.dashboard_controller.activate(this.user);
   },
 
   onDashboard: function(application) {
@@ -5130,22 +5151,22 @@ var TerminalController = new JS.Class({
         this.transactions_controller.activate(this.user);
         break;
       case 'timeclock':
-        this.timeclock_controller.activate();
+        this.timeclock_controller.activate(this.user);
         break;
       case 'tills':
-        this.tills_controller.activate();
+        this.tills_controller.activate(this.user);
         break;
       case 'inventory':
-        this.inventory_controller.activate();
+        this.inventory_controller.activate(this.user);
         break;
       case 'repairs':
-        this.repairs_controller.activate();
+        this.repairs_controller.activate(this.user);
         break;
       case 'reports':
-        this.reports_controller.activate();
+        this.reports_controller.activate(this.user);
         break;
       case 'users':
-        this.users_controller.activate();
+        this.users_controller.activate(this.user);
         break;
       default:
         break;
@@ -5187,7 +5208,7 @@ var RepairsController = new JS.Class(ViewController, {
 
   },
 
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
 

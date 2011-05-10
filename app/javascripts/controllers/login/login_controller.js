@@ -10,7 +10,7 @@ var LoginController = new JS.Class(FormController, {
     $('a.login', this.view).bind('click', {instance: this}, this.onLogin);
   },
   
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
   

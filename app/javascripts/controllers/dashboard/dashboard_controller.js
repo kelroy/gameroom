@@ -15,7 +15,16 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
   
-  activate: function() {
+  activate: function(user) {
+    if(!user.administrator) {
+      $('a.inventory', this.view).closest('li').hide();
+      $('a.reports', this.view).closest('li').hide();
+      $('a.users', this.view).closest('li').hide();
+    } else {
+      $('a.inventory', this.view).closest('li').show();
+      $('a.reports', this.view).closest('li').show();
+      $('a.users', this.view).closest('li').show();
+    }
     this.view.show();
   },
   

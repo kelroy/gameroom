@@ -19,7 +19,7 @@ var InventoryController = new JS.Class(ViewController, {
     this.section_controller.reset();
   },
   
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
   

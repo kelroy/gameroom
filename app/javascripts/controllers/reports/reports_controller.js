@@ -12,7 +12,7 @@ var ReportsController = new JS.Class(ViewController, {
     
   },
   
-  activate: function() {
+  activate: function(user) {
     this.view.show();
   },
   

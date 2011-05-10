@@ -16,7 +16,7 @@ var TransactionsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.till_id = null;
-    this.employee_id = null;
+    this.user_id = null;
     this.transaction = null;
     
     this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
@@ -55,12 +55,12 @@ var TransactionsController = new JS.Class(ViewController, {
   },
   
   onReset: function(event) {
-    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.employee_id);
+    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.user_id);
     event.preventDefault();
   },
   
-  updateEmployee: function(employee) {
-    this.employee_id = employee.id;
+  updateUser: function(user) {
+    this.user_id = user.id;
   },
 
   updateCustomer: function(customer) {
@@ -123,11 +123,11 @@ var TransactionsController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
   
-  newTransactions: function(till_id, employee_id) {
+  newTransactions: function(till_id, user_id) {
     this.reset();
     this.till_id = till_id;
-    this.employee_id = employee_id;
-    this.setTransactions(new Transactions({employee_id: employee_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
+    this.user_id = user_id;
+    this.setTransactions(new Transactions({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
   },
   
   setTransactions: function(transaction) {
@@ -178,7 +178,7 @@ var TransactionsController = new JS.Class(ViewController, {
       if(till_adjustment != 0) {
         entry = new Entry({
           till_id: this.till_id,
-          employee_id: this.employee_id,
+          user_id: this.user_id,
           title: 'Transactions: ' + this.transaction.id,
           amount: till_adjustment
         });
@@ -188,7 +188,7 @@ var TransactionsController = new JS.Class(ViewController, {
       }
       
       this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-      this.newTransactions(this.till_id, this.employee_id);
+      this.newTransactions(this.till_id, this.user_id);
     }
   }
 });

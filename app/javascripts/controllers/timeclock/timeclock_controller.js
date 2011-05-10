@@ -24,11 +24,11 @@ var TimeclockController = new JS.Class(ViewController, {
   },
   
   activate: function() {
-    employees = Employee.all();
+    users = User.all();
     
     this.view.show();
-    this.overview_controller.setEmployees(employees);
-    this.admin_controller.setEmployees(employees);
+    this.overview_controller.setUsers(users);
+    this.admin_controller.setUsers(users);
     this.section_controller.view.show();
     
     this.overview_controller.updateClock();

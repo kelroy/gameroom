@@ -11,7 +11,7 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.tills', this.view).bind('click', {instance: this}, this.onTills);
     $('a.inventory', this.view).bind('click', {instance: this}, this.onInventory);
     $('a.reports', this.view).bind('click', {instance: this}, this.onReports);
-    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
+    $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
   
   activate: function() {
@@ -47,8 +47,8 @@ var DashboardController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  onEmployees: function(event) {
-    event.data.instance.notifyObservers('employees');
+  onUsers: function(event) {
+    event.data.instance.notifyObservers('users');
     event.preventDefault();
   },
 });

@@ -3,7 +3,7 @@ class Person < ActiveRecord::Base
   
   belongs_to    :account
   has_one       :customer
-  has_one       :employee
+  has_one       :user
   serialize     :emails
   serialize     :phones
   serialize     :addresses

@@ -6,12 +6,12 @@
 //= require "../reports/reports_controller"
 //= require "../tills/tills_controller"
 //= require "../timeclock/timeclock_controller"
-//= require "../employees/employees_controller"
+//= require "../users/users_controller"
 
 var TerminalController = new JS.Class({
   
   initialize: function() {
-    this.employee = null;
+    this.user = null;
     
     this.nav_controller = new TerminalNavController('ul#terminal_nav');
     this.login_controller = new LoginController('div#login');
@@ -21,7 +21,7 @@ var TerminalController = new JS.Class({
     this.reports_controller = new ReportsController('div#reports');
     this.tills_controller = new TillsController('div#tills');
     this.timeclock_controller = new TimeclockController('div#timeclock');
-    this.employees_controller = new EmployeesController('div#employees');
+    this.users_controller = new UsersController('div#users');
     
     this.nav_controller.addObserver(this.onNav, this);
     this.login_controller.addObserver(this.onLogin, this);
@@ -41,7 +41,7 @@ var TerminalController = new JS.Class({
     this.reports_controller.deactivate();
     this.tills_controller.deactivate();
     this.timeclock_controller.deactivate();
-    this.employees_controller.deactivate();
+    this.users_controller.deactivate();
   },
   
   onNav: function(selection) {
@@ -52,7 +52,7 @@ var TerminalController = new JS.Class({
         break;
       case 'logout':
         this.reset();
-        this.employee = null;
+        this.user = null;
         this.nav_controller.reset();
         this.login_controller.activate();
         break;
@@ -61,9 +61,9 @@ var TerminalController = new JS.Class({
     }
   },
   
-  onLogin: function(employee) {
-    this.employee = employee;
-    this.nav_controller.update(employee);
+  onLogin: function(user) {
+    this.user = user;
+    this.nav_controller.update(user);
     this.login_controller.view.hide();
     this.dashboard_controller.activate();
   },
@@ -72,7 +72,7 @@ var TerminalController = new JS.Class({
     this.reset()
     switch(application) {
       case 'transactions':
-        this.transactions_controller.activate(this.employee);
+        this.transactions_controller.activate(this.user);
         break;
       case 'timeclock':
         this.timeclock_controller.activate();
@@ -86,8 +86,8 @@ var TerminalController = new JS.Class({
       case 'reports':
         this.reports_controller.activate();
         break;
-      case 'employees':
-        this.employees_controller.activate();
+      case 'users':
+        this.users_controller.activate();
         break;
       default:
         break;

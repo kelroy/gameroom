@@ -12,12 +12,12 @@ var TerminalNavController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    $('li#terminal_nav_employee', this.view).html('');
+    $('li#terminal_nav_user', this.view).html('');
     this.view.hide();
   },
   
-  update: function(employee) {
-    $('li#terminal_nav_employee', this.view).html(employee.token);
+  update: function(user) {
+    $('li#terminal_nav_user', this.view).html(user.token);
     this.view.show();
   },
   

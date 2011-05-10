@@ -11,12 +11,12 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   },
   
   doClockInOut: function(event) {
-    username = $('select#employee', event.data.instance.view).val();
+    username = $('select#user', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.authenticate(username, password);
+    user = User.authenticate(username, password);
     
-    if(employee != null) {
-      event.data.instance.timestampEmployee(employee, function(stamped) {
+    if(user != null) {
+      event.data.instance.timestampUser(user, function(stamped) {
         event.data.instance.clearInput();
         event.data.instance.view.hide();
         event.data.instance.notifyObservers();
@@ -35,15 +35,15 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  setEmployees: function(employees) {
-    $('select#employee', this.view).empty();
-    for(employee in employees) {
-      $('select#employee', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].token));
+  setUsers: function(users) {
+    $('select#user', this.view).empty();
+    for(user in users) {
+      $('select#user', this.view).append($('<option></option>').html(users[user].token).val(users[user].token));
     }
   },
   
-  timestampEmployee: function(employee, callback) {
-    if(employee.stamp()) {
+  timestampUser: function(user, callback) {
+    if(user.stamp()) {
       callback(true);
     } else {
       callback(false);

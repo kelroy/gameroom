@@ -4,17 +4,17 @@
 
 var TimeclockOverviewChartLineController = new JS.Class(ViewController, {
   
-  initialize: function(view, employee) {
+  initialize: function(view, user) {
     this.callSuper();
-    this.canvas = new TimeclockOverviewChartCanvasController($('canvas', this.view), employee);
-    this.setName(employee);
+    this.canvas = new TimeclockOverviewChartCanvasController($('canvas', this.view), user);
+    this.setName(user);
   },
   
   update: function() {
     this.canvas.draw();
   },
   
-  setName: function(employee) {
-    $('h3', this.view).html(employee.token);
+  setName: function(user) {
+    $('h3', this.view).html(user.token);
   }
 });

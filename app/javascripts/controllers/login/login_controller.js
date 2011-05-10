@@ -21,10 +21,10 @@ var LoginController = new JS.Class(FormController, {
   onLogin: function(event) {
     username = $('input#username', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.authenticate(username, password);
+    user = User.authenticate(username, password);
     
-    if(employee != null) {
-      event.data.instance.notifyObservers(employee);
+    if(user != null) {
+      event.data.instance.notifyObservers(user);
       event.data.instance.reset();
     }
     event.preventDefault();

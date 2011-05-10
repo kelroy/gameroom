@@ -2,8 +2,8 @@
 //= require "../view_controller"
 //= require "../section_controller"
 //= require "../date_controller"
-//= require "../../models/employee"
-//= require "timeclock_admin_employee_controller"
+//= require "../../models/user"
+//= require "timeclock_admin_user_controller"
 //= require "timeclock_admin_timecards_controller"
 
 var TimeclockAdminController = new JS.Class(ViewController, {
@@ -11,18 +11,18 @@ var TimeclockAdminController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.employee = null;
+    this.user = null;
     this.date = new Date();
     
     this.admin_date_controller = new DateController('form#timeclock_admin_date');
-    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#timeclock_admin_employee');
+    this.admin_user_controller = new TimeclockAdminUserController('form#timeclock_admin_user');
     this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#timeclock_admin_timecards');
     this.admin_section_controller = new SectionController('ul#timeclock_admin_nav', [
       this.admin_timecards_controller
     ]);
     
     this.admin_date_controller.addObserver(this.updateDate, this);
-    this.admin_employee_controller.addObserver(this.updateEmployee, this);
+    this.admin_user_controller.addObserver(this.updateUser, this);
   },
   
   reset: function() {
@@ -32,24 +32,24 @@ var TimeclockAdminController = new JS.Class(ViewController, {
   
   show: function() {
     this.callSuper();
-    this.updateTimecards(this.date, this.employee);
+    this.updateTimecards(this.date, this.user);
   },
   
-  setEmployees: function(employees) {
-    this.admin_employee_controller.setEmployees(employees);
+  setUsers: function(users) {
+    this.admin_user_controller.setUsers(users);
   },
   
   updateDate: function(date) {
     this.date = date;
-    this.updateTimecards(this.date, this.employee);
+    this.updateTimecards(this.date, this.user);
   },
   
-  updateEmployee: function(employee) {
-    this.employee = employee;
-    this.updateTimecards(this.date, this.employee);
+  updateUser: function(user) {
+    this.user = user;
+    this.updateTimecards(this.date, this.user);
   },
   
-  updateTimecards: function(date, employee) {
-    this.admin_timecards_controller.update(date, employee);
+  updateTimecards: function(date, user) {
+    this.admin_timecards_controller.update(date, user);
   }
 });

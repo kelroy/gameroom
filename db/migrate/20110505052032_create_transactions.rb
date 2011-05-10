@@ -5,7 +5,7 @@ class CreateTransactions < ActiveRecord::Migration
       t.integer :store_id
       t.integer :till_id
       t.integer :customer_id
-      t.integer :employee_id
+      t.integer :user_id
       t.string :payments
       t.decimal :tax_rate
       t.boolean :complete

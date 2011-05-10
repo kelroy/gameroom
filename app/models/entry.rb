@@ -5,7 +5,7 @@ class Entry < ActiveRecord::Base
   
   belongs_to              :account
   belongs_to              :till
-  belongs_to              :employee
+  belongs_to              :user
   
   private
   

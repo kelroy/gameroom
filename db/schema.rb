@@ -32,24 +32,10 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
     t.datetime "updated_at"
   end
 
-  create_table "employees", :force => true do |t|
-    t.integer  "account_id"
-    t.integer  "person_id"
-    t.string   "title"
-    t.string   "token"
-    t.string   "password_hash"
-    t.string   "password_salt"
-    t.integer  "rate"
-    t.boolean  "administrator"
-    t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
   create_table "entries", :force => true do |t|
     t.integer  "account_id"
     t.integer  "till_id"
-    t.integer  "employee_id"
+    t.integer  "user_id"
     t.string   "title"
     t.string   "description"
     t.datetime "time"
@@ -124,7 +110,7 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
 
   create_table "shifts", :force => true do |t|
     t.integer  "account_id"
-    t.integer  "employee_id"
+    t.integer  "user_id"
     t.string   "title"
     t.string   "description"
     t.datetime "begin"
@@ -159,7 +145,7 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
 
   create_table "timecards", :force => true do |t|
     t.integer  "account_id"
-    t.integer  "employee_id"
+    t.integer  "user_id"
     t.datetime "begin"
     t.datetime "end"
     t.datetime "created_at"
@@ -171,7 +157,7 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
     t.integer  "store_id"
     t.integer  "till_id"
     t.integer  "customer_id"
-    t.integer  "employee_id"
+    t.integer  "user_id"
     t.string   "payments"
     t.decimal  "tax_rate"
     t.boolean  "complete"
@@ -185,6 +171,20 @@ ActiveRecord::Schema.define(:version => 20110505052123) do
     t.integer  "item_id"
     t.integer  "location_id"
     t.decimal  "condition"
+    t.boolean  "active"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "users", :force => true do |t|
+    t.integer  "account_id"
+    t.integer  "person_id"
+    t.string   "title"
+    t.string   "token"
+    t.string   "password_hash"
+    t.string   "password_salt"
+    t.integer  "rate"
+    t.boolean  "administrator"
     t.boolean  "active"
     t.datetime "created_at"
     t.datetime "updated_at"

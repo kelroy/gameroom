@@ -61,7 +61,7 @@ var TillsAuditController = new JS.Class(ViewController, {
 
     Entry.create({
       till_id: event.data.instance.till.id,
-      employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
+      user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
       title: 'Audit - ' + new Date(),
       description: '',
       amount: amount

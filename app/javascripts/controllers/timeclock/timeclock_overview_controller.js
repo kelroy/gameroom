@@ -1,7 +1,7 @@
 //= require "../../sectionable"
 //= require "../view_controller"
 //= require "../section_controller"
-//= require "../../models/employee"
+//= require "../../models/user"
 //= require "timeclock_clock_in_out_controller"
 //= require "timeclock_overview_in_controller"
 //= require "timeclock_overview_out_controller"
@@ -62,28 +62,28 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
     event.preventDefault();
   },
   
-  setEmployees: function(employees) {
-    this.clock_in_out_controller.setEmployees(employees);
+  setUsers: function(users) {
+    this.clock_in_out_controller.setUsers(users);
   },
   
-  findEmployees: function() {
-    employees_in = Employee._in();
-    employees_out = Employee._out();
-    return { employees_in: employees_in, employees_out: employees_out }
+  findUsers: function() {
+    users_in = User._in();
+    users_out = User._out();
+    return { users_in: users_in, users_out: users_out }
   },
   
   updateCharts: function() {
-    employees_in_lines = [];
-    employees_out_lines = [];
-    employees = this.findEmployees();
-    for(employee in employees.employees_in) {
-      employees_in_lines.push(new TimeclockOverviewChartLineController(this.overview_in_controller.line.clone(), employees.employees_in[employee]));
+    users_in_lines = [];
+    users_out_lines = [];
+    users = this.findUsers();
+    for(user in users.users_in) {
+      users_in_lines.push(new TimeclockOverviewChartLineController(this.overview_in_controller.line.clone(), users.users_in[user]));
     }
-    for(employee in employees.employees_out) {
-      employees_out_lines.push(new TimeclockOverviewChartLineController(this.overview_out_controller.line.clone(), employees.employees_out[employee]));
+    for(user in users.users_out) {
+      users_out_lines.push(new TimeclockOverviewChartLineController(this.overview_out_controller.line.clone(), users.users_out[user]));
     }
-    this.overview_in_controller.setLines(employees_in_lines);
-    this.overview_out_controller.setLines(employees_out_lines);
+    this.overview_in_controller.setLines(users_in_lines);
+    this.overview_out_controller.setLines(users_out_lines);
     this.updateCanvas();
   },
   

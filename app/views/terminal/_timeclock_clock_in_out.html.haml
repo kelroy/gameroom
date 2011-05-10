@@ -3,8 +3,8 @@
   %form{:action => '#timeclock_clock_in_out', :id => 'timeclock_clock_in_out', :method => 'get'}
     %ul
       %li
-        = label_tag :employee
-        = select_tag :employee, options_for_select([])
+        = label_tag :user
+        = select_tag :user, options_for_select([])
     %ul
       %li
         = label_tag :password, "PIN"

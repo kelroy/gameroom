@@ -2,7 +2,7 @@ class CreateTimecards < ActiveRecord::Migration
   def self.up
     create_table :timecards do |t|
       t.integer :account_id
-      t.integer :employee_id
+      t.integer :user_id
       t.datetime :begin
       t.datetime :end
 

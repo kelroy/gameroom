@@ -21,8 +21,8 @@ var TransactionsSessionController = new JS.Class({
     this.till_controller.view.hide();
   },
   
-  activate: function(employee) {
-    this.updateEmployee(employee);
+  activate: function(user) {
+    this.updateUser(user);
     this.transactions_controller.view.show();
   },
   
@@ -35,12 +35,12 @@ var TransactionsSessionController = new JS.Class({
     this.receipt_controller.view.show();
   },
   
-  updateEmployee: function(employee) {
-    this.employee = employee;
+  updateUser: function(user) {
+    this.user = user;
   },
   
   updateTill: function(till) {
-    this.transactions_controller.newTransactions(till.id, this.employee.id);
+    this.transactions_controller.newTransactions(till.id, this.user.id);
     this.transactions_controller.transactions_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transactions_controller.view.show();

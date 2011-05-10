@@ -18,7 +18,7 @@ unless Rails.env.production?
   end
   
   customers = []
-  employees = []
+  users = []
   (1..20).each do
     first = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
     middle = (1..(rand(9) + 1)).map{ ('a'..'z').to_a[rand(26)] }.join.capitalize
@@ -30,14 +30,14 @@ unless Rails.env.production?
     person.save
     
     customer = Factory.create(:customer, :account => account, :person => person, :credit => (rand(9999) + 1), :notes => 'Lorem Ipsum...', :active => rand(2).even?)
-    employee = Factory.create(:employee, :account => account, :person => person, :rate => (rand(19) + 1), :administrator => rand(2).even?)
+    user = Factory.create(:user, :account => account, :person => person, :rate => (rand(19) + 1), :administrator => rand(2).even?)
     (1..(rand(99) + 1)).each do
-      employee.stamp()
-      Factory.create(:shift, :account => account, :employee => employee)
+      user.stamp()
+      Factory.create(:shift, :account => account, :user => user)
     end
     
     customers.push(customer)
-    employees.push(employee)
+    users.push(user)
   end
   
   first = 'Joe'
@@ -49,16 +49,16 @@ unless Rails.env.production?
   person.phones = ['444-5555']
   person.save
   
-  employee = Factory.create(:employee, :account => account, :person => person, :token => 'login', :rate => (rand(19) + 1), :administrator => rand(2).even?)
+  user = Factory.create(:user, :account => account, :person => person, :token => 'login', :rate => (rand(19) + 1), :administrator => rand(2).even?)
   (1..(rand(99) + 1)).each do
-    employee.stamp()
-    Factory.create(:shift, :account => account, :employee => employee)
+    user.stamp()
+    Factory.create(:shift, :account => account, :user => user)
   end
   
   tills = []
   (1..3).each do |n|
     till = Factory.create(:till, :account => account, :store => store, :title => "Till #{n}", :retainable => true, :active => true)
-    till.entries << Factory.create(:entry, :account => account, :till => till, :employee => Employee.first, :title => 'Audit', :amount => 50000)
+    till.entries << Factory.create(:entry, :account => account, :till => till, :user => User.first, :title => 'Audit', :amount => 50000)
     tills.push(till)
   end
 
@@ -92,7 +92,7 @@ unless Rails.env.production?
   end
   
   (1..100).each do |n|
-    transaction = Factory.create(:transaction, :account => account, :store => store, :till => tills[rand(2)], :customer => customers[rand(19)], :employee => employees[rand(19)], :tax_rate => 0.07)
+    transaction = Factory.create(:transaction, :account => account, :store => store, :till => tills[rand(2)], :customer => customers[rand(19)], :user => users[rand(19)], :tax_rate => 0.07)
     
     (1..(rand(9) + 1)).each do |n|
       if rand(2).even?

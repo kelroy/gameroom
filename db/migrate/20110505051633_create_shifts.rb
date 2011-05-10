@@ -2,7 +2,7 @@ class CreateShifts < ActiveRecord::Migration
   def self.up
     create_table :shifts do |t|
       t.integer :account_id
-      t.integer :employee_id
+      t.integer :user_id
       t.string :title
       t.string :description
       t.datetime :begin

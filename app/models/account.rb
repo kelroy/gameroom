@@ -10,7 +10,7 @@ class Account < ActiveRecord::Base
   after_initialize          :_default
   
   has_many :customers, :dependent => :delete_all
-  has_many :employees, :dependent => :delete_all
+  has_many :users, :dependent => :delete_all
   has_many :entries, :dependent => :delete_all
   has_many :items, :dependent => :delete_all
   has_many :lines, :dependent => :delete_all

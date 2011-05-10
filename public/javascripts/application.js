@@ -18,12 +18,12 @@ var TerminalNavController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    $('li#terminal_nav_employee', this.view).html('');
+    $('li#terminal_nav_user', this.view).html('');
     this.view.hide();
   },
 
-  update: function(employee) {
-    $('li#terminal_nav_employee', this.view).html(employee.token);
+  update: function(user) {
+    $('li#terminal_nav_user', this.view).html(user.token);
     this.view.show();
   },
 
@@ -94,10 +94,10 @@ var LoginController = new JS.Class(FormController, {
   onLogin: function(event) {
     username = $('input#username', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.authenticate(username, password);
+    user = User.authenticate(username, password);
 
-    if(employee != null) {
-      event.data.instance.notifyObservers(employee);
+    if(user != null) {
+      event.data.instance.notifyObservers(user);
       event.data.instance.reset();
     }
     event.preventDefault();
@@ -115,7 +115,7 @@ var DashboardController = new JS.Class(ViewController, {
     $('a.tills', this.view).bind('click', {instance: this}, this.onTills);
     $('a.inventory', this.view).bind('click', {instance: this}, this.onInventory);
     $('a.reports', this.view).bind('click', {instance: this}, this.onReports);
-    $('a.employees', this.view).bind('click', {instance: this}, this.onEmployees);
+    $('a.users', this.view).bind('click', {instance: this}, this.onUsers);
   },
 
   activate: function() {
@@ -151,8 +151,8 @@ var DashboardController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  onEmployees: function(event) {
-    event.data.instance.notifyObservers('employees');
+  onUsers: function(event) {
+    event.data.instance.notifyObservers('users');
     event.preventDefault();
   },
 });
@@ -854,7 +854,7 @@ var Model = new JS.Class({
           console.error('Error Thrown: ' + errorThrown);
           console.log(XMLHttpRequest);
         },
-        employeename: 'x',
+        username: 'x',
         password: 'x'
       });
     }
@@ -928,9 +928,9 @@ var Model = new JS.Class({
   }
 });
 
-var Employee = new JS.Class(Model, {
+var User = new JS.Class(Model, {
   extend: {
-    resource: 'employee',
+    resource: 'user',
     columns: ['id', 'person_id', 'title', 'token', 'password', 'password_confirmation', 'rate', 'administrator', 'active'],
     belongs_to: ['person'],
     has_many: ['tills', 'timecards'],
@@ -991,7 +991,7 @@ var Person = new JS.Class(Model, {
   extend: {
     resource: 'person',
     columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth', 'addresses', 'emails', 'phones'],
-    has_one: ['customer', 'employee']
+    has_one: ['customer', 'user']
   }
 });
 
@@ -1842,7 +1842,7 @@ var Till = new JS.Class(Model, {
   extend: {
     resource: 'till',
     columns: ['id', 'title', 'description', 'minimum_transfer', 'minimum_balance', 'retainable', 'active'],
-    has_many: ['entries', 'transactions', 'employees']
+    has_many: ['entries', 'transactions', 'users']
   },
 
   balance: function() {
@@ -1858,8 +1858,8 @@ var Till = new JS.Class(Model, {
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
-    columns: ['id', 'till_id', 'customer_id', 'employee_id', 'tax_rate', 'complete', 'locked'],
-    belongs_to: ['customer', 'till', 'employee'],
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
+    belongs_to: ['customer', 'till', 'user'],
     has_many: ['lines']
   },
 
@@ -2613,7 +2613,7 @@ var TransactionsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.till_id = null;
-    this.employee_id = null;
+    this.user_id = null;
     this.transaction = null;
 
     this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
@@ -2652,12 +2652,12 @@ var TransactionsController = new JS.Class(ViewController, {
   },
 
   onReset: function(event) {
-    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.employee_id);
+    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.user_id);
     event.preventDefault();
   },
 
-  updateEmployee: function(employee) {
-    this.employee_id = employee.id;
+  updateUser: function(user) {
+    this.user_id = user.id;
   },
 
   updateCustomer: function(customer) {
@@ -2720,11 +2720,11 @@ var TransactionsController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
 
-  newTransactions: function(till_id, employee_id) {
+  newTransactions: function(till_id, user_id) {
     this.reset();
     this.till_id = till_id;
-    this.employee_id = employee_id;
-    this.setTransactions(new Transactions({employee_id: employee_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
+    this.user_id = user_id;
+    this.setTransactions(new Transactions({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
   },
 
   setTransactions: function(transaction) {
@@ -2775,7 +2775,7 @@ var TransactionsController = new JS.Class(ViewController, {
       if(till_adjustment != 0) {
         entry = new Entry({
           till_id: this.till_id,
-          employee_id: this.employee_id,
+          user_id: this.user_id,
           title: 'Transactions: ' + this.transaction.id,
           amount: till_adjustment
         });
@@ -2785,7 +2785,7 @@ var TransactionsController = new JS.Class(ViewController, {
       }
 
       this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-      this.newTransactions(this.till_id, this.employee_id);
+      this.newTransactions(this.till_id, this.user_id);
     }
   }
 });
@@ -3175,7 +3175,7 @@ var TillsAuditController = new JS.Class(ViewController, {
 
     Entry.create({
       till_id: event.data.instance.till.id,
-      employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
+      user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
       title: 'Audit - ' + new Date(),
       description: '',
       amount: amount
@@ -3391,12 +3391,12 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
   },
 
   doClockInOut: function(event) {
-    username = $('select#employee', event.data.instance.view).val();
+    username = $('select#user', event.data.instance.view).val();
     password = $('input#password', event.data.instance.view).val();
-    employee = Employee.authenticate(username, password);
+    user = User.authenticate(username, password);
 
-    if(employee != null) {
-      event.data.instance.timestampEmployee(employee, function(stamped) {
+    if(user != null) {
+      event.data.instance.timestampUser(user, function(stamped) {
         event.data.instance.clearInput();
         event.data.instance.view.hide();
         event.data.instance.notifyObservers();
@@ -3415,15 +3415,15 @@ var TimeclockClockInOutController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  setEmployees: function(employees) {
-    $('select#employee', this.view).empty();
-    for(employee in employees) {
-      $('select#employee', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].token));
+  setUsers: function(users) {
+    $('select#user', this.view).empty();
+    for(user in users) {
+      $('select#user', this.view).append($('<option></option>').html(users[user].token).val(users[user].token));
     }
   },
 
-  timestampEmployee: function(employee, callback) {
-    if(employee.stamp()) {
+  timestampUser: function(user, callback) {
+    if(user.stamp()) {
       callback(true);
     } else {
       callback(false);
@@ -3568,8 +3568,8 @@ var TimeclockOverviewOutController = new JS.Class(TimeclockOverviewChartControll
 var Timecard = new JS.Class(Model, {
   extend: {
     resource: 'timecard',
-    columns: ['id', 'employee_id', 'begin', 'end'],
-    belongs_to: ['employee']
+    columns: ['id', 'user_id', 'begin', 'end'],
+    belongs_to: ['user']
   }
 });
 /*
@@ -4314,9 +4314,9 @@ Date.prototype.setISO8601 = function(dString){
 
 var TimeclockOverviewChartCanvasController = new JS.Class(ViewController, {
 
-  initialize: function(view, employee) {
+  initialize: function(view, user) {
     this.callSuper();
-    this.employee = employee;
+    this.user = user;
     this.timecards = [];
 
     $(this.view).bind('click', {instance: this}, this.onClick);
@@ -4356,32 +4356,32 @@ var TimeclockOverviewChartCanvasController = new JS.Class(ViewController, {
   },
 
   onClick: function(event) {
-    event.data.instance.timecards = event.data.instance._findTimecards(event.data.instance.employee);
+    event.data.instance.timecards = event.data.instance._findTimecards(event.data.instance.user);
     event.data.instance.draw();
   },
 
-  _findTimecards: function(employee) {
+  _findTimecards: function(user) {
     day_begin = new Date();
     day_end = new Date();
     day_end.setDate(day_begin.getDate() + 1);
-    return Timecard.where('employee_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [employee.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
+    return Timecard.where('user_id = ? AND ((begin >= ? AND begin <= ?) OR (end >= ? AND end <= ?) OR (end IS NULL))', [user.id, day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59'), day_begin.strftime('%Y-%m-%d 05:00:00'), day_end.strftime('%Y-%m-%d 04:59:59')], 1, 100);
   }
 });
 
 var TimeclockOverviewChartLineController = new JS.Class(ViewController, {
 
-  initialize: function(view, employee) {
+  initialize: function(view, user) {
     this.callSuper();
-    this.canvas = new TimeclockOverviewChartCanvasController($('canvas', this.view), employee);
-    this.setName(employee);
+    this.canvas = new TimeclockOverviewChartCanvasController($('canvas', this.view), user);
+    this.setName(user);
   },
 
   update: function() {
     this.canvas.draw();
   },
 
-  setName: function(employee) {
-    $('h3', this.view).html(employee.token);
+  setName: function(user) {
+    $('h3', this.view).html(user.token);
   }
 });
 
@@ -4440,28 +4440,28 @@ var TimeclockOverviewController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  setEmployees: function(employees) {
-    this.clock_in_out_controller.setEmployees(employees);
+  setUsers: function(users) {
+    this.clock_in_out_controller.setUsers(users);
   },
 
-  findEmployees: function() {
-    employees_in = Employee._in();
-    employees_out = Employee._out();
-    return { employees_in: employees_in, employees_out: employees_out }
+  findUsers: function() {
+    users_in = User._in();
+    users_out = User._out();
+    return { users_in: users_in, users_out: users_out }
   },
 
   updateCharts: function() {
-    employees_in_lines = [];
-    employees_out_lines = [];
-    employees = this.findEmployees();
-    for(employee in employees.employees_in) {
-      employees_in_lines.push(new TimeclockOverviewChartLineController(this.overview_in_controller.line.clone(), employees.employees_in[employee]));
+    users_in_lines = [];
+    users_out_lines = [];
+    users = this.findUsers();
+    for(user in users.users_in) {
+      users_in_lines.push(new TimeclockOverviewChartLineController(this.overview_in_controller.line.clone(), users.users_in[user]));
     }
-    for(employee in employees.employees_out) {
-      employees_out_lines.push(new TimeclockOverviewChartLineController(this.overview_out_controller.line.clone(), employees.employees_out[employee]));
+    for(user in users.users_out) {
+      users_out_lines.push(new TimeclockOverviewChartLineController(this.overview_out_controller.line.clone(), users.users_out[user]));
     }
-    this.overview_in_controller.setLines(employees_in_lines);
-    this.overview_out_controller.setLines(employees_out_lines);
+    this.overview_in_controller.setLines(users_in_lines);
+    this.overview_out_controller.setLines(users_out_lines);
     this.updateCanvas();
   },
 
@@ -4527,28 +4527,28 @@ var DateController = new JS.Class(ViewController, {
   }
 });
 
-var TimeclockAdminEmployeeController = new JS.Class(ViewController, {
+var TimeclockAdminUserController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    $('select', this.view).bind('change', {instance: this}, this.onEmployee);
+    $('select', this.view).bind('change', {instance: this}, this.onUser);
   },
 
-  setEmployees: function(employees) {
+  setUsers: function(users) {
     $('select', this.view).empty();
     $('select', this.view).append($('<option></option>'));
-    for(employee in employees) {
-      $('select', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].id));
+    for(user in users) {
+      $('select', this.view).append($('<option></option>').html(users[user].token).val(users[user].id));
     }
   },
 
-  onEmployee: function(event) {
+  onUser: function(event) {
     id = parseInt($('select', event.data.instance.view).val());
     console.log(id);
     if(!isNaN(id)) {
-      event.data.instance.notifyObservers(Employee.find(id));
+      event.data.instance.notifyObservers(User.find(id));
     }
     event.preventDefault();
   }
@@ -4593,7 +4593,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   initialize: function(view) {
     this.callSuper();
     this.date = null;
-    this.employee = null;
+    this.user = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.timecard = $('li.timeclock_timecards_line', this.view).detach();
@@ -4606,23 +4606,23 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
 
   reset: function() {
     this.date = null;
-    this.employee = null;
+    this.user = null;
     this.timecards = [];
     this.timecard_controllers = [];
     this.clearTimecards();
   },
 
-  update: function(date, employee) {
+  update: function(date, user) {
     this.date = date;
-    this.employee = employee;
+    this.user = user;
     this.loadTimecards();
   },
 
   loadTimecards: function() {
-    if(this.employee != null) {
+    if(this.user != null) {
       tomorrow = new Date();
       tomorrow.setDate(this.date.getDate() + 1);
-      this.setTimecards(Timecard.where('employee_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.employee.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
+      this.setTimecards(Timecard.where('user_id = ? AND begin >= ? AND begin <= ? AND end IS NOT NULL', [this.user.id, this.date.strftime('%Y-%m-%d 05:00:00'), tomorrow.strftime('%Y-%m-%d 04:59:59')]), 1, 100);
     } else {
       this.setTimecards([]);
     }
@@ -4662,7 +4662,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
 
   updateTimecard: function(timecard) {
     if(timecard != undefined) {
-      this.timecard_controller.setEmployee(this.employee);
+      this.timecard_controller.setUser(this.user);
       this.timecard_controller.setTimecard(timecard);
       this.timecard_controller.view.show();
     } else {
@@ -4671,7 +4671,7 @@ var TimeclockAdminTimecardsController = new JS.Class(ViewController, {
   },
 
   onAdd: function(event) {
-    event.data.instance.timecard_controller.setEmployee(event.data.instance.employee);
+    event.data.instance.timecard_controller.setUser(event.data.instance.user);
     event.data.instance.timecard_controller.setTimecard(null);
     event.data.instance.timecard_controller.view.show();
     event.preventDefault();
@@ -4691,18 +4691,18 @@ var TimeclockAdminController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.employee = null;
+    this.user = null;
     this.date = new Date();
 
     this.admin_date_controller = new DateController('form#timeclock_admin_date');
-    this.admin_employee_controller = new TimeclockAdminEmployeeController('form#timeclock_admin_employee');
+    this.admin_user_controller = new TimeclockAdminUserController('form#timeclock_admin_user');
     this.admin_timecards_controller = new TimeclockAdminTimecardsController('div#timeclock_admin_timecards');
     this.admin_section_controller = new SectionController('ul#timeclock_admin_nav', [
       this.admin_timecards_controller
     ]);
 
     this.admin_date_controller.addObserver(this.updateDate, this);
-    this.admin_employee_controller.addObserver(this.updateEmployee, this);
+    this.admin_user_controller.addObserver(this.updateUser, this);
   },
 
   reset: function() {
@@ -4712,25 +4712,25 @@ var TimeclockAdminController = new JS.Class(ViewController, {
 
   show: function() {
     this.callSuper();
-    this.updateTimecards(this.date, this.employee);
+    this.updateTimecards(this.date, this.user);
   },
 
-  setEmployees: function(employees) {
-    this.admin_employee_controller.setEmployees(employees);
+  setUsers: function(users) {
+    this.admin_user_controller.setUsers(users);
   },
 
   updateDate: function(date) {
     this.date = date;
-    this.updateTimecards(this.date, this.employee);
+    this.updateTimecards(this.date, this.user);
   },
 
-  updateEmployee: function(employee) {
-    this.employee = employee;
-    this.updateTimecards(this.date, this.employee);
+  updateUser: function(user) {
+    this.user = user;
+    this.updateTimecards(this.date, this.user);
   },
 
-  updateTimecards: function(date, employee) {
-    this.admin_timecards_controller.update(date, employee);
+  updateTimecards: function(date, user) {
+    this.admin_timecards_controller.update(date, user);
   }
 });
 
@@ -4756,11 +4756,11 @@ var TimeclockController = new JS.Class(ViewController, {
   },
 
   activate: function() {
-    employees = Employee.all();
+    users = User.all();
 
     this.view.show();
-    this.overview_controller.setEmployees(employees);
-    this.admin_controller.setEmployees(employees);
+    this.overview_controller.setUsers(users);
+    this.admin_controller.setUsers(users);
     this.section_controller.view.show();
 
     this.overview_controller.updateClock();
@@ -4774,20 +4774,20 @@ var TimeclockController = new JS.Class(ViewController, {
   }
 });
 
-var EmployeesOverviewFormController = new JS.Class(FormController, {
+var UsersOverviewFormController = new JS.Class(FormController, {
 
-  update: function(employee) {
+  update: function(user) {
     this.reset();
 
-    $('input#id', this.view).val(employee.id);
-    $('input#token', this.view).val(employee.token);
-    $('input#password', this.view).val(employee.password);
-    $('input#administrator', this.view).attr('checked', employee.administrator);
-    $('input#active', this.view).attr('checked', employee.active);
-    $('input#title', this.view).val(employee.title);
-    $('input#rate', this.view).val(Currency.format(employee.rate));
+    $('input#id', this.view).val(user.id);
+    $('input#token', this.view).val(user.token);
+    $('input#password', this.view).val(user.password);
+    $('input#administrator', this.view).attr('checked', user.administrator);
+    $('input#active', this.view).attr('checked', user.active);
+    $('input#title', this.view).val(user.title);
+    $('input#rate', this.view).val(Currency.format(user.rate));
 
-    person = employee.person();
+    person = user.person();
     if(person != undefined) {
       $('input#first_name', this.view).val(person.first_name);
       $('input#last_name', this.view).val(person.last_name);
@@ -4822,20 +4822,20 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
   save: function() {
     if(this.valid()) {
       if($('input#id', this.view).val() > 0) {
-        employee = Employee.find($('input#id', this.view).val());
-        employee.token = $('input#token', this.view).val();
-        employee.title = $('input#title', this.view).val();
-        employee.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
+        user = User.find($('input#id', this.view).val());
+        user.token = $('input#token', this.view).val();
+        user.title = $('input#title', this.view).val();
+        user.rate = parseInt(Currency.toPennies($('input#rate', this.view).val()));
         if($('input#password', this.view).val() != '') {
-          employee.password = $('input#password', this.view).val();
-          employee.password_confirmation = $('input#password_confirmation', this.view).val();
+          user.password = $('input#password', this.view).val();
+          user.password_confirmation = $('input#password_confirmation', this.view).val();
         }
-        employee.administrator = $('input#administrator', this.view).is(':checked');
-        employee.active = $('input#active', this.view).is(':checked');
-        employee.save();
+        user.administrator = $('input#administrator', this.view).is(':checked');
+        user.active = $('input#active', this.view).is(':checked');
+        user.save();
 
-        if(employee != undefined) {
-          person = employee.person();
+        if(user != undefined) {
+          person = user.person();
           if(person != undefined) {
             date_of_birth_year = $('select#date_of_birth_year', this.view).val();
             date_of_birth_month = $('select#date_of_birth_month', this.view).val() - 1;
@@ -4869,7 +4869,7 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
         });
         person.save();
 
-        employee = new Employee({
+        user = new User({
           token: $('input#token', this.view).val(),
           password: $('input#password', this.view).val(),
           password_confirmation: $('input#password_confirmation', this.view).val(),
@@ -4878,9 +4878,9 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
           administrator: $('input#administrator', this.view).is(':checked'),
           active: $('input#active', this.view).is(':checked')
         });
-        employee.setPerson(person);
+        user.setPerson(person);
       }
-      if(employee.save()) {
+      if(user.save()) {
         this.notifyObservers();
         this.reset();
       }
@@ -4942,37 +4942,37 @@ var EmployeesOverviewFormController = new JS.Class(FormController, {
   }
 });
 
-var EmployeesOverviewSelectController = new JS.Class(ViewController, {
+var UsersOverviewSelectController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
 
-    $('select', this.view).bind('change', {instance: this}, this.onEmployee);
+    $('select', this.view).bind('change', {instance: this}, this.onUser);
   },
 
   reset: function() {
     $('select', this.view).val(0);
   },
 
-  setEmployees: function(employees) {
+  setUsers: function(users) {
     $('select', this.view).empty();
     $('select', this.view).append($('<option></option>'));
-    for(employee in employees) {
-      $('select', this.view).append($('<option></option>').html(employees[employee].token).val(employees[employee].id));
+    for(user in users) {
+      $('select', this.view).append($('<option></option>').html(users[user].token).val(users[user].id));
     }
   },
 
-  onEmployee: function(event) {
+  onUser: function(event) {
     id = parseInt($('select', event.data.instance.view).val());
     if(!isNaN(id)) {
-      event.data.instance.notifyObservers(Employee.find(id));
+      event.data.instance.notifyObservers(User.find(id));
     }
     event.preventDefault();
   }
 });
 
-var EmployeesOverviewEmployeeController = new JS.Class(ViewController, {
+var UsersOverviewUserController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
@@ -4983,57 +4983,57 @@ var EmployeesOverviewEmployeeController = new JS.Class(ViewController, {
   }
 });
 
-var EmployeesOverviewController = new JS.Class(ViewController, {
+var UsersOverviewController = new JS.Class(ViewController, {
   include: Sectionable,
 
   initialize: function(view) {
     this.callSuper();
-    this.employee = null;
+    this.user = null;
 
-    this.overview_select_controller = new EmployeesOverviewSelectController('form#employees_select_form');
-    this.overview_form_controller = new EmployeesOverviewFormController('form#employees_overview_employee');
-    this.overview_employee_controller = new EmployeesOverviewEmployeeController('div#employees_overview_employee');
-    this.overview_section_controller = new SectionController('ul#employees_overview_nav', [
-      this.overview_employee_controller
+    this.overview_select_controller = new UsersOverviewSelectController('form#users_select_form');
+    this.overview_form_controller = new UsersOverviewFormController('form#users_overview_user');
+    this.overview_user_controller = new UsersOverviewUserController('div#users_overview_user');
+    this.overview_section_controller = new SectionController('ul#users_overview_nav', [
+      this.overview_user_controller
     ]);
 
-    $('a.new', this.view).bind('click', {instance: this}, this.newEmployee);
+    $('a.new', this.view).bind('click', {instance: this}, this.newUser);
 
-    this.overview_form_controller.addObserver(this.updateEmployees, this);
-    this.overview_select_controller.addObserver(this.updateEmployee, this);
+    this.overview_form_controller.addObserver(this.updateUsers, this);
+    this.overview_select_controller.addObserver(this.updateUser, this);
   },
 
   reset: function() {
     this.overview_form_controller.reset();
   },
 
-  setEmployees: function(employees) {
-    this.overview_select_controller.setEmployees(employees);
+  setUsers: function(users) {
+    this.overview_select_controller.setUsers(users);
   },
 
-  updateEmployee: function(employee) {
-    this.employee = employee;
-    this.overview_form_controller.update(employee);
+  updateUser: function(user) {
+    this.user = user;
+    this.overview_form_controller.update(user);
   },
 
-  newEmployee: function(event) {
+  newUser: function(event) {
     event.data.instance.overview_select_controller.reset();
     event.data.instance.reset();
     event.preventDefault();
   },
 
-  updateEmployees: function() {
-    this.setEmployees(Employee.all());
+  updateUsers: function() {
+    this.setUsers(User.all());
   }
 });
 
-var EmployeesController = new JS.Class(ViewController, {
+var UsersController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
 
-    this.overview_controller = new EmployeesOverviewController('section#employees_overview');
-    this.section_controller = new SectionController('ul#employees_nav', [
+    this.overview_controller = new UsersOverviewController('section#users_overview');
+    this.section_controller = new SectionController('ul#users_nav', [
       this.overview_controller
     ]);
     this.reset();
@@ -5046,7 +5046,7 @@ var EmployeesController = new JS.Class(ViewController, {
 
   activate: function() {
     this.view.show();
-    this.overview_controller.setEmployees(Employee.all());
+    this.overview_controller.setUsers(User.all());
   },
 
   deactivate: function() {
@@ -5058,7 +5058,7 @@ var EmployeesController = new JS.Class(ViewController, {
 var TerminalController = new JS.Class({
 
   initialize: function() {
-    this.employee = null;
+    this.user = null;
 
     this.nav_controller = new TerminalNavController('ul#terminal_nav');
     this.login_controller = new LoginController('div#login');
@@ -5068,7 +5068,7 @@ var TerminalController = new JS.Class({
     this.reports_controller = new ReportsController('div#reports');
     this.tills_controller = new TillsController('div#tills');
     this.timeclock_controller = new TimeclockController('div#timeclock');
-    this.employees_controller = new EmployeesController('div#employees');
+    this.users_controller = new UsersController('div#users');
 
     this.nav_controller.addObserver(this.onNav, this);
     this.login_controller.addObserver(this.onLogin, this);
@@ -5088,7 +5088,7 @@ var TerminalController = new JS.Class({
     this.reports_controller.deactivate();
     this.tills_controller.deactivate();
     this.timeclock_controller.deactivate();
-    this.employees_controller.deactivate();
+    this.users_controller.deactivate();
   },
 
   onNav: function(selection) {
@@ -5099,7 +5099,7 @@ var TerminalController = new JS.Class({
         break;
       case 'logout':
         this.reset();
-        this.employee = null;
+        this.user = null;
         this.nav_controller.reset();
         this.login_controller.activate();
         break;
@@ -5108,9 +5108,9 @@ var TerminalController = new JS.Class({
     }
   },
 
-  onLogin: function(employee) {
-    this.employee = employee;
-    this.nav_controller.update(employee);
+  onLogin: function(user) {
+    this.user = user;
+    this.nav_controller.update(user);
     this.login_controller.view.hide();
     this.dashboard_controller.activate();
   },
@@ -5119,7 +5119,7 @@ var TerminalController = new JS.Class({
     this.reset()
     switch(application) {
       case 'transactions':
-        this.transactions_controller.activate(this.employee);
+        this.transactions_controller.activate(this.user);
         break;
       case 'timeclock':
         this.timeclock_controller.activate();
@@ -5133,8 +5133,8 @@ var TerminalController = new JS.Class({
       case 'reports':
         this.reports_controller.activate();
         break;
-      case 'employees':
-        this.employees_controller.activate();
+      case 'users':
+        this.users_controller.activate();
         break;
       default:
         break;
@@ -5194,7 +5194,7 @@ var TillsAdjustController = new JS.Class(ViewController, {
     if(amount != 0) {
       Entry.create({
         till_id: event.data.instance.till.id,
-        employee_id: parseInt($('ul#employee_nav li.current_employee_login').attr('data-employee-id')),
+        user_id: parseInt($('ul#user_nav li.current_user_login').attr('data-user-id')),
         title: 'Adjustment - ' + new Date(),
         description: $('textarea#description', event.data.instance.view).val(),
         amount: amount
@@ -5281,7 +5281,7 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     $('a.tills_edit', this.view).bind('click', {instance: this}, this.onEdit);
     $('a.tills_audit', this.view).bind('click', {instance: this}, this.onAudit);
     $('a.tills_adjust', this.view).bind('click', {instance: this}, this.onAdjust);
-    $('a.tills_employees', this.view).bind('click', {instance: this}, this.onEmployees);
+    $('a.tills_users', this.view).bind('click', {instance: this}, this.onUsers);
   },
 
   set: function(till) {
@@ -5307,8 +5307,8 @@ var TillsAdminTillsTillController = new JS.Class(ViewController, {
     event.preventDefault();
   },
 
-  onEmployees: function(event) {
-    event.data.instance.notifyObservers('employees', event.data.instance.till);
+  onUsers: function(event) {
+    event.data.instance.notifyObservers('users', event.data.instance.till);
     event.preventDefault();
   }
 });
@@ -5404,15 +5404,15 @@ var TimeclockTimecardController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.employee = null;
+    this.user = null;
     this.timecard = null;
 
     $('a.close', this.view).bind('click', {instance: this}, this.onClose);
     $('a.save', this.view).bind('click', {instance: this}, this.onSave);
   },
 
-  setEmployee: function(employee) {
-    this.employee = employee;
+  setUser: function(user) {
+    this.user = user;
   },
 
   setTimecard: function(timecard) {
@@ -5484,7 +5484,7 @@ var TimeclockTimecardController = new JS.Class(ViewController, {
     end = new Date(end_year, end_month, end_day, end_hour, end_minute, end_second);
     if(event.data.instance.timecard == null) {
       timecard = Timecard.create({
-        employee_id: event.data.instance.employee.id,
+        user_id: event.data.instance.user.id,
         begin: begin,
         end: end
       });
@@ -5636,8 +5636,8 @@ var TransactionsSessionController = new JS.Class({
     this.till_controller.view.hide();
   },
 
-  activate: function(employee) {
-    this.updateEmployee(employee);
+  activate: function(user) {
+    this.updateUser(user);
     this.transactions_controller.view.show();
   },
 
@@ -5650,12 +5650,12 @@ var TransactionsSessionController = new JS.Class({
     this.receipt_controller.view.show();
   },
 
-  updateEmployee: function(employee) {
-    this.employee = employee;
+  updateUser: function(user) {
+    this.user = user;
   },
 
   updateTill: function(till) {
-    this.transactions_controller.newTransactions(till.id, this.employee.id);
+    this.transactions_controller.newTransactions(till.id, this.user.id);
     this.transactions_controller.transactions_nav_controller.update(till);
     this.till_controller.view.hide();
     this.transactions_controller.view.show();

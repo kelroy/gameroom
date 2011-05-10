@@ -5,7 +5,7 @@ class Shift < ActiveRecord::Base
   after_initialize        :_default
   
   belongs_to  :account
-  belongs_to  :employee
+  belongs_to  :user
   
   private
   

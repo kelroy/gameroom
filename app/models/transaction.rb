@@ -8,7 +8,7 @@ class Transaction < ActiveRecord::Base
   belongs_to  :account
   belongs_to  :till
   belongs_to  :customer
-  belongs_to  :employee
+  belongs_to  :user
   belongs_to  :store
   has_many    :lines
   has_many    :items,    :through => :lines

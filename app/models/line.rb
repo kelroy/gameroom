@@ -38,7 +38,7 @@ class Line < ActiveRecord::Base
     self.price      ||= 0 if new_record?
     self.credit     ||= 0 if new_record?
     self.cash       ||= 0 if new_record?
-    self.purchase   ||= true if new_record?
-    self.taxable    ||= true if new_record?
+    self.purchase   = true if new_record? && self.purchase.nil?
+    self.taxable    = true if new_record? && self.taxable.nil?
   end
 end

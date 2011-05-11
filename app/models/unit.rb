@@ -13,6 +13,6 @@ class Unit < ActiveRecord::Base
   
   def _default
     self.condition  ||= 1 if new_record?
-    self.active     ||= true if new_record?
+    self.active     = true if new_record? && self.active.nil?
   end
 end

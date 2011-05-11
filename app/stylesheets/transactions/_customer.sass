@@ -1,7 +1,7 @@
-section#customer
+section#transactions_customer
   
-  div#customer_header  
-    div#customer_search
+  div#transactions_customer_header  
+    div#transactions_customer_search
       float: left
       width: 598px
       margin: 20px 0px
@@ -34,25 +34,25 @@ section#customer
             font-size: 20px
             border: none
   
-  div#customer_pages
+  div#transactions_customer_pages
       
-    div#customer_review
-      h2#customer_notice
+    div#transactions_customer_review
+      h2#transactions_customer_notice
         font-size: 20px
         text-align: center
         margin: 20px 0px
         
-      div#customer_data
+      div#transactions_customer_data
         display: none
         
-        div#customer_left
+        div#transactions_customer_left
           float: left
           
           h3
             font-size: 24px
             margin-bottom: 20px
             
-          div.customer_data_block
+          div.transactions_customer_data_block
             margin-bottom: 10px
             
             &:last-child
@@ -73,13 +73,13 @@ section#customer
                 display: block
                 background-color: $lighter_gray
             
-        div#customer_right
+        div#transactions_customer_right
           float: right
             
-          div#customer_history
+          div#transactions_customer_history
             display: none
             
-          div.customer_important
+          div.transactions_customer_important
             margin-bottom: 10px
             padding: 10px
             max-height: 400px
@@ -98,18 +98,21 @@ section#customer
               tr:hover
                 cursor: default
         
-    div#customer_form
+    div#transactions_customer_form
       ul:last-child
         li
           margin-bottom: 0px
+          
+      input#address
+        width: 496px
       
-    div#customer_search_results
+    div#transactions_customer_search_results
       display: none
       
       table
         display: none
 
-      h2#customer_search_results_notice
+      h2#transactions_customer_search_results_notice
         clear: both
         font-size: 20px
         text-align: center

@@ -1,5 +1,5 @@
-%div{:id => 'cart_header', :class => 'header_container'}
-  %div{:id => 'cart_search'}
+%div{:id => 'transactions_cart_header', :class => 'header_container'}
+  %div{:id => 'transactions_cart_search'}
     %ul{:class => 'alphabet_nav'}
       - ('A'..'Z').each do |letter|
         %li
@@ -11,18 +11,18 @@
         %a{:href => '#next', :class => 'button next'} >
         %a{:href => '#prev', :class => 'button prev'} <
         %img{:src => 'images/loading.gif', :alt => 'Loading...', :class => 'loading'}
-  %h2{:id => 'cart_summary'} 0 item(s): $0.00
-%ul{:id => 'cart_nav', :class => 'tab_nav'}
+  %h2{:id => 'transactions_cart_summary'} 0 item(s): $0.00
+%ul{:id => 'transactions_cart_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#cart_lines', :class => 'cart_lines selected'} Cart
+    %a{:href => '#transactions_cart_lines', :class => 'transactions_cart_lines selected'} Cart
   %li
-    %a{:href => '#cart_form', :class => 'cart_form'} Add Item(s)
+    %a{:href => '#transactions_cart_form', :class => 'transactions_cart_form'} Add Item(s)
   %li
-    %a{:href => '#cart_search_results', :class => 'cart_search_results'} Search Results
-%div{:id => 'cart_pages', :class => 'page_container'}
-  %div{:id => 'cart_lines'}
+    %a{:href => '#transactions_cart_search_results', :class => 'transactions_cart_search_results'} Search Results
+%div{:id => 'transactions_cart_pages', :class => 'page_container'}
+  %div{:id => 'transactions_cart_lines'}
     = render :partial => 'transactions_cart_lines'
-  %div{:id => 'cart_form'}
+  %div{:id => 'transactions_cart_form'}
     = render :partial => 'transactions_cart_form'
-  %div{:id => 'cart_search_results'}
-    = render :partial => 'transactions_cart_results'
+  %div{:id => 'transactions_cart_search_results'}
+    = render :partial => 'transactions_cart_search_results'

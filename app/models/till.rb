@@ -23,7 +23,7 @@ class Till < ActiveRecord::Base
   def _default
     self.minimum_transfer   ||= 0 if new_record?
     self.minimum_balance    ||= 0 if new_record?
-    self.retainable         ||= true if new_record?
-    self.active             ||= true if new_record?
+    self.retainable         = true if new_record? && self.retainable.nil?
+    self.active             = true if new_record? && self.active.nil?
   end
 end

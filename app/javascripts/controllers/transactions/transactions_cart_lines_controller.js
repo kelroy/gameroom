@@ -9,12 +9,12 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
     this.line_controllers = [];
-    this.line = $('li.cart_line', this.view).detach();
+    this.line = $('li.transactions_cart_line', this.view).detach();
     this.hideCartNav();
-    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
-    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
-    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
-    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
+    $('ul#transactions_cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('ul#transactions_cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('ul#transactions_cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#transactions_cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
   },
   
   reset: function() {
@@ -63,7 +63,7 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
       }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
-      $('ul#cart_lines', this.view).append(new_line.view);
+      $('ul#transactions_cart_lines', this.view).append(new_line.view);
     }
     if(lines.length > 0) {
       this.showCartNav();
@@ -75,7 +75,7 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
   },
   
   clearLines: function() {
-    $('ul#cart_lines > li').remove();
+    $('ul#transactions_cart_lines > li').remove();
   },
   
   updateLine: function(index, updated_line) {
@@ -117,18 +117,18 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
   },
   
   showCartNav: function() {
-    $('ul#cart_lines_nav', this.view).show();
+    $('ul#transactions_cart_lines_nav', this.view).show();
   },
   
   hideCartNav: function() {
-    $('ul#cart_lines_nav', this.view).hide();
+    $('ul#transactions_cart_lines_nav', this.view).hide();
   },
   
   showCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).show();
+    $('h2#transactions_cart_lines_notice', this.view).show();
   },
   
   hideCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).hide();
+    $('h2#transactions_cart_lines_notice', this.view).hide();
   }
 });

@@ -12,6 +12,6 @@ class Location < ActiveRecord::Base
   private
   
   def _default
-    self.active   ||= true if new_record?
+    self.active   = true if new_record? && self.active.nil?
   end
 end

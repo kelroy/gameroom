@@ -8,7 +8,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.row = $('ul.line_elements', view).first().clone();
+    this.row = $('ul.transactions_line_elements', view).first().clone();
     
     $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
@@ -21,13 +21,13 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   
   saveAll: function() {
     var controller = this;
-    $('ul.line_elements', this.view).each(function(index, value) {
+    $('ul.transactions_line_elements', this.view).each(function(index, value) {
       controller.saveLine(index);
     });
   },
   
   saveLine: function(index) {
-    new_line = $('ul.line_elements', this.view).eq(index);
+    new_line = $('ul.transactions_line_elements', this.view).eq(index);
     
     base_price = parseInt(Currency.toPennies($('input#price', new_line).val()));
     if(base_price <= 0) {
@@ -97,7 +97,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   },
   
   onLess: function(event) {
-    $('ul.line_elements', event.data.instance.view).last().remove();
+    $('ul.transactions_line_elements', event.data.instance.view).last().remove();
     event.preventDefault();
   },
   
@@ -132,7 +132,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   },
   
   onAddRow: function(event) {
-    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
+    event.data.instance.saveLine($('ul.transactions_line_elements li > a.add_row', event.data.instance.view).index(this));
     event.preventDefault();
   }
 });

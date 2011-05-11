@@ -5,7 +5,6 @@
 //= require "transactions_review_controller"
 //= require "transactions_summary_controller"
 //= require "transactions_finish_controller"
-//= require "transactions_nav_controller"
 //= require "../section_controller"
 //= require "../../models/transaction"
 //= require "../../currency"
@@ -15,13 +14,12 @@ var TransactionsController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.till_id = null;
-    this.user_id = null;
+    this.till = null;
+    this.user = null;
     this.transaction = null;
     
-    this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
-    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
     this.cart_controller = new TransactionsCartController('section#transactions_cart');
+    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
     this.payment_controller = new TransactionsPaymentController('section#transactions_payment');
     this.review_controller = new TransactionsReviewController('section#transactions_review');
     this.section_controller = new SectionController('ul#transactions_nav', [
@@ -40,27 +38,37 @@ var TransactionsController = new JS.Class(ViewController, {
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
     this.finish_controller.addObserver(this.saveTransactions, this);
-    
-    $('ul#transactions_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
   
   reset: function() {
     this.cart_controller.reset();
     this.payment_controller.reset();
     this.review_controller.reset();
-    this.section_controller.reset();
     this.summary_controller.reset();
     this.finish_controller.reset();
     this.customer_controller.reset();
+    this.section_controller.reset();
   },
   
-  onReset: function(event) {
-    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.user_id);
-    event.preventDefault();
+  activate: function(user, till) {
+    this.user = user;
+    this.till = till;
+    this.newTransaction(till, user);
+    this.summary_controller.view.show();
+    this.finish_controller.view.show();
+    this.section_controller.view.show();
+    this.view.show();
+  },
+  
+  deactivate: function() {
+    this.summary_controller.view.hide();
+    this.finish_controller.view.hide();
+    this.section_controller.view.hide();
+    this.view.hide();
   },
   
   updateUser: function(user) {
-    this.user_id = user.id;
+    this.user = user;
   },
 
   updateCustomer: function(customer) {
@@ -74,9 +82,9 @@ var TransactionsController = new JS.Class(ViewController, {
     if(this.transaction) {
       this.transaction.setLines(lines);
       if(this.transaction.subtotal() < 0) {
-        this.transaction.setPayments([new Payment({form: 'store_credit', amount: this.transaction.subtotal()})]);
+        this.transaction.payments = [{form: 'store_credit', amount: this.transaction.subtotal()}];
       } else {
-        this.transaction.setPayments([]);
+        this.transaction.payments = [];
       }
       this.notifyControllers(this.transaction);
     }
@@ -84,7 +92,7 @@ var TransactionsController = new JS.Class(ViewController, {
   
   updatePayments: function(payments) {
     if(this.transaction) {
-      this.transaction.setPayments(payments);
+      this.transaction.payments = payments;
       this.notifyControllers(this.transaction);
     }
   },
@@ -123,11 +131,9 @@ var TransactionsController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
   
-  newTransactions: function(till_id, user_id) {
+  newTransaction: function(till, user) {
     this.reset();
-    this.till_id = till_id;
-    this.user_id = user_id;
-    this.setTransactions(new Transactions({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransactions(new Transaction({user_id: user.id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
   },
   
   setTransactions: function(transaction) {
@@ -142,23 +148,21 @@ var TransactionsController = new JS.Class(ViewController, {
       
       lines = this.transaction.lines();
       for(line in lines) {
-        lines[line].transactions_id = this.transaction.id;
+        lines[line].transaction_id = this.transaction.id;
         if(!lines[line].save()) {
           console.error('Line not saved.');
         }
       }
       
-      payments = this.transaction.payments();
-      for(payment in payments) {
-        if(payments[payment].form == 'store_credit') {
-          credit_adjustment += payments[payment].amount;
-        }
-        if(payments[payment].form == 'cash') {
-          till_adjustment += payments[payment].amount;
-        }
-        payments[payment].transactions_id = this.transaction.id;
-        if(!payments[payment].save()) {
-          console.error('Payment not saved.');
+      payments = this.transaction.payments;
+      if(payments != undefined) {
+        for(payment in payments) {
+          if(payments[payment].form == 'store_credit') {
+            credit_adjustment += payments[payment].amount;
+          }
+          if(payments[payment].form == 'cash') {
+            till_adjustment += payments[payment].amount;
+          }
         }
       }
       
@@ -177,8 +181,8 @@ var TransactionsController = new JS.Class(ViewController, {
       }
       if(till_adjustment != 0) {
         entry = new Entry({
-          till_id: this.till_id,
-          user_id: this.user_id,
+          till_id: this.till.id,
+          user_id: this.user.id,
           title: 'Transactions: ' + this.transaction.id,
           amount: till_adjustment
         });
@@ -188,7 +192,7 @@ var TransactionsController = new JS.Class(ViewController, {
       }
       
       this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-      this.newTransactions(this.till_id, this.user_id);
+      this.newTransaction(this.till, this.user);
     }
   }
 });

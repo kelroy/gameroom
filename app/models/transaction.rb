@@ -95,7 +95,7 @@ class Transaction < ActiveRecord::Base
   def _default
     self.payments   ||= [] if new_record?
     self.tax_rate   ||= 0 if new_record?
-    self.complete   ||= false if new_record?
-    self.locked     ||= false if new_record?
+    self.complete   = false if new_record? && self.complete.nil?
+    self.locked     = false if new_record? && self.locked.nil?
   end
 end

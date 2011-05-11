@@ -16,6 +16,6 @@ class Customer < ActiveRecord::Base
   
   def _default
     self.credit   ||= 0 if new_record?
-    self.active   ||= true if new_record?
+    self.active   = true if new_record? && self.active.nil?
   end
 end

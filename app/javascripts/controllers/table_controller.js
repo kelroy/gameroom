@@ -5,9 +5,9 @@ var TableController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.table_row = $('tbody > tr', view).detach();
+    this.table_row = $('tbody > tr', this.view).detach();
     this.reset();
-    $('tbody > tr', view).live('click', {instance: this}, this.onSelect);
+    $('tbody > tr', this.view).live('click', {instance: this}, this.onSelect);
   },
   
   reset: function() {

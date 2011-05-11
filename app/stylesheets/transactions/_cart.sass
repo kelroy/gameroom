@@ -1,7 +1,7 @@
-section#cart
+section#transactions_cart
 
-  div#cart_header
-    div#cart_search
+  div#transactions_cart_header
+    div#transactions_cart_search
       position: relative
       float: left
       width: 598px
@@ -35,7 +35,7 @@ section#cart
             font-size: 20px
             border: none
         
-    h2#cart_summary
+    h2#transactions_cart_summary
       float: right
       margin-top: 83px
       padding: 6px 20px
@@ -45,21 +45,21 @@ section#cart
       color: $white
       @include border-radius(5px)
     
-  div#cart_lines
-    ul#cart_lines_nav
+  div#transactions_cart_lines
+    ul#transactions_cart_lines_nav
       height: 24px
       margin-bottom: 10px
       
-    h2#cart_lines_notice
+    h2#transactions_cart_lines_notice
       clear: both
       font-size: 20px
       text-align: center
       margin: 20px 0px
       
-    ul#cart_lines
+    ul#transactions_cart_lines
       clear: both
       
-      > li.cart_line
+      > li.transactions_cart_line
         margin-bottom: 10px
         padding: 10px
         background-color: $lighter_gray
@@ -80,7 +80,7 @@ section#cart
           &:last-child
             margin-top: 5px
         
-          hgroup.cart_line_information
+          hgroup.transactions_cart_line_information
             float: left
             
             h3
@@ -98,7 +98,7 @@ section#cart
               font-family: LatinModernMonoLight10Regular, Tacoma, serif
               font-size: 12px
           
-          h4.cart_line_subtotal
+          h4.transactions_cart_line_subtotal
             float: right
             padding: 0px 20px
             font-family: LatinModernMonoLight10Bold, Tacoma, serif
@@ -107,7 +107,7 @@ section#cart
             color: $white
             @include border-radius(5px)
           
-          ul.cart_line_quantity
+          ul.transactions_cart_line_quantity
             float: left
             margin-right: 10px
             
@@ -127,11 +127,11 @@ section#cart
                 padding: 0px 4px
                 text-align: center
             
-          ul.cart_line_action
+          ul.transactions_cart_line_action
             float: left
           
-          ul.cart_line_purchase_control,
-          ul.cart_line_sell_control
+          ul.transactions_cart_line_purchase_control,
+          ul.transactions_cart_line_sell_control
             display: none
             float: right
             padding: 0px 10px
@@ -147,8 +147,8 @@ section#cart
               &:last-child
                 margin-right: 0px
 
-            ul.cart_line_purchase_discount,
-            ul.cart_line_sell_condition
+            ul.transactions_cart_line_purchase_discount,
+            ul.transactions_cart_line_sell_condition
               li
                 a
                   border: 1px $white solid
@@ -156,26 +156,26 @@ section#cart
                   line-height: 14px
                   margin-top: 2px
     
-  div#cart_form
+  div#transactions_cart_form
     display: none
     
     ul:last-child
       li
         margin-bottom: 0px
         
-    input.price
+    input.transactions_price
       width: 100px
     
-    input.quantity
+    input.transactions_quantity
       width: 40px
                 
-  div#cart_search_results
+  div#transactions_cart_search_results
     display: none
     
     table
       display: none
     
-    h2#cart_search_results_notice
+    h2#transactions_cart_search_results_notice
       clear: both
       font-size: 20px
       text-align: center

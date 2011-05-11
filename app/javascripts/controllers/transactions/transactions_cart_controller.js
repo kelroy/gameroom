@@ -11,11 +11,11 @@ var TransactionsCartController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.cart_lines_controller = new TransactionsCartLinesController('div#cart_lines');
-    this.cart_form_controller = new TransactionsCartFormController('div#cart_form');
-    this.cart_search_controller = new SearchController('div#cart_search');
-    this.cart_search_results_controller = new TransactionsCartSearchResultsController('div#cart_search_results');
-    this.cart_section_controller = new SectionController('ul#cart_nav', [
+    this.cart_lines_controller = new TransactionsCartLinesController('div#transactions_cart_lines');
+    this.cart_form_controller = new TransactionsCartFormController('div#transactions_cart_form');
+    this.cart_search_controller = new SearchController('div#transactions_cart_search');
+    this.cart_search_results_controller = new TransactionsCartSearchResultsController('div#transactions_cart_search_results');
+    this.cart_section_controller = new SectionController('ul#transactions_cart_nav', [
       this.cart_lines_controller,
       this.cart_form_controller,
       this.cart_search_results_controller
@@ -34,8 +34,7 @@ var TransactionsCartController = new JS.Class(ViewController, {
     this.cart_form_controller.reset();
     this.cart_search_controller.reset();
     this.cart_search_results_controller.reset();
-    this.cart_section_controller.reset();
-    $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
+    $('h2#transactions_cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
     this.showLinesController();
   },
   
@@ -74,7 +73,7 @@ var TransactionsCartController = new JS.Class(ViewController, {
   },
   
   update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
+    $('h2#transactions_cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
   
   showLinesController: function() {

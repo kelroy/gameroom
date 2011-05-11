@@ -1,5 +1,5 @@
-%form{:action => '#line', :method => 'get'}
-  %ul{:class => 'line_nav'}
+%form{:action => '#transactions_line', :method => 'get'}
+  %ul{:class => 'transactions_line_nav'}
     %li
       %ul{:class => 'button_nav'}
         %li
@@ -11,7 +11,7 @@
         %li
           %a{:href => '#add_all', :class => 'button add_all'} Add All To Cart
   - (1..5).each do
-    %ul{:class => 'line_elements'}
+    %ul{:class => 'transactions_line_elements'}
       %li
         = label_tag :quantity, "Qty."
         = text_field_tag :quantity, 1, :class => 'quantity'

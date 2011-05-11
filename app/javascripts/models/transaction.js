@@ -7,7 +7,7 @@
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
-    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'payments', 'tax_rate', 'complete', 'locked'],
     belongs_to: ['customer', 'till', 'user'],
     has_many: ['lines']
   },
@@ -77,7 +77,7 @@ var Transaction = new JS.Class(Model, {
   },
   
   purchaseSubtotal: function() {
-    payments = this.payments();
+    payments = this.payments;
     subtotal = this.subtotal();
     if(subtotal >= 0) {
       store_credit_payment = 0;
@@ -93,7 +93,7 @@ var Transaction = new JS.Class(Model, {
   },
   
   amountDue: function() {
-    payments = this.payments();
+    payments = this.payments;
     
     if(this.subtotal() >= 0) {
       payment_total = 0;
@@ -165,12 +165,12 @@ var Transaction = new JS.Class(Model, {
     subtotal = this.subtotal();
     credit_payout = parseInt(subtotal * ratio);
     cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
-    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
-    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
+    this.updatePayment({form: 'store_credit', amount: credit_payout});
+    this.updatePayment({form: 'cash', amount: cash_payout});
   },
   
   updatePayment: function(updated_payment) {
-    payments = this.payments();
+    payments = this.payments;
     found = false;
     for(payment in payments) {
       if(payments[payment].form == updated_payment.form) {
@@ -179,7 +179,7 @@ var Transaction = new JS.Class(Model, {
       }
     }
     if(!found) {
-      this.addPayment(updated_payment);
+      this.payments.push(updated_payment);
     }
   }
 });

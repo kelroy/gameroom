@@ -6,9 +6,6 @@ var TransactionsPaymentLineController = new JS.Class(TransactionsPaymentFieldCon
     this.callSuper();
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
   
   onAmountDue: function(event) {

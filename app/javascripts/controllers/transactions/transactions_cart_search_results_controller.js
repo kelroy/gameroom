@@ -8,7 +8,7 @@ var TransactionsCartSearchResultsController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.cart_table_controller = new TransactionsCartTableController($('table', this.view));
+    this.cart_table_controller = new TransactionsCartTableController($('table#transactions_cart_search_results_table', this.view));
     this.cart_table_controller.addObserver(this.onItem, this);
   },
   
@@ -18,9 +18,9 @@ var TransactionsCartSearchResultsController = new JS.Class(ViewController, {
   
   update: function(results) {
     if(results.length > 0) {
-      $('h2#cart_search_results_notice').hide();
+      $('h2#transactions_cart_search_results_notice').hide();
     } else {
-      $('h2#cart_search_results_notice').show();
+      $('h2#transactions_cart_search_results_notice').show();
     }
     this.cart_table_controller.update(results);
   },

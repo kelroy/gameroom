@@ -1,4 +1,4 @@
-%form{:action => '#customer', :method => 'get'}
+%form{:action => '#transactions_customer', :method => 'get'}
   %ul
     %li
       = label_tag :first_name, "First Name"
@@ -14,40 +14,25 @@
       = select_date Date.today, :prefix => :date_of_birth, :start_year => Time.now.year - 100, :end_year => Time.now.year
   %ul
     %li
-      = label_tag :first_line, "Address First Line"
-      = text_field_tag :first_line
-    %li
-      = label_tag :second_line, "Address Second Line"
-      = text_field_tag :second_line
-    %li
-      = label_tag :city
-      = text_field_tag :city
-    %li
-      = label_tag :state
-      = text_field_tag :state
-    %li
-      = label_tag :zip
-      = text_field_tag :zip
+      = label_tag :address, "Address"
+      = text_field_tag :address
   %ul
     %li
-      = label_tag :number, "Phone Number"
-      = text_field_tag :number, nil, :required => true
+      = label_tag :phone, "Phone Number"
+      = text_field_tag :phone, nil, :required => true
     %li
-      = label_tag :address, "Email Address"
-      = email_field_tag :address, nil, :required => true
+      = label_tag :email, "Email Address"
+      = email_field_tag :email, nil, :required => true
     %li
-      = label_tag :drivers_license_number, "Drivers License No."
-      = text_field_tag :drivers_license_number, nil, :required => true
-    %li
-      = label_tag :drivers_license_state, "Drivers License State"
-      = text_field_tag :drivers_license_state, nil, :required => true
+      = label_tag :drivers_license, "Drivers License"
+      = text_field_tag :drivers_license, nil, :required => true
   %ul
     %li
       = label_tag :credit, "Store Credit"
       = text_field_tag :credit, nil, :disabled => true
     %li
       = label_tag :flagged
-      = check_box_tag :customer_flagged, 1
+      = check_box_tag :flagged, 1
   %ul
     %li
       = label_tag :notes

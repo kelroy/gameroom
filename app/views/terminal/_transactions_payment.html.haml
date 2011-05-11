@@ -1,18 +1,18 @@
-%div{:id => 'payment_cart', :class => 'payment_line'}
+%div{:id => 'transactions_payment_cart', :class => 'transactions_payment_line'}
   %ul
     %li
-      %span{:id => 'payment_cart_items', :class => 'payment_plain'}
+      %span{:id => 'transactions_payment_cart_items', :class => 'transactions_payment_plain'}
     %li
-      %span{:class => 'payment_symbol'} =
+      %span{:class => 'transactions_payment_symbol'} =
     %li
-      %span{:id => 'payment_cart_subtotal', :class => 'payment_pill'}
-%div{:class => 'payment_divider'}
-  %span{:class => 'payment_symbol'} -
-%div{:id => 'payment_store_credit', :class => 'payment_line'}
+      %span{:id => 'transactions_payment_cart_subtotal', :class => 'transactions_payment_pill'}
+%div{:class => 'transactions_payment_divider'}
+  %span{:class => 'transactions_payment_symbol'} -
+%div{:id => 'transactions_payment_store_credit', :class => 'transactions_payment_line'}
   %h3 Store Credit
   %ul
     %li
-      %span{:id => 'payment_customer', :class => 'payment_plain'}
+      %span{:id => 'transactions_payment_customer', :class => 'transactions_payment_plain'}
     %li
       %a{:href => '#amount_due', :class => 'button amount_due'} Amount Due
     %li
@@ -21,23 +21,23 @@
       = form_for :store_credit, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
-%div{:id => 'payment_summary', :class => 'payment_line'}
+%div{:id => 'transactions_payment_summary', :class => 'transactions_payment_line'}
   %ul
     %li
-      %span{:class => 'payment_symbol'} =
+      %span{:class => 'transactions_payment_symbol'} =
     %li
-      %span{:id => 'payment_summary_taxable_subtotal', :class => 'payment_pill'}
+      %span{:id => 'transactions_payment_summary_taxable_subtotal', :class => 'transactions_payment_pill'}
     %li
-      %span{:class => 'payment_symbol'} +
+      %span{:class => 'transactions_payment_symbol'} +
     %li
-      %span{:id => 'payment_summary_tax', :class => 'payment_pill'}
+      %span{:id => 'transactions_payment_summary_tax', :class => 'transactions_payment_pill'}
     %li
-      %span{:class => 'payment_symbol'} =
+      %span{:class => 'transactions_payment_symbol'} =
     %li 
-      %span{:id => 'payment_summary_total', :class => 'payment_pill'}
-%div{:class => 'payment_divider'}
-  %span{:class => 'payment_symbol'} +
-%div{:id => 'payment_gift_card', :class => 'payment_line'}
+      %span{:id => 'transactions_payment_summary_total', :class => 'transactions_payment_pill'}
+%div{:class => 'transactions_payment_divider'}
+  %span{:class => 'transactions_payment_symbol'} +
+%div{:id => 'transactions_payment_gift_card', :class => 'transactions_payment_line'}
   %h3 Gift Card
   %ul
     %li
@@ -48,9 +48,9 @@
       = form_for :gift_card, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'gift_card'
-%div{:class => 'payment_divider'}
-  %span{:class => 'payment_symbol'} +
-%div{:id => 'payment_check', :class => 'payment_line'}
+%div{:class => 'transactions_payment_divider'}
+  %span{:class => 'transactions_payment_symbol'} +
+%div{:id => 'transactions_payment_check', :class => 'transactions_payment_line'}
   %h3 Check
   %ul
     %li
@@ -61,9 +61,9 @@
       = form_for :check, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'check'
-%div{:class => 'payment_divider'}
-  %span{:class => 'payment_symbol'} +
-%div{:id => 'payment_credit_card', :class => 'payment_line'}
+%div{:class => 'transactions_payment_divider'}
+  %span{:class => 'transactions_payment_symbol'} +
+%div{:id => 'transactions_payment_credit_card', :class => 'transactions_payment_line'}
   %h3 Credit Card
   %ul
     %li
@@ -74,9 +74,9 @@
       = form_for :credit_card, :method => 'get', :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'credit_card'
-%div{:class => 'payment_divider'}
-  %span{:class => 'payment_symbol'} +
-%div{:id => 'payment_cash', :class => 'payment_line'}
+%div{:class => 'transactions_payment_divider'}
+  %span{:class => 'transactions_payment_symbol'} +
+%div{:id => 'transactions_payment_cash', :class => 'transactions_payment_line'}
   %h3 Cash
   %ul
     %li
@@ -111,22 +111,22 @@
       = form_for :cash, :method => 'get', :url => root_path do |f|
         %div
           = f.text_field :amount, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'cash'
-%div{:id => 'payment_action', :class => 'payment_line'}
+%div{:id => 'transactions_payment_action', :class => 'transactions_payment_line'}
   = form_for :payment_action, :method => 'get', :url => root_path do |f|
-    %ul{:id => 'payment_change_container'}
+    %ul{:id => 'transactions_payment_change_container'}
       %li
-        %span{:class => 'payment_symbol'} =
+        %span{:class => 'transactions_payment_symbol'} =
       %li
-        %span{:id => 'payment_change', :class => 'payment_pill'} Change Due: $0.00
-    %ul{:id => 'payment_scale_container'}
+        %span{:id => 'transactions_payment_change', :class => 'transactions_payment_pill'} Change Due: $0.00
+    %ul{:id => 'transactions_payment_scale_container'}
       %li
-        %span{:class => 'payment_pill'} Credit Applied
-      %li{:id => 'payment_scale_store_credit'}
+        %span{:class => 'transactions_payment_pill'} Credit Applied
+      %li{:id => 'transactions_payment_scale_store_credit'}
         = f.text_field :credit_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'store_credit'
       - (0..10).each do |n|
         %li
           %a{:href => '#payment_scale', :class => 'button dark', :"data-index" => "#{10 - n}"} *
-      %li{:id => 'payment_scale_cash'}
+      %li{:id => 'transactions_payment_scale_cash'}
         = f.text_field :cash_value, :placeholder => '0.00', :class => 'payment', :"data-payment-form" => 'cash'
       %li 
-        %span{:class => 'payment_pill'} Cash Given
+        %span{:class => 'transactions_payment_pill'} Cash Given

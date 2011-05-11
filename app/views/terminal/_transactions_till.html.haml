@@ -1,13 +1,11 @@
 %div{:id => 'transactions_till', :class => 'modal'}
   %h2 Select a till...
-  %form{:action => '#till'}
+  %form{:action => '#tills'}
     %ul
       %li
-        = #t.select :id, @tills.map { |till| [till.title, till.id] }
+        = select_tag :till, options_for_select([])
     %ul
       %li
         %ul{:id => 'tills_till_nav', :class => 'button_nav'}
           %li
-            %a{:href => '#tills_cancel', :class => 'tills_cancel button'} Cancel
-          %li
-            %a{:href => '#tills_select', :class => 'tills_select button'} Select
+            %a{:href => '#select', :class => 'select button'} Select

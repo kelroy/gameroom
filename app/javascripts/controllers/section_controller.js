@@ -6,11 +6,11 @@ var SectionController = new JS.Class(ViewController, {
   initialize: function(view, controllers) {
     this.callSuper();
     this._controllers = controllers;
-    $('a', view).bind('click', {instance: this, view: this.view}, this.onClick);
+    $('a', view).bind('click', {instance: this}, this.onClick);
   },
   
   onClick: function(event) {
-    index = $('li > a', event.data.view).index(this);
+    index = $('li > a', event.data.instance.view).index(this);
     event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);
     event.preventDefault();
@@ -30,7 +30,7 @@ var SectionController = new JS.Class(ViewController, {
   },
   
   reset: function() {
-    this.view.hide();
+    this.hideControllers();
     this.showController(0);
   }
 });

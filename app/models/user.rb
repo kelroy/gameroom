@@ -94,9 +94,9 @@ class User < ActiveRecord::Base
   private
   
   def _default
-    self.rate     ||= 0 if new_record?
-    self.administrator  ||= false if new_record?
-    self.active   ||= true if new_record?
+    self.rate           ||= 0 if new_record?
+    self.administrator  = false if new_record? && self.administrator.nil?
+    self.active         = true if new_record? && self.active.nil?
   end
   
   def _encrypt_password

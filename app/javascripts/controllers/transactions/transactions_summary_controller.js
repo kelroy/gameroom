@@ -20,23 +20,23 @@ var TransactionsSummaryController = new JS.Class(ViewController, {
   },
   
   setItemCount: function(count) {
-    $('h2#summary_item_count', this.view).html(count + ' item(s)');
+    $('h2#transactions_summary_item_count', this.view).html(count + ' item(s)');
   },
   
   setCustomer: function(customer) {
     if(customer.id == null) {
-      $('h2#summary_customer', this.view).html("No customer");
+      $('h2#transactions_summary_customer', this.view).html("No customer");
     } else {
       person = customer.person();
       if(person != undefined) {
-        $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
+        $('h2#transactions_summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        $('h2#summary_customer', this.view).empty();
+        $('h2#transactions_summary_customer', this.view).empty();
       }
     }
   },
   
   setTotal: function(total) {
-    $('h2#summary_total', this.view).html(Currency.pretty(total));
+    $('h2#transactions_summary_total', this.view).html(Currency.pretty(total));
   }
 });

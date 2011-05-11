@@ -21,9 +21,11 @@ var InventoryController = new JS.Class(ViewController, {
   
   activate: function(user) {
     this.view.show();
+    this.section_controller.view.show();
   },
   
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   }
 });

@@ -10,11 +10,11 @@ var TransactionsCustomerController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.customer_review_controller = new TransactionsCustomerReviewController('div#customer_review');
-    this.customer_form_controller = new TransactionsCustomerFormController('div#customer_form');
-    this.customer_search_controller = new SearchController('div#customer_search');
-    this.customer_search_results_controller = new TransactionsCustomerSearchResultsController('div#customer_search_results');
-    this.customer_section_controller = new SectionController('ul#customer_nav', [
+    this.customer_review_controller = new TransactionsCustomerReviewController('div#transactions_customer_review');
+    this.customer_form_controller = new TransactionsCustomerFormController('div#transactions_customer_form');
+    this.customer_search_controller = new SearchController('div#transactions_customer_search');
+    this.customer_search_results_controller = new TransactionsCustomerSearchResultsController('div#transactions_customer_search_results');
+    this.customer_section_controller = new SectionController('ul#transactions_customer_nav', [
       this.customer_review_controller,
       this.customer_form_controller,
       this.customer_search_results_controller
@@ -32,7 +32,6 @@ var TransactionsCustomerController = new JS.Class(ViewController, {
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
-    this.customer_section_controller.reset();
     this.showReviewSection();
   },
   

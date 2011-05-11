@@ -36,6 +36,6 @@ class Account < ActiveRecord::Base
   def _default
     self.api_key    ||= Digest::SHA256.hexdigest(Time.now.to_s) if new_record?
     self.api_secret ||= Digest::SHA256.hexdigest(Time.now.to_s.reverse) if new_record?
-    self.active     ||= true if new_record?
+    self.active     = true if new_record? && self.active.nil?
   end
 end

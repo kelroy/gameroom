@@ -15,14 +15,14 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
     this.callSuper();
     this.payments = [];
     
-    this.scale_controller = new TransactionsPaymentScaleController('ul#payment_scale_container');
-    this.store_credit_controller = new TransactionsPaymentStoreCreditController('div#payment_store_credit');
-    this.gift_card_controller = new TransactionsPaymentLineController('div#payment_gift_card');
-    this.check_controller = new TransactionsPaymentLineController('div#payment_check');
-    this.credit_card_controller = new TransactionsPaymentLineController('div#payment_credit_card');
-    this.cash_controller = new TransactionsPaymentCashController('div#payment_cash');
-    this.store_credit_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_store_credit');
-    this.cash_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_cash');
+    this.scale_controller = new TransactionsPaymentScaleController('ul#transactions_payment_scale_container');
+    this.store_credit_controller = new TransactionsPaymentStoreCreditController('div#transactions_payment_store_credit');
+    this.gift_card_controller = new TransactionsPaymentLineController('div#transactions_payment_gift_card');
+    this.check_controller = new TransactionsPaymentLineController('div#transactions_payment_check');
+    this.credit_card_controller = new TransactionsPaymentLineController('div#transactions_payment_credit_card');
+    this.cash_controller = new TransactionsPaymentCashController('div#transactions_payment_cash');
+    this.store_credit_payout_controller = new TransactionsPaymentPayoutController('li#transactions_payment_scale_store_credit');
+    this.cash_payout_controller = new TransactionsPaymentPayoutController('li#transactions_payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);
     this.gift_card_controller.addObserver(this.updatePayment, this);
     this.check_controller.addObserver(this.updatePayment, this);
@@ -39,11 +39,11 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
   },
   
   resetSummary: function() {
-    $('div#payment_summary span#payment_cart_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_cart_subtotal', this.view).html('$0.00');
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
-    $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');
+    $('div#transactions_payment_summary span#transactions_payment_cart_items', this.view).html('0 item(s) in cart');
+    $('div#transactions_payment_summary span#transactions_payment_cart_subtotal', this.view).html('$0.00');
+    $('div#transactions_payment_summary span#transactions_payment_summary_tax', this.view).html('Tax: $0.00');
+    $('div#transactions_payment_summary span#transactions_payment_summary_total', this.view).html('Total: $0.00');
+    $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Change Due: $0.00');
   },
   
   resetPaymentFields: function() {
@@ -78,7 +78,7 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
   update: function(transaction) {
     this.reset();
     amount_due = transaction.amountDue();
-    payments = transaction.payments();
+    payments = transaction.payments;
     
     this.store_credit_controller.update(0, transaction.subtotal());
     this.store_credit_payout_controller.update(0, transaction.subtotal());
@@ -88,31 +88,33 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
     this.credit_card_controller.update(0, amount_due);
     this.check_controller.update(0, amount_due);
     
-    if(payments.length > 0) {
-      this.payments = payments;
-      for(payment in payments) {
-        switch(payments[payment].form) {
-          case 'store_credit':
-            this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
-            this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
-            break;
-          case 'cash':
-            this.cash_controller.update(payments[payment].amount, amount_due);
-            this.cash_payout_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'gift_card':
-            this.gift_card_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'credit_card':
-            this.credit_card_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'check':
-            this.check_controller.update(payments[payment].amount, amount_due);
-            break;
+    if(payments != undefined) {
+      if(payments.length > 0) {
+        this.payments = payments;
+        for(payment in payments) {
+          switch(payments[payment].form) {
+            case 'store_credit':
+              this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
+              this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
+              break;
+            case 'cash':
+              this.cash_controller.update(payments[payment].amount, amount_due);
+              this.cash_payout_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'gift_card':
+              this.gift_card_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'credit_card':
+              this.credit_card_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'check':
+              this.check_controller.update(payments[payment].amount, amount_due);
+              break;
+          }
         }
+      } else {
+        this.payments = [];
       }
-    } else {
-      this.payments = [];
     }
     this.store_credit_controller.setCustomer(transaction.customer());
     this.updateSummary(transaction);
@@ -140,15 +142,15 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
   
   updateSummary: function(transaction) {
     amount_due = transaction.amountDue();
-    $('div#payment_cart span#payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
-    $('div#payment_cart span#payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
-    $('div#payment_summary span#payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.purchaseSubtotal()));
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
+    $('div#transactions_payment_cart span#transactions_payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
+    $('div#transactions_payment_cart span#transactions_payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.purchaseSubtotal()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
     if(amount_due >= 0) {
-      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
+      $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
     } else {
-      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
+      $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
     }
   },
   

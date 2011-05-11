@@ -1,10 +1,10 @@
-%div{:id => 'review_header', :class => 'header_container'}
-  %h2{:id => 'review_customer'} No customer
-%ul{:id => 'review_nav', :class => 'tab_nav'}
+%div{:id => 'transactions_review_header', :class => 'header_container'}
+  %h2{:id => 'transactions_review_customer'} No customer
+%ul{:id => 'transactions_review_nav', :class => 'tab_nav'}
   %li
-    %a{:href => '#review_lines', :class => 'review_lines selected'} Review
+    %a{:href => '#transactions_review_lines', :class => 'transactions_review_lines selected'} Review
 %div{:class => 'page_container'}
-  %div{:id => 'review_lines'}
+  %div{:id => 'transactions_review_lines'}
     %table
       %thead
         %tr
@@ -18,7 +18,7 @@
           %td{:class => 'title'}
           %td{:class => 'description'}
           %td{:class => 'subtotal'}
-  %div{:id => 'review_summary'}
+  %div{:id => 'transactions_review_summary'}
     %table
       %tbody
         %tr{:id => 'subtotal'}

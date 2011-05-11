@@ -5,7 +5,7 @@ class CreateLines < ActiveRecord::Migration
       t.integer :transaction_id
       t.integer :item_id
       t.integer :unit_id
-      t.string :title
+      t.string  :title
       t.integer :quantity
       t.decimal :condition
       t.decimal :discount

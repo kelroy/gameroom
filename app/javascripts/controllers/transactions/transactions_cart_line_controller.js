@@ -13,40 +13,40 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
     $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
     $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
-    $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
-    $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
-    $('ul.cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
+    $('ul.transactions_cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
+    $('ul.transactions_cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
     $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
   },
   
   set: function(line) {
     
     $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
+    $('hgroup.transactions_cart_line_information h3.transactions_cart_line_title', this.view).html(line.title);
     if(line.description != undefined) {
-      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
+      $('hgroup.transactions_cart_line_information h4.transactions_cart_line_description', this.view).html(line.description.truncate(50));
     }
-    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
-    $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
-    $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    $('h4.transactions_cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
+    $('ul.transactions_cart_line_action li a', this.view).removeClass('selected');
+    $('span.transactions_cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.transactions_cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
+    $('ul.transactions_cart_line_sell_condition li a', this.view).removeClass('selected');
+    $('ul.transactions_cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
     if(line.purchase) {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      $('ul.transactions_cart_line_action li a.purchase', this.view).addClass('selected');
       if(line.discountable) {
         this.showPurchaseControls();
       }
       this.hideSellControls();
     } else {
-      $('ul.cart_line_action li a.sell', this.view).addClass('selected');
+      $('ul.transactions_cart_line_action li a.sell', this.view).addClass('selected');
       this.showSellControls();
       this.hidePurchaseControls();
     }
     if(this.isOpen()) {
-      $('div.cart_info', this.view).css('display', 'block');
+      $('div.transactions_cart_info', this.view).css('display', 'block');
     }
   },
   
@@ -57,10 +57,10 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   toggleInfo: function() {
     if(this.open) {
       this.open = false;
-      $('div.cart_info', this.view).hide();
+      $('div.transactions_cart_info', this.view).hide();
     } else {
       this.open = true;
-      $('div.cart_info', this.view).show();
+      $('div.transactions_cart_info', this.view).show();
     }
   },
   
@@ -75,21 +75,21 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
   
   onDiscount: function(event) {
-    index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
+    index = $('ul.transactions_cart_line_purchase_discount li a', event.data.instance.view).index(this);
+    event.data.instance.line.discount = (1 - ($('ul.transactions_cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
   
   onCondition: function(event) {
-    index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    index = $('ul.transactions_cart_line_sell_condition li a', event.data.instance.view).index(this);
+    event.data.instance.line.condition = ($('ul.transactions_cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
   
   onInfo: function(event) {
-    $('div.cart_info', event.data.instance.view).toggle();
+    $('div.transactions_cart_info', event.data.instance.view).toggle();
     event.data.instance.open = !event.data.instance.open;
     event.preventDefault();
   },
@@ -122,7 +122,7 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
   
   onAction: function(event) {
-    index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
+    index = $('ul.transactions_cart_line_action li a', event.data.instance.view).index(this);
     if(index == 0) {
       event.data.instance.setPurchase();
     } else {
@@ -138,18 +138,18 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
   
   showSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).css('display', 'block');
+    $('ul.transactions_cart_line_sell_control', this.view).css('display', 'block');
   },
   
   hideSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).hide();
+    $('ul.transactions_cart_line_sell_control', this.view).hide();
   },
   
   showPurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).css('display', 'block');
+    $('ul.transactions_cart_line_purchase_control', this.view).css('display', 'block');
   },
   
   hidePurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).hide();
+    $('ul.transactions_cart_line_purchase_control', this.view).hide();
   }
 });

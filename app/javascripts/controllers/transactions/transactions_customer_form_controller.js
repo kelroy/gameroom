@@ -13,8 +13,6 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
     
     $('input#id', this.view).val(customer.id);
     $('input#credit', this.view).val(Currency.format(customer.credit));
-    $('input#drivers_license_number', this.view).val(customer.drivers_license_number);
-    $('input#drivers_license_state', this.view).val(customer.drivers_license_state);
     $('input#flagged', this.view).attr('checked', !customer.active);
     $('textarea#notes', this.view).val(customer.notes);
     
@@ -23,6 +21,7 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
       $('input#first_name', this.view).val(person.first_name);
       $('input#middle_name', this.view).val(person.middle_name);
       $('input#last_name', this.view).val(person.last_name);
+      $('input#drivers_license', this.view).val(person.drivers_license);
       if(person.date_of_birth == null || person.date_of_birth == undefined) {
         person.date_of_birth = new Date();
       }
@@ -31,23 +30,19 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
       $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
       $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
       
-      addresses = person.addresses();
+      addresses = person.addresses;
       if(addresses.length > 0) {
-        $('input#first_line', this.view).val(addresses[0].first_line);
-        $('input#second_line', this.view).val(addresses[0].second_line);
-        $('input#city', this.view).val(addresses[0].city);
-        $('input#state', this.view).val(addresses[0].state);
-        $('input#zip', this.view).val(addresses[0].zip);
+        $('input#address', this.view).val(addresses[0]);
       }
 
-      phones = person.phones();
+      phones = person.phones;
       if(phones.length > 0){
-        $('input#number', this.view).val(phones[0].number);
+        $('input#phone', this.view).val(phones[0]);
       }
 
-      emails = person.emails();
+      emails = person.emails;
       if(emails.length > 0){
-        $('input#address', this.view).val(emails[0].address);
+        $('input#email', this.view).val(emails[0]);
       }
     }
   },
@@ -58,8 +53,6 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
         customer = Customer.find($('input#id', this.view).val());
         customer.credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
         customer.notes = $('textarea#notes', this.view).val();
-        customer.drivers_license_number = $('input#drivers_license_number', this.view).val();
-        customer.drivers_license_state = $('input#drivers_license_state', this.view).val();
         customer.active = !$('input#flagged', this.view).is(':checked');
         customer.save();
         
@@ -74,53 +67,29 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
             person.first_name = $('input#first_name', this.view).val();
             person.middle_name = $('input#middle_name', this.view).val();
             person.last_name = $('input#last_name', this.view).val();
+            person.drivers_license = $('input#drivers_license', this.view).val();
             person.date_of_birth = date_of_birth;
-            person.save();
             
-            addresses = person.addresses();
+            addresses = person.addresses;
             if(addresses.length > 0) {
-              addresses[0].first_line =  $('input#first_line', this.view).val();
-              addresses[0].second_line = $('input#second_line', this.view).val();
-              addresses[0].city = $('input#city', this.view).val();
-              addresses[0].state = $('input#state', this.view).val();
-              addresses[0].zip = $('input#zip', this.view).val();
-              addresses[0].save();
+              addresses[0].address =  $('input#address', this.view).val();
             } else {
-              address = new Address({
-                first_line: $('input#first_line', this.view).val(),
-                second_line: $('input#second_line', this.view).val(),
-                city: $('input#city', this.view).val(),
-                state: $('input#state', this.view).val(),
-                zip: $('input#zip', this.view).val(),
-              });
-              address.setPerson(person);
-              address.save();
+              person.addresses = [$('input#address', this.view).val()];
             }
-            
-            phones = person.phones();
+            phones = person.phones;
             if(phones.length > 0) {
-              phones[0].number =  $('input#number', this.view).val();
-              phones[0].save();
+              phones[0] =  $('input#phone', this.view).val();
             } else {
-              phone = new Phone({
-                number: $('input#number', this.view).val()
-              });
-              phone.setPerson(person);
-              phone.save();
+              person.phones = [$('input#phone', this.view).val()];
             }
-            
-            emails = person.emails();
+            emails = person.emails;
             if(emails.length > 0) {
-              emails[0].address =  $('input#address', this.view).val();
-              emails[0].save();
+              emails[0] =  $('input#email', this.view).val();
             } else {
-              email = new Email({
-                address: $('input#address', this.view).val()
-              });
-              email.setPerson(person);
-              email.save();
+              person.emails = [$('input#email', this.view).val()];
             }
             
+            person.save();
             customer.setPerson(person);
           }
         }        
@@ -128,37 +97,17 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
         person = new Person({
           first_name: $('input#first_name', this.view).val(),
           middle_name: $('input#middle_name', this.view).val(),
-          last_name: $('input#last_name', this.view).val()
+          last_name: $('input#last_name', this.view).val(),
+          drivers_license: $('input#drivers_license', this.view).val(),
+          addresses: [$('input#address', this.view).val()],
+          phones: [$('input#phone', this.view).val()],
+          emails: [$('input#email', this.view).val()]
         });
-        if(person.save()) {
-          address = new Address({
-            first_line: $('input#first_line', this.view).val(),
-            second_line: $('input#second_line', this.view).val(),
-            city: $('input#city', this.view).val(),
-            state: $('input#state', this.view).val(),
-            zip: $('input#zip', this.view).val(),
-          });
-          address.setPerson(person);
-          address.save();
-
-          phone = new Phone({
-            number: $('input#number', this.view).val()
-          });
-          phone.setPerson(person);
-          phone.save();
-
-          email = new Email({
-            address: $('input#address', this.view).val()
-          });
-          email.setPerson(person);
-          email.save();
-        }
-
+        person.save();
+        
         customer = new Customer({
           credit: parseInt(Currency.toPennies($('input#credit', this.view).val())),
           notes: $('textarea#notes', this.view).val(),
-          drivers_license_number: $('input#drivers_license_number', this.view).val(),
-          drivers_license_state: $('input#drivers_license_state', this.view).val(),
           active: !$('input#flagged', this.view).is(':checked')
         });
         customer.setPerson(person);

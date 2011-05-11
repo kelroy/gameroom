@@ -265,11 +265,11 @@ var SectionController = new JS.Class(ViewController, {
   initialize: function(view, controllers) {
     this.callSuper();
     this._controllers = controllers;
-    $('a', view).bind('click', {instance: this, view: this.view}, this.onClick);
+    $('a', view).bind('click', {instance: this}, this.onClick);
   },
 
   onClick: function(event) {
-    index = $('li > a', event.data.view).index(this);
+    index = $('li > a', event.data.instance.view).index(this);
     event.data.instance.showController(index);
     event.data.instance.notifyObservers(index);
     event.preventDefault();
@@ -289,7 +289,7 @@ var SectionController = new JS.Class(ViewController, {
   },
 
   reset: function() {
-    this.view.hide();
+    this.hideControllers();
     this.showController(0);
   }
 });
@@ -306,8 +306,6 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
 
     $('input#id', this.view).val(customer.id);
     $('input#credit', this.view).val(Currency.format(customer.credit));
-    $('input#drivers_license_number', this.view).val(customer.drivers_license_number);
-    $('input#drivers_license_state', this.view).val(customer.drivers_license_state);
     $('input#flagged', this.view).attr('checked', !customer.active);
     $('textarea#notes', this.view).val(customer.notes);
 
@@ -316,6 +314,7 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
       $('input#first_name', this.view).val(person.first_name);
       $('input#middle_name', this.view).val(person.middle_name);
       $('input#last_name', this.view).val(person.last_name);
+      $('input#drivers_license', this.view).val(person.drivers_license);
       if(person.date_of_birth == null || person.date_of_birth == undefined) {
         person.date_of_birth = new Date();
       }
@@ -324,23 +323,19 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
       $('select#date_of_birth_month', this.view).val(date_of_birth.getMonth() + 1);
       $('select#date_of_birth_day', this.view).val(date_of_birth.getDate());
 
-      addresses = person.addresses();
+      addresses = person.addresses;
       if(addresses.length > 0) {
-        $('input#first_line', this.view).val(addresses[0].first_line);
-        $('input#second_line', this.view).val(addresses[0].second_line);
-        $('input#city', this.view).val(addresses[0].city);
-        $('input#state', this.view).val(addresses[0].state);
-        $('input#zip', this.view).val(addresses[0].zip);
+        $('input#address', this.view).val(addresses[0]);
       }
 
-      phones = person.phones();
+      phones = person.phones;
       if(phones.length > 0){
-        $('input#number', this.view).val(phones[0].number);
+        $('input#phone', this.view).val(phones[0]);
       }
 
-      emails = person.emails();
+      emails = person.emails;
       if(emails.length > 0){
-        $('input#address', this.view).val(emails[0].address);
+        $('input#email', this.view).val(emails[0]);
       }
     }
   },
@@ -351,8 +346,6 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
         customer = Customer.find($('input#id', this.view).val());
         customer.credit = parseInt(Currency.toPennies($('input#credit', this.view).val()));
         customer.notes = $('textarea#notes', this.view).val();
-        customer.drivers_license_number = $('input#drivers_license_number', this.view).val();
-        customer.drivers_license_state = $('input#drivers_license_state', this.view).val();
         customer.active = !$('input#flagged', this.view).is(':checked');
         customer.save();
 
@@ -367,53 +360,29 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
             person.first_name = $('input#first_name', this.view).val();
             person.middle_name = $('input#middle_name', this.view).val();
             person.last_name = $('input#last_name', this.view).val();
+            person.drivers_license = $('input#drivers_license', this.view).val();
             person.date_of_birth = date_of_birth;
-            person.save();
 
-            addresses = person.addresses();
+            addresses = person.addresses;
             if(addresses.length > 0) {
-              addresses[0].first_line =  $('input#first_line', this.view).val();
-              addresses[0].second_line = $('input#second_line', this.view).val();
-              addresses[0].city = $('input#city', this.view).val();
-              addresses[0].state = $('input#state', this.view).val();
-              addresses[0].zip = $('input#zip', this.view).val();
-              addresses[0].save();
+              addresses[0].address =  $('input#address', this.view).val();
             } else {
-              address = new Address({
-                first_line: $('input#first_line', this.view).val(),
-                second_line: $('input#second_line', this.view).val(),
-                city: $('input#city', this.view).val(),
-                state: $('input#state', this.view).val(),
-                zip: $('input#zip', this.view).val(),
-              });
-              address.setPerson(person);
-              address.save();
+              person.addresses = [$('input#address', this.view).val()];
             }
-
-            phones = person.phones();
+            phones = person.phones;
             if(phones.length > 0) {
-              phones[0].number =  $('input#number', this.view).val();
-              phones[0].save();
+              phones[0] =  $('input#phone', this.view).val();
             } else {
-              phone = new Phone({
-                number: $('input#number', this.view).val()
-              });
-              phone.setPerson(person);
-              phone.save();
+              person.phones = [$('input#phone', this.view).val()];
             }
-
-            emails = person.emails();
+            emails = person.emails;
             if(emails.length > 0) {
-              emails[0].address =  $('input#address', this.view).val();
-              emails[0].save();
+              emails[0] =  $('input#email', this.view).val();
             } else {
-              email = new Email({
-                address: $('input#address', this.view).val()
-              });
-              email.setPerson(person);
-              email.save();
+              person.emails = [$('input#email', this.view).val()];
             }
 
+            person.save();
             customer.setPerson(person);
           }
         }
@@ -421,37 +390,17 @@ var TransactionsCustomerFormController = new JS.Class(FormController, {
         person = new Person({
           first_name: $('input#first_name', this.view).val(),
           middle_name: $('input#middle_name', this.view).val(),
-          last_name: $('input#last_name', this.view).val()
+          last_name: $('input#last_name', this.view).val(),
+          drivers_license: $('input#drivers_license', this.view).val(),
+          addresses: [$('input#address', this.view).val()],
+          phones: [$('input#phone', this.view).val()],
+          emails: [$('input#email', this.view).val()]
         });
-        if(person.save()) {
-          address = new Address({
-            first_line: $('input#first_line', this.view).val(),
-            second_line: $('input#second_line', this.view).val(),
-            city: $('input#city', this.view).val(),
-            state: $('input#state', this.view).val(),
-            zip: $('input#zip', this.view).val(),
-          });
-          address.setPerson(person);
-          address.save();
-
-          phone = new Phone({
-            number: $('input#number', this.view).val()
-          });
-          phone.setPerson(person);
-          phone.save();
-
-          email = new Email({
-            address: $('input#address', this.view).val()
-          });
-          email.setPerson(person);
-          email.save();
-        }
+        person.save();
 
         customer = new Customer({
           credit: parseInt(Currency.toPennies($('input#credit', this.view).val())),
           notes: $('textarea#notes', this.view).val(),
-          drivers_license_number: $('input#drivers_license_number', this.view).val(),
-          drivers_license_state: $('input#drivers_license_state', this.view).val(),
           active: !$('input#flagged', this.view).is(':checked')
         });
         customer.setPerson(person);
@@ -1005,7 +954,7 @@ var User = new JS.Class(Model, {
 var Person = new JS.Class(Model, {
   extend: {
     resource: 'person',
-    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth', 'addresses', 'emails', 'phones'],
+    columns: ['id', 'first_name', 'middle_name', 'last_name', 'date_of_birth', 'drivers_license', 'ssn', 'addresses', 'emails', 'phones'],
     has_one: ['customer', 'user']
   }
 });
@@ -1024,9 +973,9 @@ var TableController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.table_row = $('tbody > tr', view).detach();
+    this.table_row = $('tbody > tr', this.view).detach();
     this.reset();
-    $('tbody > tr', view).live('click', {instance: this}, this.onSelect);
+    $('tbody > tr', this.view).live('click', {instance: this}, this.onSelect);
   },
 
   reset: function() {
@@ -1064,44 +1013,26 @@ var TransactionsCustomerTableController = new JS.Class(TableController, {
           people[person].first_name,
           people[person].last_name
         ].join(' '));
+        $('td.drivers_license', new_row).html(people[person].drivers_license);
 
-        addresses = people[person].addresses();
+        addresses = people[person].addresses;
         for(address in addresses) {
-          address_string = [
-            addresses[address].first_line,
-            addresses[address].second_line,
-            addresses[address].city + ',',
-            addresses[address].state,
-            addresses[address].province,
-            addresses[address].country,
-            addresses[address].zip
-          ].join(' ');
-          $('td.address', new_row).append($('<address></address>').html(address_string));
+          $('td.address', new_row).append($('<address></address>').html(addresses[address]));
         }
 
-        phones = people[person].phones();
+        phones = people[person].phones;
         for(phone in phones) {
-          if(phones[phone].title != null) {
-            phone_string = phones[phone].title + ' - ' + phones[phone].number;
-          } else {
-            phone_string = phones[phone].number;
-          }
-          $('td.phone', new_row).append($('<p></p>').html(phone_string));
+          $('td.phone', new_row).append($('<p></p>').html(phones[phone]));
         }
 
-        emails = people[person].emails();
+        emails = people[person].emails;
         for(email in emails) {
-          email_string = emails[email].address;
-          $('td.email', new_row).append($('<p></p>').html(email_string));
+          $('td.email', new_row).append($('<p></p>').html(emails[email]));
         }
 
         customer = people[person].customer();
         if(customer != undefined) {
           $('td.credit', new_row).html(Currency.pretty(customer.credit));
-          $('td.drivers_license', new_row).html([
-            customer.drivers_license_number,
-            customer.drivers_license_state
-          ].join(' '));
           $('td.flagged', new_row).html(Boolean.toString(!customer.active));
           $('td.notes', new_row).html(customer.notes);
           $('tbody', this.view).append(new_row);
@@ -1119,7 +1050,7 @@ var TransactionsCustomerSearchResultsController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.customer_table_controller = new TransactionsCustomerTableController($('table', this.view));
+    this.customer_table_controller = new TransactionsCustomerTableController($('table#transactions_customer_search_results_table', this.view));
     this.customer_table_controller.addObserver(this.onPerson, this);
   },
 
@@ -1129,9 +1060,9 @@ var TransactionsCustomerSearchResultsController = new JS.Class(ViewController, {
 
   update: function(results) {
     if(results.length > 0) {
-      $('h2#customer_search_results_notice').hide();
+      $('h2#transactions_customer_search_results_notice').hide();
     } else {
-      $('h2#customer_search_results_notice').show();
+      $('h2#transactions_customer_search_results_notice').show();
     }
     this.customer_table_controller.update(results);
   },
@@ -1146,11 +1077,11 @@ var TransactionsCustomerController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.customer_review_controller = new TransactionsCustomerReviewController('div#customer_review');
-    this.customer_form_controller = new TransactionsCustomerFormController('div#customer_form');
-    this.customer_search_controller = new SearchController('div#customer_search');
-    this.customer_search_results_controller = new TransactionsCustomerSearchResultsController('div#customer_search_results');
-    this.customer_section_controller = new SectionController('ul#customer_nav', [
+    this.customer_review_controller = new TransactionsCustomerReviewController('div#transactions_customer_review');
+    this.customer_form_controller = new TransactionsCustomerFormController('div#transactions_customer_form');
+    this.customer_search_controller = new SearchController('div#transactions_customer_search');
+    this.customer_search_results_controller = new TransactionsCustomerSearchResultsController('div#transactions_customer_search_results');
+    this.customer_section_controller = new SectionController('ul#transactions_customer_nav', [
       this.customer_review_controller,
       this.customer_form_controller,
       this.customer_search_results_controller
@@ -1168,7 +1099,6 @@ var TransactionsCustomerController = new JS.Class(ViewController, {
     this.customer_form_controller.reset();
     this.customer_search_controller.reset();
     this.customer_search_results_controller.reset();
-    this.customer_section_controller.reset();
     this.showReviewSection();
   },
 
@@ -1209,7 +1139,7 @@ var TransactionsCustomerController = new JS.Class(ViewController, {
 var Line = new JS.Class(Model, {
   extend: {
     resource: 'line',
-    columns: ['id', 'transaction_id', 'item_id', 'title', 'description', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable', 'discountable'],
+    columns: ['id', 'transaction_id', 'item_id', 'title', 'quantity', 'condition', 'discount', 'price', 'credit', 'cash', 'purchase', 'taxable'],
     belongs_to: ['item', 'transaction'],
     'title': {
       'presence_of': {}
@@ -1261,7 +1191,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.row = $('ul.line_elements', view).first().clone();
+    this.row = $('ul.transactions_line_elements', view).first().clone();
 
     $('input.price', this.view).bind('change', {instance: this}, this.onPrice);
     $('a.more', this.view).bind('click', {instance: this}, this.onMore);
@@ -1274,13 +1204,13 @@ var TransactionsCartFormController = new JS.Class(FormController, {
 
   saveAll: function() {
     var controller = this;
-    $('ul.line_elements', this.view).each(function(index, value) {
+    $('ul.transactions_line_elements', this.view).each(function(index, value) {
       controller.saveLine(index);
     });
   },
 
   saveLine: function(index) {
-    new_line = $('ul.line_elements', this.view).eq(index);
+    new_line = $('ul.transactions_line_elements', this.view).eq(index);
 
     base_price = parseInt(Currency.toPennies($('input#price', new_line).val()));
     if(base_price <= 0) {
@@ -1350,7 +1280,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   },
 
   onLess: function(event) {
-    $('ul.line_elements', event.data.instance.view).last().remove();
+    $('ul.transactions_line_elements', event.data.instance.view).last().remove();
     event.preventDefault();
   },
 
@@ -1385,7 +1315,7 @@ var TransactionsCartFormController = new JS.Class(FormController, {
   },
 
   onAddRow: function(event) {
-    event.data.instance.saveLine($('ul.line_elements li > a.add_row', event.data.instance.view).index(this));
+    event.data.instance.saveLine($('ul.transactions_line_elements li > a.add_row', event.data.instance.view).index(this));
     event.preventDefault();
   }
 });
@@ -1403,40 +1333,40 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
     $('a.info', this.view).bind('click', {instance: this}, this.onInfo);
     $('a.plus', this.view).bind('click', {instance: this}, this.onPlus);
     $('a.minus', this.view).bind('click', {instance: this}, this.onMinus);
-    $('ul.cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
-    $('ul.cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
-    $('ul.cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
+    $('ul.transactions_cart_line_action li a', this.view).bind('click', {instance: this}, this.onAction);
+    $('ul.transactions_cart_line_sell_condition li a', this.view).bind('click', {instance: this}, this.onCondition);
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).bind('click', {instance: this}, this.onDiscount);
     $('form', this.view).bind('submit', {instance: this}, this.onSubmit);
   },
 
   set: function(line) {
 
     $('input.quantity', this.view).val(line.quantity);
-    $('hgroup.cart_line_information h3.cart_line_title', this.view).html(line.title);
+    $('hgroup.transactions_cart_line_information h3.transactions_cart_line_title', this.view).html(line.title);
     if(line.description != undefined) {
-      $('hgroup.cart_line_information h4.cart_line_description', this.view).html(line.description.truncate(50));
+      $('hgroup.transactions_cart_line_information h4.transactions_cart_line_description', this.view).html(line.description.truncate(50));
     }
-    $('h4.cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
-    $('ul.cart_line_action li a', this.view).removeClass('selected');
-    $('span.cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
-    $('span.cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
-    $('ul.cart_line_sell_condition li a', this.view).removeClass('selected');
-    $('ul.cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).removeClass('selected');
-    $('ul.cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
+    $('h4.transactions_cart_line_subtotal', this.view).html(Currency.pretty(line.subtotal()));
+    $('ul.transactions_cart_line_action li a', this.view).removeClass('selected');
+    $('span.transactions_cart_line_credit_value', this.view).html('Credit Value: ' + Currency.pretty(Math.round(line.credit * line.condition)));
+    $('span.transactions_cart_line_cash_value', this.view).html('Cash Value: ' + Currency.pretty(Math.round(line.cash * line.condition)));
+    $('ul.transactions_cart_line_sell_condition li a', this.view).removeClass('selected');
+    $('ul.transactions_cart_line_sell_condition li a', this.view).eq(Math.round((line.condition * 5) - 1)).addClass('selected');
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).removeClass('selected');
+    $('ul.transactions_cart_line_purchase_discount li a', this.view).eq(Math.round(((1 - line.discount) * 100) / 5)).addClass('selected');
     if(line.purchase) {
-      $('ul.cart_line_action li a.purchase', this.view).addClass('selected');
+      $('ul.transactions_cart_line_action li a.purchase', this.view).addClass('selected');
       if(line.discountable) {
         this.showPurchaseControls();
       }
       this.hideSellControls();
     } else {
-      $('ul.cart_line_action li a.sell', this.view).addClass('selected');
+      $('ul.transactions_cart_line_action li a.sell', this.view).addClass('selected');
       this.showSellControls();
       this.hidePurchaseControls();
     }
     if(this.isOpen()) {
-      $('div.cart_info', this.view).css('display', 'block');
+      $('div.transactions_cart_info', this.view).css('display', 'block');
     }
   },
 
@@ -1447,10 +1377,10 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   toggleInfo: function() {
     if(this.open) {
       this.open = false;
-      $('div.cart_info', this.view).hide();
+      $('div.transactions_cart_info', this.view).hide();
     } else {
       this.open = true;
-      $('div.cart_info', this.view).show();
+      $('div.transactions_cart_info', this.view).show();
     }
   },
 
@@ -1465,21 +1395,21 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
 
   onDiscount: function(event) {
-    index = $('ul.cart_line_purchase_discount li a', event.data.instance.view).index(this);
-    event.data.instance.line.discount = (1 - ($('ul.cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
+    index = $('ul.transactions_cart_line_purchase_discount li a', event.data.instance.view).index(this);
+    event.data.instance.line.discount = (1 - ($('ul.transactions_cart_line_purchase_discount li a').eq(index).attr('data-discount') / 100));
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
   onCondition: function(event) {
-    index = $('ul.cart_line_sell_condition li a', event.data.instance.view).index(this);
-    event.data.instance.line.condition = ($('ul.cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
+    index = $('ul.transactions_cart_line_sell_condition li a', event.data.instance.view).index(this);
+    event.data.instance.line.condition = ($('ul.transactions_cart_line_sell_condition li a').eq(index).attr('data-condition') / 5);
     event.data.instance.notifyObservers(event.data.instance.line_index, event.data.instance.line);
     event.preventDefault();
   },
 
   onInfo: function(event) {
-    $('div.cart_info', event.data.instance.view).toggle();
+    $('div.transactions_cart_info', event.data.instance.view).toggle();
     event.data.instance.open = !event.data.instance.open;
     event.preventDefault();
   },
@@ -1512,7 +1442,7 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
 
   onAction: function(event) {
-    index = $('ul.cart_line_action li a', event.data.instance.view).index(this);
+    index = $('ul.transactions_cart_line_action li a', event.data.instance.view).index(this);
     if(index == 0) {
       event.data.instance.setPurchase();
     } else {
@@ -1528,19 +1458,19 @@ var TransactionsCartLineController = new JS.Class(ViewController, {
   },
 
   showSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).css('display', 'block');
+    $('ul.transactions_cart_line_sell_control', this.view).css('display', 'block');
   },
 
   hideSellControls: function() {
-    $('ul.cart_line_sell_control', this.view).hide();
+    $('ul.transactions_cart_line_sell_control', this.view).hide();
   },
 
   showPurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).css('display', 'block');
+    $('ul.transactions_cart_line_purchase_control', this.view).css('display', 'block');
   },
 
   hidePurchaseControls: function() {
-    $('ul.cart_line_purchase_control', this.view).hide();
+    $('ul.transactions_cart_line_purchase_control', this.view).hide();
   }
 });
 
@@ -1551,12 +1481,12 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
     this.callSuper();
     this.lines = [];
     this.line_controllers = [];
-    this.line = $('li.cart_line', this.view).detach();
+    this.line = $('li.transactions_cart_line', this.view).detach();
     this.hideCartNav();
-    $('ul#cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
-    $('ul#cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
-    $('ul#cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
-    $('ul#cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
+    $('ul#transactions_cart_lines_nav a.remove', this.view).bind('click', {instance: this}, this.onRemove);
+    $('ul#transactions_cart_lines_nav a.info', this.view).bind('click', {instance: this}, this.onInfo);
+    $('ul#transactions_cart_lines_nav a.purchase', this.view).bind('click', {instance: this}, this.onPurchase);
+    $('ul#transactions_cart_lines_nav a.sell', this.view).bind('click', {instance: this}, this.onSell);
   },
 
   reset: function() {
@@ -1605,7 +1535,7 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
       }
       new_line.addObserver(this.updateLine, this);
       this.line_controllers.push(new_line);
-      $('ul#cart_lines', this.view).append(new_line.view);
+      $('ul#transactions_cart_lines', this.view).append(new_line.view);
     }
     if(lines.length > 0) {
       this.showCartNav();
@@ -1617,7 +1547,7 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
   },
 
   clearLines: function() {
-    $('ul#cart_lines > li').remove();
+    $('ul#transactions_cart_lines > li').remove();
   },
 
   updateLine: function(index, updated_line) {
@@ -1659,19 +1589,19 @@ var TransactionsCartLinesController = new JS.Class(ViewController, {
   },
 
   showCartNav: function() {
-    $('ul#cart_lines_nav', this.view).show();
+    $('ul#transactions_cart_lines_nav', this.view).show();
   },
 
   hideCartNav: function() {
-    $('ul#cart_lines_nav', this.view).hide();
+    $('ul#transactions_cart_lines_nav', this.view).hide();
   },
 
   showCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).show();
+    $('h2#transactions_cart_lines_notice', this.view).show();
   },
 
   hideCartNotice: function() {
-    $('h2#cart_lines_notice', this.view).hide();
+    $('h2#transactions_cart_lines_notice', this.view).hide();
   }
 });
 
@@ -1691,7 +1621,9 @@ var TransactionsCartTableController = new JS.Class(TableController, {
 
         $('td.title', new_row).html(items[item].title);
         $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
-        $('td.tags', new_row).html(items[item].tags);
+        if(items[item].tags != undefined) {
+          $('td.tags', new_row).html(items[item].tags.join(','));
+        }
         $('td.sku', new_row).html(items[item].sku);
         $('td.price', new_row).html(Currency.pretty(items[item].price));
         $('td.credit', new_row).html(Currency.pretty(items[item].credit));
@@ -1717,7 +1649,7 @@ var TransactionsCartSearchResultsController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.cart_table_controller = new TransactionsCartTableController($('table', this.view));
+    this.cart_table_controller = new TransactionsCartTableController($('table#transactions_cart_search_results_table', this.view));
     this.cart_table_controller.addObserver(this.onItem, this);
   },
 
@@ -1727,9 +1659,9 @@ var TransactionsCartSearchResultsController = new JS.Class(ViewController, {
 
   update: function(results) {
     if(results.length > 0) {
-      $('h2#cart_search_results_notice').hide();
+      $('h2#transactions_cart_search_results_notice').hide();
     } else {
-      $('h2#cart_search_results_notice').show();
+      $('h2#transactions_cart_search_results_notice').show();
     }
     this.cart_table_controller.update(results);
   },
@@ -1758,11 +1690,11 @@ var TransactionsCartController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.cart_lines_controller = new TransactionsCartLinesController('div#cart_lines');
-    this.cart_form_controller = new TransactionsCartFormController('div#cart_form');
-    this.cart_search_controller = new SearchController('div#cart_search');
-    this.cart_search_results_controller = new TransactionsCartSearchResultsController('div#cart_search_results');
-    this.cart_section_controller = new SectionController('ul#cart_nav', [
+    this.cart_lines_controller = new TransactionsCartLinesController('div#transactions_cart_lines');
+    this.cart_form_controller = new TransactionsCartFormController('div#transactions_cart_form');
+    this.cart_search_controller = new SearchController('div#transactions_cart_search');
+    this.cart_search_results_controller = new TransactionsCartSearchResultsController('div#transactions_cart_search_results');
+    this.cart_section_controller = new SectionController('ul#transactions_cart_nav', [
       this.cart_lines_controller,
       this.cart_form_controller,
       this.cart_search_results_controller
@@ -1781,8 +1713,7 @@ var TransactionsCartController = new JS.Class(ViewController, {
     this.cart_form_controller.reset();
     this.cart_search_controller.reset();
     this.cart_search_results_controller.reset();
-    this.cart_section_controller.reset();
-    $('h2#cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
+    $('h2#transactions_cart_summary', this.view).html('0 item(s): ' + Currency.pretty(0));
     this.showLinesController();
   },
 
@@ -1821,7 +1752,7 @@ var TransactionsCartController = new JS.Class(ViewController, {
   },
 
   update: function(transaction) {
-    $('h2#cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
+    $('h2#transactions_cart_summary', this.view).html(transaction.countItems() + ' item(s): ' + Currency.pretty(transaction.subtotal()));
   },
 
   showLinesController: function() {
@@ -1873,7 +1804,7 @@ var Till = new JS.Class(Model, {
 var Transaction = new JS.Class(Model, {
   extend: {
     resource: 'transaction',
-    columns: ['id', 'till_id', 'customer_id', 'user_id', 'tax_rate', 'complete', 'locked'],
+    columns: ['id', 'till_id', 'customer_id', 'user_id', 'payments', 'tax_rate', 'complete', 'locked'],
     belongs_to: ['customer', 'till', 'user'],
     has_many: ['lines']
   },
@@ -1943,7 +1874,7 @@ var Transaction = new JS.Class(Model, {
   },
 
   purchaseSubtotal: function() {
-    payments = this.payments();
+    payments = this.payments;
     subtotal = this.subtotal();
     if(subtotal >= 0) {
       store_credit_payment = 0;
@@ -1959,7 +1890,7 @@ var Transaction = new JS.Class(Model, {
   },
 
   amountDue: function() {
-    payments = this.payments();
+    payments = this.payments;
 
     if(this.subtotal() >= 0) {
       payment_total = 0;
@@ -2031,12 +1962,12 @@ var Transaction = new JS.Class(Model, {
     subtotal = this.subtotal();
     credit_payout = parseInt(subtotal * ratio);
     cash_payout = parseInt((credit_cash_ratio - (credit_cash_ratio * ratio)) * subtotal);
-    this.updatePayment(new Payment({form: 'store_credit', amount: credit_payout}));
-    this.updatePayment(new Payment({form: 'cash', amount: cash_payout}));
+    this.updatePayment({form: 'store_credit', amount: credit_payout});
+    this.updatePayment({form: 'cash', amount: cash_payout});
   },
 
   updatePayment: function(updated_payment) {
-    payments = this.payments();
+    payments = this.payments;
     found = false;
     for(payment in payments) {
       if(payments[payment].form == updated_payment.form) {
@@ -2045,7 +1976,7 @@ var Transaction = new JS.Class(Model, {
       }
     }
     if(!found) {
-      this.addPayment(updated_payment);
+      this.payments.push(updated_payment);
     }
   }
 });
@@ -2096,7 +2027,7 @@ var TransactionsPaymentFieldController = new JS.Class(ViewController, {
 
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val()))}));
+      event.data.instance.notifyObservers({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val()))});
     } else {
       $(this).val(null);
     }
@@ -2109,9 +2040,6 @@ var TransactionsPaymentLineController = new JS.Class(TransactionsPaymentFieldCon
     this.callSuper();
     $('a.clear', this.view).bind('click', {instance: this}, this.onClear);
     $('a.amount_due', this.view).bind('click', {instance: this}, this.onAmountDue);
-    $('form', this.view).submit(function(event) {
-      event.preventDefault();
-    });
   },
 
   onAmountDue: function(event) {
@@ -2189,7 +2117,7 @@ var TransactionsPaymentStoreCreditController = new JS.Class(TransactionsPaymentL
     this.callSuper();
     this.disable();
     this.customer = undefined;
-    $('div#payment_store_credit span#payment_customer').empty();
+    $('div#transactions_payment_store_credit span#transactions_payment_customer').empty();
   },
 
   setCustomer: function(customer) {
@@ -2197,9 +2125,9 @@ var TransactionsPaymentStoreCreditController = new JS.Class(TransactionsPaymentL
       this.customer = customer;
       person = customer.person();
       if(person != undefined) {
-        $('div#payment_store_credit span#payment_customer').html(person.first_name + ' ' + person.last_name + ': ' + Currency.pretty(customer.credit));
+        $('div#transactions_payment_store_credit span#transactions_payment_customer').html(person.first_name + ' ' + person.last_name + ': ' + Currency.pretty(customer.credit));
       } else {
-        $('div#payment_store_credit span#payment_customer').empty();
+        $('div#transactions_payment_store_credit span#transactions_payment_customer').empty();
       }
       this.enable();
     } else {
@@ -2229,7 +2157,7 @@ var TransactionsPaymentStoreCreditController = new JS.Class(TransactionsPaymentL
       if(Currency.toPennies(amount) > event.data.instance.amount_due) {
         amount = Currency.format(event.data.instance.amount_due);
       }
-      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))}));
+      event.data.instance.notifyObservers({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs(amount))});
     } else {
       $(this).val(null);
     }
@@ -2254,7 +2182,7 @@ var TransactionsPaymentPayoutController = new JS.Class(TransactionsPaymentFieldC
 
   onChange: function(event) {
     if(!isNaN($(this).val())) {
-      event.data.instance.notifyObservers(new Payment({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val())) * -1}));
+      event.data.instance.notifyObservers({form: $(this).attr('data-payment-form'), amount: Currency.toPennies(Math.abs($(this).val())) * -1});
     } else {
       $(this).val(null);
     }
@@ -2266,7 +2194,7 @@ var TransactionsPaymentScaleController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    $('ul#payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
+    $('ul#transactions_payment_scale_container a.button').bind('click', {instance: this}, this.onScale);
   },
 
   onScale: function(event) {
@@ -2283,14 +2211,14 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
     this.callSuper();
     this.payments = [];
 
-    this.scale_controller = new TransactionsPaymentScaleController('ul#payment_scale_container');
-    this.store_credit_controller = new TransactionsPaymentStoreCreditController('div#payment_store_credit');
-    this.gift_card_controller = new TransactionsPaymentLineController('div#payment_gift_card');
-    this.check_controller = new TransactionsPaymentLineController('div#payment_check');
-    this.credit_card_controller = new TransactionsPaymentLineController('div#payment_credit_card');
-    this.cash_controller = new TransactionsPaymentCashController('div#payment_cash');
-    this.store_credit_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_store_credit');
-    this.cash_payout_controller = new TransactionsPaymentPayoutController('li#payment_scale_cash');
+    this.scale_controller = new TransactionsPaymentScaleController('ul#transactions_payment_scale_container');
+    this.store_credit_controller = new TransactionsPaymentStoreCreditController('div#transactions_payment_store_credit');
+    this.gift_card_controller = new TransactionsPaymentLineController('div#transactions_payment_gift_card');
+    this.check_controller = new TransactionsPaymentLineController('div#transactions_payment_check');
+    this.credit_card_controller = new TransactionsPaymentLineController('div#transactions_payment_credit_card');
+    this.cash_controller = new TransactionsPaymentCashController('div#transactions_payment_cash');
+    this.store_credit_payout_controller = new TransactionsPaymentPayoutController('li#transactions_payment_scale_store_credit');
+    this.cash_payout_controller = new TransactionsPaymentPayoutController('li#transactions_payment_scale_cash');
     this.store_credit_controller.addObserver(this.updatePayment, this);
     this.gift_card_controller.addObserver(this.updatePayment, this);
     this.check_controller.addObserver(this.updatePayment, this);
@@ -2307,11 +2235,11 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
   },
 
   resetSummary: function() {
-    $('div#payment_summary span#payment_cart_items', this.view).html('0 item(s) in cart');
-    $('div#payment_summary span#payment_cart_subtotal', this.view).html('$0.00');
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: $0.00');
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: $0.00');
-    $('div#payment_action span#payment_change', this.view).html('Change Due: $0.00');
+    $('div#transactions_payment_summary span#transactions_payment_cart_items', this.view).html('0 item(s) in cart');
+    $('div#transactions_payment_summary span#transactions_payment_cart_subtotal', this.view).html('$0.00');
+    $('div#transactions_payment_summary span#transactions_payment_summary_tax', this.view).html('Tax: $0.00');
+    $('div#transactions_payment_summary span#transactions_payment_summary_total', this.view).html('Total: $0.00');
+    $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Change Due: $0.00');
   },
 
   resetPaymentFields: function() {
@@ -2346,7 +2274,7 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
   update: function(transaction) {
     this.reset();
     amount_due = transaction.amountDue();
-    payments = transaction.payments();
+    payments = transaction.payments;
 
     this.store_credit_controller.update(0, transaction.subtotal());
     this.store_credit_payout_controller.update(0, transaction.subtotal());
@@ -2356,31 +2284,33 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
     this.credit_card_controller.update(0, amount_due);
     this.check_controller.update(0, amount_due);
 
-    if(payments.length > 0) {
-      this.payments = payments;
-      for(payment in payments) {
-        switch(payments[payment].form) {
-          case 'store_credit':
-            this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
-            this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
-            break;
-          case 'cash':
-            this.cash_controller.update(payments[payment].amount, amount_due);
-            this.cash_payout_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'gift_card':
-            this.gift_card_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'credit_card':
-            this.credit_card_controller.update(payments[payment].amount, amount_due);
-            break;
-          case 'check':
-            this.check_controller.update(payments[payment].amount, amount_due);
-            break;
+    if(payments != undefined) {
+      if(payments.length > 0) {
+        this.payments = payments;
+        for(payment in payments) {
+          switch(payments[payment].form) {
+            case 'store_credit':
+              this.store_credit_controller.update(payments[payment].amount, transaction.subtotal());
+              this.store_credit_payout_controller.update(payments[payment].amount, transaction.subtotal());
+              break;
+            case 'cash':
+              this.cash_controller.update(payments[payment].amount, amount_due);
+              this.cash_payout_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'gift_card':
+              this.gift_card_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'credit_card':
+              this.credit_card_controller.update(payments[payment].amount, amount_due);
+              break;
+            case 'check':
+              this.check_controller.update(payments[payment].amount, amount_due);
+              break;
+          }
         }
+      } else {
+        this.payments = [];
       }
-    } else {
-      this.payments = [];
     }
     this.store_credit_controller.setCustomer(transaction.customer());
     this.updateSummary(transaction);
@@ -2408,15 +2338,15 @@ var TransactionsPaymentController = new JS.Class(ViewController, {
 
   updateSummary: function(transaction) {
     amount_due = transaction.amountDue();
-    $('div#payment_cart span#payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
-    $('div#payment_cart span#payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
-    $('div#payment_summary span#payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.purchaseSubtotal()));
-    $('div#payment_summary span#payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
-    $('div#payment_summary span#payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
+    $('div#transactions_payment_cart span#transactions_payment_cart_items', this.view).html(transaction.countItems() + ' item(s) in cart');
+    $('div#transactions_payment_cart span#transactions_payment_cart_subtotal', this.view).html(Currency.pretty(transaction.subtotal()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_taxable_subtotal', this.view).html(Currency.pretty(transaction.purchaseSubtotal()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_tax', this.view).html('Tax: ' + Currency.pretty(transaction.tax()));
+    $('div#transactions_payment_summary span#transactions_payment_summary_total', this.view).html('Total: ' + Currency.pretty(transaction.total()));
     if(amount_due >= 0) {
-      $('div#payment_action span#payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
+      $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Amount Due: ' + Currency.pretty(amount_due));
     } else {
-      $('div#payment_action span#payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
+      $('div#transactions_payment_action span#transactions_payment_change', this.view).html('Change Due: ' + Currency.pretty(Math.abs(amount_due)));
     }
   },
 
@@ -2467,19 +2397,21 @@ var TransactionsReviewController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
-    this.line = $('div#review_lines table > tbody > tr', view).detach();
+
+    this.payment_row = $('div#transactions_review_summary table > tbody > tr#payment', this.view).detach();
+    this.line = $('div#transactions_review_lines table > tbody > tr', this.view).detach();
+    $('ul#transactions_review_nav a', this.view).click(function(event) { event.preventDefault(); });
   },
 
   reset: function() {
     $('input#receipt_quantity', this.view).val(1);
-    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#payment', this.view).remove();
-    $('div#review_lines table > tbody > tr', this.view).remove();
-    $('h2#review_customer', this.view).html("No customer");
+    $('div#transactions_review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#transactions_review_lines table > tbody > tr', this.view).remove();
+    $('h2#transactions_review_customer', this.view).html("No customer");
   },
 
   update: function(transaction) {
@@ -2488,16 +2420,16 @@ var TransactionsReviewController = new JS.Class(ViewController, {
     if(customer != undefined) {
       person = customer.person();
       if(person != undefined) {
-        $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
+        $('h2#transactions_review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        $('h2#review_customer', this.view).empty();
+        $('h2#transactions_review_customer', this.view).empty();
       }
     } else {
-      $('h2#review_customer', this.view).html("No customer");
+      $('h2#transactions_review_customer', this.view).html("No customer");
     }
 
-    $('div#review_summary table > tbody > tr#payment', this.view).remove();
-    $('div#review_lines table > tbody > tr', this.view).remove();
+    $('div#transactions_review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#transactions_review_lines table > tbody > tr', this.view).remove();
 
     lines = transaction.lines();
     for(line in lines) {
@@ -2510,27 +2442,29 @@ var TransactionsReviewController = new JS.Class(ViewController, {
       $('td.title', new_line).html(lines[line].title);
       $('td.description', new_line).html(lines[line].description.truncate(50));
       $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
-      $('div#review_lines table tbody').append(new_line);
+      $('div#transactions_review_lines table tbody').append(new_line);
     }
-    payments = transaction.payments();
-    for(payment in payments) {
-      if(payments[payment].amount != 0) {
-        var new_payment_row = this.payment_row.clone();
-        $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
-        $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
-        $('div#review_summary table tbody tr#change').before(new_payment_row);
+    payments = transaction.payments;
+    if(payments != undefined) {
+      for(payment in payments) {
+        if(payments[payment].amount != 0) {
+          var new_payment_row = this.payment_row.clone();
+          $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
+          $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
+          $('div#transactions_review_summary table tbody tr#change').before(new_payment_row);
+        }
       }
     }
-    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
-    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
-    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
+    $('div#transactions_review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
+    $('div#transactions_review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
+    $('div#transactions_review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
     amount_due = transaction.amountDue();
     if(amount_due >= 0) {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
     } else {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
   }
 });
@@ -2554,24 +2488,24 @@ var TransactionsSummaryController = new JS.Class(ViewController, {
   },
 
   setItemCount: function(count) {
-    $('h2#summary_item_count', this.view).html(count + ' item(s)');
+    $('h2#transactions_summary_item_count', this.view).html(count + ' item(s)');
   },
 
   setCustomer: function(customer) {
     if(customer.id == null) {
-      $('h2#summary_customer', this.view).html("No customer");
+      $('h2#transactions_summary_customer', this.view).html("No customer");
     } else {
       person = customer.person();
       if(person != undefined) {
-        $('h2#summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
+        $('h2#transactions_summary_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        $('h2#summary_customer', this.view).empty();
+        $('h2#transactions_summary_customer', this.view).empty();
       }
     }
   },
 
   setTotal: function(total) {
-    $('h2#summary_total', this.view).html(Currency.pretty(total));
+    $('h2#transactions_summary_total', this.view).html(Currency.pretty(total));
   }
 });
 
@@ -2614,26 +2548,17 @@ var TransactionsFinishController = new JS.Class(ViewController, {
   }
 });
 
-var TransactionsNavController = new JS.Class(ViewController, {
-
-  update: function(till) {
-    $('li#transactions_nav_till', this.view).html(till.title);
-    this.view.show();
-  }
-});
-
 var TransactionsController = new JS.Class(ViewController, {
   include: JS.Observable,
 
   initialize: function(view) {
     this.callSuper();
-    this.till_id = null;
-    this.user_id = null;
+    this.till = null;
+    this.user = null;
     this.transaction = null;
 
-    this.transactions_nav_controller = new TransactionsNavController('ul#transactions_nav');
-    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
     this.cart_controller = new TransactionsCartController('section#transactions_cart');
+    this.customer_controller = new TransactionsCustomerController('section#transactions_customer');
     this.payment_controller = new TransactionsPaymentController('section#transactions_payment');
     this.review_controller = new TransactionsReviewController('section#transactions_review');
     this.section_controller = new SectionController('ul#transactions_nav', [
@@ -2652,27 +2577,37 @@ var TransactionsController = new JS.Class(ViewController, {
     this.payment_controller.store_credit_payout_controller.addObserver(this.updateCreditPayout, this);
     this.payment_controller.cash_payout_controller.addObserver(this.updateCashPayout, this);
     this.finish_controller.addObserver(this.saveTransactions, this);
-
-    $('ul#transactions_nav a.reset').bind('click', {instance: this}, this.onReset);
   },
 
   reset: function() {
     this.cart_controller.reset();
     this.payment_controller.reset();
     this.review_controller.reset();
-    this.section_controller.reset();
     this.summary_controller.reset();
     this.finish_controller.reset();
     this.customer_controller.reset();
+    this.section_controller.reset();
   },
 
-  onReset: function(event) {
-    event.data.instance.newTransactions(event.data.instance.till_id, event.data.instance.user_id);
-    event.preventDefault();
+  activate: function(user, till) {
+    this.user = user;
+    this.till = till;
+    this.newTransaction(till, user);
+    this.summary_controller.view.show();
+    this.finish_controller.view.show();
+    this.section_controller.view.show();
+    this.view.show();
+  },
+
+  deactivate: function() {
+    this.summary_controller.view.hide();
+    this.finish_controller.view.hide();
+    this.section_controller.view.hide();
+    this.view.hide();
   },
 
   updateUser: function(user) {
-    this.user_id = user.id;
+    this.user = user;
   },
 
   updateCustomer: function(customer) {
@@ -2686,9 +2621,9 @@ var TransactionsController = new JS.Class(ViewController, {
     if(this.transaction) {
       this.transaction.setLines(lines);
       if(this.transaction.subtotal() < 0) {
-        this.transaction.setPayments([new Payment({form: 'store_credit', amount: this.transaction.subtotal()})]);
+        this.transaction.payments = [{form: 'store_credit', amount: this.transaction.subtotal()}];
       } else {
-        this.transaction.setPayments([]);
+        this.transaction.payments = [];
       }
       this.notifyControllers(this.transaction);
     }
@@ -2696,7 +2631,7 @@ var TransactionsController = new JS.Class(ViewController, {
 
   updatePayments: function(payments) {
     if(this.transaction) {
-      this.transaction.setPayments(payments);
+      this.transaction.payments = payments;
       this.notifyControllers(this.transaction);
     }
   },
@@ -2735,11 +2670,9 @@ var TransactionsController = new JS.Class(ViewController, {
     this.finish_controller.update(transaction);
   },
 
-  newTransactions: function(till_id, user_id) {
+  newTransaction: function(till, user) {
     this.reset();
-    this.till_id = till_id;
-    this.user_id = user_id;
-    this.setTransactions(new Transactions({user_id: user_id, till_id: till_id, tax_rate: 0.07, complete: false, locked: false}));
+    this.setTransactions(new Transaction({user_id: user.id, till_id: till.id, tax_rate: 0.07, complete: false, locked: false}));
   },
 
   setTransactions: function(transaction) {
@@ -2754,23 +2687,21 @@ var TransactionsController = new JS.Class(ViewController, {
 
       lines = this.transaction.lines();
       for(line in lines) {
-        lines[line].transactions_id = this.transaction.id;
+        lines[line].transaction_id = this.transaction.id;
         if(!lines[line].save()) {
           console.error('Line not saved.');
         }
       }
 
-      payments = this.transaction.payments();
-      for(payment in payments) {
-        if(payments[payment].form == 'store_credit') {
-          credit_adjustment += payments[payment].amount;
-        }
-        if(payments[payment].form == 'cash') {
-          till_adjustment += payments[payment].amount;
-        }
-        payments[payment].transactions_id = this.transaction.id;
-        if(!payments[payment].save()) {
-          console.error('Payment not saved.');
+      payments = this.transaction.payments;
+      if(payments != undefined) {
+        for(payment in payments) {
+          if(payments[payment].form == 'store_credit') {
+            credit_adjustment += payments[payment].amount;
+          }
+          if(payments[payment].form == 'cash') {
+            till_adjustment += payments[payment].amount;
+          }
         }
       }
 
@@ -2789,8 +2720,8 @@ var TransactionsController = new JS.Class(ViewController, {
       }
       if(till_adjustment != 0) {
         entry = new Entry({
-          till_id: this.till_id,
-          user_id: this.user_id,
+          till_id: this.till.id,
+          user_id: this.user.id,
           title: 'Transactions: ' + this.transaction.id,
           amount: till_adjustment
         });
@@ -2800,7 +2731,7 @@ var TransactionsController = new JS.Class(ViewController, {
       }
 
       this.notifyObservers('/api/transactions/' + this.transaction.id + '/receipt');
-      this.newTransactions(this.till_id, this.user_id);
+      this.newTransaction(this.till, this.user);
     }
   }
 });
@@ -3101,10 +3032,12 @@ var InventoryController = new JS.Class(ViewController, {
 
   activate: function(user) {
     this.view.show();
+    this.section_controller.view.show();
   },
 
   deactivate: function() {
     this.view.hide();
+    this.section_controller.view.hide();
   }
 });
 
@@ -5074,11 +5007,13 @@ var UsersController = new JS.Class(ViewController, {
   activate: function(user) {
     this.view.show();
     this.overview_controller.setUsers(User.all());
+    this.section_controller.view.show();
   },
 
   deactivate: function() {
-    this.overview_controller.reset();
     this.view.hide();
+    this.overview_controller.reset();
+    this.section_controller.view.hide();
   }
 });
 
@@ -5569,66 +5504,52 @@ var TransactionsCustomerReviewController = new JS.Class(ViewController, {
   },
 
   update: function(customer) {
-    $('div#customer_data h3#customer_name', this.view).empty();
-    $('div#customer_data div#customer_addresses > p', this.view).empty();
-    $('div#customer_data div#customer_phones > p', this.view).empty();
-    $('div#customer_data div#customer_emails > p', this.view).empty();
+    $('div#transactions_customer_data h3#transactions_customer_name', this.view).empty();
+    $('div#transactions_customer_data div#transactions_customer_addresses > p', this.view).empty();
+    $('div#transactions_customer_data div#transactions_customer_phones > p', this.view).empty();
+    $('div#transactions_customer_data div#transactions_customer_emails > p', this.view).empty();
 
     person = customer.person();
-    $('div#customer_data h3#customer_name', this.view).html([
-      person.first_name,
-      person.middle_name,
-      person.last_name
-    ].join(' '));
-
     if(person != undefined) {
-      addresses = person.addresses();
+      $('div#transactions_customer_data h3#transactions_customer_name', this.view).html([
+        person.first_name,
+        person.middle_name,
+        person.last_name
+      ].join(' '));
+      $('div#transactions_customer_data div#transactions_customer_license > p', this.view).html(person.drivers_license);
+
+      addresses = person.addresses;
       for(address in addresses) {
-        $('div#customer_data div#customer_addresses > p', this.view).append('<address>' + [
-          addresses[address].first_line,
-          addresses[address].second_line,
-          addresses[address].city + ',',
-          addresses[address].state,
-          addresses[address].zip
-        ].join(' ') + '</address>');
+        $('div#transactions_customer_data div#transactions_customer_addresses > p', this.view).append('<address>' + addresses[address] + '</address>');
       }
 
-      phones = person.phones();
+      phones = person.phones;
       for(phone in phones) {
-        if(phones[phone].title != null) {
-          phone_string = phones[phone].title + ' - ' + phones[phone].number;
-        } else {
-          phone_string = phones[phone].number;
-        }
-        $('div#customer_data div#customer_phones > p', this.view).append('<span>' + phone_string + '</span>');
+        $('div#transactions_customer_data div#transactions_customer_phones > p', this.view).append('<span>' + phones[phone] + '</span>');
       }
 
-      emails = person.emails();
+      emails = person.emails;
       for(email in emails) {
-        $('div#customer_data div#customer_emails > p', this.view).append('<span>' + emails[email].address + '</span>');
+        $('div#transactions_customer_data div#transactions_customer_emails > p', this.view).append('<span>' + emails[email] + '</span>');
       }
     }
 
-    $('div#customer_data div#customer_license > p', this.view).html([
-      customer.drivers_license_state,
-      customer.drivers_license_number
-    ].join(' - '));
-    $('div#customer_data div#customer_notes > p', this.view).html(customer.notes);
-    $('div#customer_data div#customer_flagged > p', this.view).html(Boolean.toString(!customer.active));
-    $('div#customer_data div#customer_credit > p', this.view).html(Currency.pretty(customer.credit));
-    $('h2#customer_notice').hide();
-    $('div#customer_data').show();
+    $('div#transactions_customer_data div#transactions_customer_notes > p', this.view).html(customer.notes);
+    $('div#transactions_customer_data div#transactions_customer_flagged > p', this.view).html(Boolean.toString(!customer.active));
+    $('div#transactions_customer_data div#transactions_customer_credit > p', this.view).html(Currency.pretty(customer.credit));
+    $('h2#transactions_customer_notice').hide();
+    $('div#transactions_customer_data').show();
   },
 
   reset: function() {
-    $('h2#customer_notice').show();
-    $('div#customer_data').hide();
-    $('div#customer_data h3#customer_name', this.view).html(null);
-    $('div#customer_data div#customer_addresses > p', this.view).html(null);
-    $('div#customer_data div#customer_emails > p', this.view).html(null);
-    $('div#customer_data div#customer_phones > p', this.view).html(null);
-    $('div#customer_data div#customer_license > p', this.view).html(null);
-    $('div#customer_data div#customer_notes > p', this.view).html(null);
+    $('h2#transactions_customer_notice').show();
+    $('div#transactions_customer_data').hide();
+    $('div#transactions_customer_data h3#transactions_customer_name', this.view).html(null);
+    $('div#transactions_customer_data div#transactions_customer_addresses > p', this.view).html(null);
+    $('div#transactions_customer_data div#transactions_customer_emails > p', this.view).html(null);
+    $('div#transactions_customer_data div#transactions_customer_phones > p', this.view).html(null);
+    $('div#transactions_customer_data div#transactions_customer_license > p', this.view).html(null);
+    $('div#transactions_customer_data div#transactions_customer_notes > p', this.view).html(null);
   }
 });
 
@@ -5637,12 +5558,12 @@ var TransactionsReceiptController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    $('ul#receipt_nav a.close', view).bind('click', {instance: this}, this.doClose);
-    $('ul#receipt_nav a.print', view).bind('click', {instance: this}, this.doPrint);
+    $('ul#transactions_receipt_nav a.close', view).bind('click', {instance: this}, this.doClose);
+    $('ul#transactions_receipt_nav a.print', view).bind('click', {instance: this}, this.doPrint);
   },
 
   update: function(url) {
-    $('object#receipt_window', this.view).attr('data', url);
+    $('object#transactions_receipt_window', this.view).attr('data', url);
   },
 
   doClose: function(event) {
@@ -5661,11 +5582,41 @@ var TransactionsTillController = new JS.Class(ViewController, {
 
   initialize: function(view) {
     this.callSuper();
-    $('ul#till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
+    $('ul#tills_till_nav a.select', view).bind('click', {instance: this}, this.doSelect);
+  },
+
+  present: function(tills) {
+    $('select#till', this.view).empty();
+    for(till in tills) {
+      $('select#till', this.view).append($('<option></option>').html(tills[till].title).val(tills[till].id));
+    }
+    this.view.show();
   },
 
   doSelect: function(event) {
-    event.data.instance.notifyObservers(Till.find($('div#till select#till_id').val()));
+    id = $('select#till', event.data.instance.view).val();
+    event.data.instance.notifyObservers(Till.find(id));
+    event.data.instance.view.hide();
+    event.preventDefault();
+  }
+});
+
+var TransactionsSessionNavController = new JS.Class(ViewController, {
+  include: JS.Observable,
+
+  initialize: function(view) {
+    this.callSuper();
+
+    $('a.reset', this.view).bind('click', {instance: this}, this.onReset);
+  },
+
+  update: function(till) {
+    $('li#transactions_session_nav_till', this.view).html(till.title);
+    this.view.show();
+  },
+
+  onReset: function(event) {
+    event.data.instance.notifyObservers('reset');
     event.preventDefault();
   }
 });
@@ -5673,12 +5624,17 @@ var TransactionsTillController = new JS.Class(ViewController, {
 var TransactionsSessionController = new JS.Class({
 
   initialize: function() {
+    this.user = null;
+    this.till = null;
+
     this.transactions_controller = new TransactionsController('div#transactions');
-    this.receipt_controller = new TransactionsReceiptController('div#receipt');
+    this.transactions_session_nav_controller = new TransactionsSessionNavController('ul#transactions_session_nav');
+    this.receipt_controller = new TransactionsReceiptController('div#transactions_receipt');
     this.till_controller = new TransactionsTillController('div#transactions_till');
 
     this.till_controller.addObserver(this.updateTill, this);
     this.transactions_controller.addObserver(this.presentReceipt, this);
+    this.transactions_session_nav_controller.addObserver(this.onSessionNav, this);
 
     this.reset();
   },
@@ -5691,11 +5647,12 @@ var TransactionsSessionController = new JS.Class({
 
   activate: function(user) {
     this.updateUser(user);
-    this.transactions_controller.view.show();
+    this.till_controller.present(Till.all());
   },
 
   deactivate: function() {
-    this.transactions_controller.view.hide();
+    this.reset();
+    this.transactions_controller.deactivate();
   },
 
   presentReceipt: function(url) {
@@ -5708,9 +5665,12 @@ var TransactionsSessionController = new JS.Class({
   },
 
   updateTill: function(till) {
-    this.transactions_controller.newTransactions(till.id, this.user.id);
-    this.transactions_controller.transactions_nav_controller.update(till);
-    this.till_controller.view.hide();
-    this.transactions_controller.view.show();
+    this.till = till;
+    this.transactions_session_nav_controller.update(this.till);
+    this.transactions_controller.activate(this.user, this.till);
+  },
+
+  onSessionNav: function(action) {
+    this.transactions_controller.newTransaction(this.till, this.user);
   }
 });

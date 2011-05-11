@@ -40,9 +40,9 @@ class Item < ActiveRecord::Base
     self.price          ||= 0 if new_record?
     self.credit         ||= 0 if new_record?
     self.cash           ||= 0 if new_record?
-    self.taxable        ||= true if new_record?
-    self.discountable   ||= true if new_record?
-    self.locked         ||= true if new_record?
-    self.active         ||= true if new_record?
+    self.taxable        = true if new_record? && self.taxable.nil?
+    self.discountable   = true if new_record? && self.discountable.nil?
+    self.locked         = false if new_record? && self.locked.nil?
+    self.active         = true if new_record? && self.active.nil?
   end
 end

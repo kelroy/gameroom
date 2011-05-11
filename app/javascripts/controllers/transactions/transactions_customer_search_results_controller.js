@@ -7,7 +7,7 @@ var TransactionsCustomerSearchResultsController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.customer_table_controller = new TransactionsCustomerTableController($('table', this.view));
+    this.customer_table_controller = new TransactionsCustomerTableController($('table#transactions_customer_search_results_table', this.view));
     this.customer_table_controller.addObserver(this.onPerson, this);
   },
   
@@ -17,9 +17,9 @@ var TransactionsCustomerSearchResultsController = new JS.Class(ViewController, {
   
   update: function(results) {
     if(results.length > 0) {
-      $('h2#customer_search_results_notice').hide();
+      $('h2#transactions_customer_search_results_notice').hide();
     } else {
-      $('h2#customer_search_results_notice').show();
+      $('h2#transactions_customer_search_results_notice').show();
     }
     this.customer_table_controller.update(results);
   },

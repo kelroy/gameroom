@@ -21,10 +21,12 @@ var UsersController = new JS.Class(ViewController, {
   activate: function(user) {
     this.view.show();
     this.overview_controller.setUsers(User.all());
+    this.section_controller.view.show();
   },
   
   deactivate: function() {
-    this.overview_controller.reset();
     this.view.hide();
+    this.overview_controller.reset();
+    this.section_controller.view.hide();
   }
 });

@@ -1,4 +1,4 @@
-%ul{:id => 'cart_lines_nav', :class => 'button_nav'}
+%ul{:id => 'transactions_cart_lines_nav', :class => 'button_nav'}
   %li
     %a{:href => '#remove', :class => 'button remove'} X
   %li
@@ -7,51 +7,50 @@
     %a{:href => '#purchase', :class => 'button purchase'} Purchase From Store
   %li
     %a{:href => '#sell', :class => 'button sell'} Sell To Store
-%h2{:id => 'cart_lines_notice'} No items in cart.
-%ul{:id => 'cart_lines'}
-  %li{:class => 'cart_line'}
-    %div{:class => 'cart_main'}
-      %ul{:class => 'cart_line_quantity button_nav'}
+%h2{:id => 'transactions_cart_lines_notice'} No items in cart.
+%ul{:id => 'transactions_cart_lines'}
+  %li{:class => 'transactions_cart_line'}
+    %div{:class => 'transactions_cart_main'}
+      %ul{:class => 'transactions_cart_line_quantity button_nav'}
         %li
           %a{:href => '#remove', :class => 'button remove'} X
         %li
           %a{:href => '#minus', :class => 'button minus'} -
         %li
-          %form{:action => '#quantity', :method => 'get'}
+          %form{:action => '#transactions_quantity', :method => 'get'}
             %div
               = text_field_tag :amount, 1, :class => 'quantity'
         %li
           %a{:href => '#plus', :class => 'button plus'} +
         %li
           %a{:href => '#info', :class => 'button info'} ?
-      %hgroup{:class => 'cart_line_information'}
-        %h3{:class => 'cart_line_title'}
-        %h4{:class => 'cart_line_description'}
-      %h4{:class => 'cart_line_subtotal'}
-    %div{:class => 'cart_info'}
-      %ul{:class => 'cart_line_action group_nav'}
+      %hgroup{:class => 'transactions_cart_line_information'}
+        %h3{:class => 'transactions_cart_line_title'}
+        %h4{:class => 'transactions_cart_line_description'}
+      %h4{:class => 'transactions_cart_line_subtotal'}
+    %div{:class => 'transactions_cart_info'}
+      %ul{:class => 'transactions_cart_line_action group_nav'}
         %li
           %a{:href => '#purchase', :class => 'purchase'} Purchase From Store
         %li
           %a{:href => '#sell', :class => 'sell'} Sell To Store
-      %ul{:class => 'cart_line_purchase_control'}
+      %ul{:class => 'transactions_cart_line_purchase_control'}
         %li
           %span Item Discount %:
         %li
-          %ul{:class => 'cart_line_purchase_discount group_nav'}
+          %ul{:class => 'transactions_cart_line_purchase_discount group_nav'}
             - (0..30).step(5) do |n|
               %li
-                %a{:href => '#cart_line_purchase_discount', :'data-discount' => "#{n}"}= n
-      %ul{:class => 'cart_line_sell_control'}
+                %a{:href => '#transactions_cart_line_purchase_discount', :'data-discount' => "#{n}"}= n
+      %ul{:class => 'transactions_cart_line_sell_control'}
         %li
           %span Item Condition:
         %li
-          %ul{:class => 'cart_line_sell_condition group_nav'}
+          %ul{:class => 'transactions_cart_line_sell_condition group_nav'}
             - (1..5).each do |n|
               %li
-                %a{:href => '#cart_line_sell_condition', :'data-condition' => "#{n}"}= n
+                %a{:href => '#transactions_cart_line_sell_condition', :'data-condition' => "#{n}"}= n
         %li
-          %span{:class => 'cart_line_credit_value'}
+          %span{:class => 'transactions_cart_line_credit_value'}
         %li
-          %span{:class => 'cart_line_cash_value'}
-        
+          %span{:class => 'transactions_cart_line_cash_value'}

@@ -8,19 +8,21 @@ var TransactionsReviewController = new JS.Class(ViewController, {
   
   initialize: function(view) {
     this.callSuper();
-    this.payment_row = $('div#review_summary table > tbody > tr#payment', view).detach();
-    this.line = $('div#review_lines table > tbody > tr', view).detach();
+    
+    this.payment_row = $('div#transactions_review_summary table > tbody > tr#payment', this.view).detach();
+    this.line = $('div#transactions_review_lines table > tbody > tr', this.view).detach();
+    $('ul#transactions_review_nav a', this.view).click(function(event) { event.preventDefault(); });
   },
   
   reset: function() {
     $('input#receipt_quantity', this.view).val(1);
-    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
-    $('div#review_summary table > tbody > tr#payment', this.view).remove();
-    $('div#review_lines table > tbody > tr', this.view).remove();
-    $('h2#review_customer', this.view).html("No customer");
+    $('div#transactions_review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(0));
+    $('div#transactions_review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#transactions_review_lines table > tbody > tr', this.view).remove();
+    $('h2#transactions_review_customer', this.view).html("No customer");
   },
   
   update: function(transaction) {
@@ -29,16 +31,16 @@ var TransactionsReviewController = new JS.Class(ViewController, {
     if(customer != undefined) {
       person = customer.person();
       if(person != undefined) {
-        $('h2#review_customer', this.view).html(person.first_name + ' ' + person.last_name);
+        $('h2#transactions_review_customer', this.view).html(person.first_name + ' ' + person.last_name);
       } else {
-        $('h2#review_customer', this.view).empty();
+        $('h2#transactions_review_customer', this.view).empty();
       }
     } else {
-      $('h2#review_customer', this.view).html("No customer");
+      $('h2#transactions_review_customer', this.view).html("No customer");
     }
     
-    $('div#review_summary table > tbody > tr#payment', this.view).remove();
-    $('div#review_lines table > tbody > tr', this.view).remove();
+    $('div#transactions_review_summary table > tbody > tr#payment', this.view).remove();
+    $('div#transactions_review_lines table > tbody > tr', this.view).remove();
     
     lines = transaction.lines();
     for(line in lines) {
@@ -51,27 +53,29 @@ var TransactionsReviewController = new JS.Class(ViewController, {
       $('td.title', new_line).html(lines[line].title);
       $('td.description', new_line).html(lines[line].description.truncate(50));
       $('td.subtotal', new_line).html(Currency.pretty(lines[line].subtotal()));
-      $('div#review_lines table tbody').append(new_line);
+      $('div#transactions_review_lines table tbody').append(new_line);
     }
-    payments = transaction.payments();
-    for(payment in payments) {
-      if(payments[payment].amount != 0) {
-        var new_payment_row = this.payment_row.clone();
-        $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
-        $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
-        $('div#review_summary table tbody tr#change').before(new_payment_row);
+    payments = transaction.payments;
+    if(payments != undefined) {
+      for(payment in payments) {
+        if(payments[payment].amount != 0) {
+          var new_payment_row = this.payment_row.clone();
+          $('td', new_payment_row).eq(0).html(payments[payment].form.replace('_', ' ').capitalize());
+          $('td', new_payment_row).eq(1).html(Currency.pretty(payments[payment].amount));
+          $('div#transactions_review_summary table tbody tr#change').before(new_payment_row);
+        }
       }
     }
-    $('div#review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
-    $('div#review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
-    $('div#review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
+    $('div#transactions_review_summary table > tbody > tr#subtotal > td', this.view).eq(1).html(Currency.pretty(transaction.subtotal()));
+    $('div#transactions_review_summary table > tbody > tr#tax > td', this.view).eq(1).html(Currency.pretty(transaction.tax()));
+    $('div#transactions_review_summary table > tbody > tr#total > td', this.view).eq(1).html(Currency.pretty(transaction.total()));
     amount_due = transaction.amountDue();
     if(amount_due >= 0) {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(0).html('Amount Due');
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(amount_due));
     } else {
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
-      $('div#review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(0).html('Change Due');
+      $('div#transactions_review_summary table > tbody > tr#change > td', this.view).eq(1).html(Currency.pretty(Math.abs(amount_due)));
     }
   }
 });

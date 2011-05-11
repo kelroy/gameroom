@@ -12,6 +12,6 @@ class Shift < ActiveRecord::Base
   def _default
     self.begin    ||= Time.now if new_record?
     self.end      ||= Time.now if new_record?
-    self.active   ||= true if new_record?
+    self.active   = true if new_record? && self.active.nil?
   end
 end

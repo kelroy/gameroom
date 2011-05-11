@@ -16,7 +16,9 @@ var TransactionsCartTableController = new JS.Class(TableController, {
 
         $('td.title', new_row).html(items[item].title);
         $('td.description', new_row).html(items[item].description.truncate(50)).attr('title', items[item].description);
-        $('td.tags', new_row).html(items[item].tags);
+        if(items[item].tags != undefined) {
+          $('td.tags', new_row).html(items[item].tags.join(','));
+        }
         $('td.sku', new_row).html(items[item].sku);
         $('td.price', new_row).html(Currency.pretty(items[item].price));
         $('td.credit', new_row).html(Currency.pretty(items[item].credit));

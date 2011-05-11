@@ -28,7 +28,7 @@ var TerminalController = new JS.Class({
     this.login_controller.addObserver(this.onLogin, this);
     this.dashboard_controller.addObserver(this.onDashboard, this);
     
-    $('form', this.view).submit(function(event) {
+    $('form').submit(function(event) {
       event.preventDefault();
     });
     
@@ -44,6 +44,7 @@ var TerminalController = new JS.Class({
     this.tills_controller.deactivate();
     this.timeclock_controller.deactivate();
     this.users_controller.deactivate();
+    $('div.modal').hide();
   },
   
   onNav: function(selection) {

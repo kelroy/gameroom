@@ -139,6 +139,9 @@ Gameroom::Application.routes.draw do
   
   namespace 'reports' do
     root :to => 'reports#index'
+    match "transactions" => "reports#transactions"
+    match "timecards" => "reports#timecards"
+    match "timecard_summary" => "reports#timecard_summary"
   end
   
   namespace 'tills' do

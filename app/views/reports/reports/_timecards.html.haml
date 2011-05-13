@@ -1,0 +1,38 @@
+%div
+  .time
+    FROM:
+    =Time.parse(@start_date.to_s).strftime("%A, %B %d, %Y")
+    %br/
+    TO:
+    =Time.parse(@end_date.to_s).strftime("%A, %B %d, %Y")
+-@report.users.each do |user|
+  %table
+    %thead
+      %tr
+        %th
+          %b
+            Employee:
+          =@report.users_timecard[user.person.id][:first_name]
+          =@report.users_timecard[user.person.id][:middle_name]
+          =@report.users_timecard[user.person.id][:last_name]
+          %b
+            Total Hours Worked:  
+            =@report.users_timecard[user.person.id][:sum]
+      %tr
+        %th
+          Time In
+        %th
+          Time Out
+        %th
+          Duration in Hours
+    -@report.users_timecard[user.person.id][:timecards].each do |timecard|
+      %tr
+        %td
+          =timecard.begin.to_time.strftime("%A, %B %d, %Y %I:%M %p")
+        %td
+          -if timecard.end
+            =timecard.end.to_time.strftime("%A, %B %d, %Y %I:%M %p")
+        %td
+          =@report.users_timecard[user.person.id][timecard.id]
+  %br/
+  %br/

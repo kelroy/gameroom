@@ -1,0 +1,17 @@
+.date
+  %form{:action => action, :method => "post", :name => "date_range_input"}         
+    %div
+      -if @start_date && @end_date
+        -@start_date = @start_date.strftime("%Y-%m-%d")
+        -@end_date = @end_date.strftime("%Y-%m-%d")
+      -else
+        -@start_date = Time.now.strftime("%Y-%m-%d")
+        -@end_date = Time.now.strftime("%Y-%m-%d")
+      Starting Date:
+      %input#date{:name => "start_date", :type => "date", :value => @start_date}
+      Ending Date:
+      %input#date{:name => "end_date", :type => "date", :value => @end_date}
+
+      =submit_tag "Submit"
+      =submit_tag "Previous Day"
+      =submit_tag "Next Day"

@@ -1,1 +1,16 @@
 %div{:id => 'reports', :class => 'section_container'}
+  =render :partial => "date_range", :locals => {:action => "/reports"}
+  .left_report_pane
+    -if @report != nil
+      =render :partial => @type.to_s
+  .right_column_picker
+    Statistics:
+    %br/
+    %hr
+    =link_to "Timeclock Timecards",:action => "timecards"
+    %br/
+    =link_to "Timeclock Timecard Summary",:action => "timecard_summary"
+    %br/
+    =link_to "Pos Transactions",:action => "transactions"
+    %br/
+    =@type.to_s

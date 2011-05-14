@@ -6,81 +6,81 @@
     TO:
     =Time.parse(@end_date.to_s).strftime("%A, %B %d, %Y")
 .left
-  %table
-    %thead
-      %tr
-        %th
+  %table.reports
+    %th.reportsead
+      %tr.reports
+        %th.reports
           PAID TO GAMEROOM FOR MERCHANDISE
-    %tr
-      %td
+    %tr.reports
+      %td.reports
         STORE CREDIT
-      %td.money_positive=Currency.to_s_no_symb @report.positive['store_credit'].to_f
-    %tr
-      %td
-      %td
-    %tr
-      %td
+      %td.reports.money_positive=Currency.to_s_no_symb @report.positive['store_credit'].to_f
+    %tr.reports
+      %td.reports
+      %td.reports
+    %tr.reports
+      %td.reports
         CHECK
-      %td.money_positive=Currency.to_s_no_symb @report.positive['check'].to_f
-    %tr
-      %td
+      %td.reports.money_positive=Currency.to_s_no_symb @report.positive['check'].to_f
+    %tr.reports
+      %td.reports
         GIFT CARD
-      %td.money_positive=Currency.to_s_no_symb @report.positive['gift_card'].to_f
-      %tr
-        %td
+      %td.reports.money_positive=Currency.to_s_no_symb @report.positive['gift_card'].to_f
+      %tr.reports
+        %td.reports
           CREDIT CARD
-        %td.money_positive=Currency.to_s_no_symb @report.positive['credit_card'].to_f
-        %tr
-          %td
+        %td.reports.money_positive=Currency.to_s_no_symb @report.positive['credit_card'].to_f
+        %tr.reports
+          %td.reports
             CASH
-          %td.money_positive=Currency.to_s_no_symb @report.positive['cash'].to_f
-        %tr
-          %td
-          %td
-        %tr
-          %td
+          %td.reports.money_positive=Currency.to_s_no_symb @report.positive['cash'].to_f
+        %tr.reports
+          %td.reports
+          %td.reports
+        %tr.reports
+          %td.reports
             CASH TOTALS
-          %td.money_positive
+          %td.reports.money_positive
             =Currency.to_s_no_symb(@report.positive['cash'].to_f + @report.positive['credit_card'].to_f + @report.positive['check'].to_f + @report.positive['gift_card'].to_f)
-        %tr
-          %td
+        %tr.reports
+          %td.reports
             TAX COLLECTED
-          %td.money_positive
+          %td.reports.money_positive
             =Currency.to_s_no_symb(@report.positive[:tax].to_f)
 .right
   %table.payout
-    %thead
-      %tr
-        %th
+    %th.reportsead
+      %tr.reports
+        %th.reports
           PAID OUT TO CUSTOMER FOR MERCHANDISE
-    %tr
-      %td
+    %tr.reports
+      %td.reports
         STORE CREDIT
-      %td.money_neg=Currency.to_s_no_symb @report.negative['store_credit'].to_f.abs
-    %tr
-      %td
-      %td
-    %tr
-      %td
+      %td.reports.money_neg=Currency.to_s_no_symb @report.negative['store_credit'].to_f.abs
+    %tr.reports
+      %td.reports
+      %td.reports
+    %tr.reports
+      %td.reports
         CHECK
-      %td.money_neg=Currency.to_s_no_symb @report.negative['check'].to_f.abs
-    %tr
-      %td
+      %td.reports.money_neg=Currency.to_s_no_symb @report.negative['check'].to_f.abs
+    %tr.reports
+      %td.reports
         GIFT CARD
-      %td.money_neg=Currency.to_s_no_symb @report.negative['gift_card'].to_f.abs
-    %tr
-      %td
+      %td.reports.money_neg=Currency.to_s_no_symb @report.negative['gift_card'].to_f.abs
+    %tr.reports
+      %td.reports
         CREDIT CARD
-      %td.money_neg=Currency.to_s_no_symb @report.negative['credit_card'].to_f.abs
-    %tr
-      %td
+      %td.reports.money_neg=Currency.to_s_no_symb @report.negative['credit_card'].to_f.abs
+    %tr.reports
+      %td.reports
         CASH
-      %td.money_neg=Currency.to_s_no_symb @report.negative['cash'].to_f.abs
-    %tr
-      %td
-      %td
-    %tr
-      %td
+      %td.reports.money_neg=Currency.to_s_no_symb @report.negative['cash'].to_f.abs
+    %tr.reports
+      %td.reports
+      %td.reports
+    %tr.reports
+      %td.reports
         CASH TOTALS
-      %td.money_neg
+      %td.reports.money_neg
         =Currency.to_s_no_symb((@report.negative['cash'].to_f + @report.negative['credit_card'].to_f + @report.negative['check'].to_f + @report.negative['gift_card'].to_f).abs)

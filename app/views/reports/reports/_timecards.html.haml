@@ -6,10 +6,10 @@
     TO:
     =Time.parse(@end_date.to_s).strftime("%A, %B %d, %Y")
 -@report.users.each do |user|
-  %table
-    %thead
-      %tr
-        %th
+  %table.reports
+    %th.reports
+      %tr.reports
+        %th.reports
           %b
             Employee:
           =@report.users_timecard[user.person.id][:first_name]
@@ -18,21 +18,21 @@
           %b
             Total Hours Worked:  
             =@report.users_timecard[user.person.id][:sum]
-      %tr
-        %th
+      %tr.reports
+        %th.reports
           Time In
-        %th
+        %th.reports
           Time Out
-        %th
+        %th.reports
           Duration in Hours
     -@report.users_timecard[user.person.id][:timecards].each do |timecard|
-      %tr
-        %td
+      %tr.reports
+        %td.reports
           =timecard.begin.to_time.strftime("%A, %B %d, %Y %I:%M %p")
-        %td
+        %td.reports
           -if timecard.end
             =timecard.end.to_time.strftime("%A, %B %d, %Y %I:%M %p")
-        %td
+        %td.reports
           =@report.users_timecard[user.person.id][timecard.id]
   %br/
   %br/

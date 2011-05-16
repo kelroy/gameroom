@@ -7,17 +7,16 @@
     =Time.parse(@end_date.to_s).strftime("%A, %B %d, %Y")
 -@report.users.each do |user|
   %table.reports
-    %th.reports
-      %tr.reports
-        %th.reports
-          %b
-            Employee:
-          =@report.users_timecard[user.person.id][:first_name]
-          =@report.users_timecard[user.person.id][:middle_name]
-          =@report.users_timecard[user.person.id][:last_name]
-          %b
-            Total Hours Worked:  
-            =@report.users_timecard[user.person.id][:sum]
+    %tr.reports
+      %th.reports
+        %b
+          Employee:
+        =@report.users_timecard[user.person.id][:first_name]
+        =@report.users_timecard[user.person.id][:middle_name]
+        =@report.users_timecard[user.person.id][:last_name]
+        %b
+          Total Hours Worked:  
+          =@report.users_timecard[user.person.id][:sum]
       %tr.reports
         %th.reports
           Time In

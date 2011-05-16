@@ -36,33 +36,22 @@ module Report
       @positive[:tax] = 0.0
     
       @transactions = Transaction.where('created_at >= ? AND created_at <= ?', @start_date + 5.hours, @end_date + 5.hours)
-    
+      subtotal_sum = 0.0
       @transactions.each do |transaction|
-        ##@positive[:tax] += transaction.tax.to_f
-      
         @payments = transaction.payments
         
         @lines = transaction.lines
-        @lines.each do |line|
+        @lines.each do |line| 
           subtotal = 0.0
           if line[:purchase] && line[:taxable]
             subtotal =  line[:quantity] * line[:condition] * line[:discount] * line[:price]
             @positive[:tax] += subtotal.to_f * transaction[:tax_rate].to_f
           end
+          subtotal_sum += subtotal 
         end
         
-        ##end
         
         @payments.each do |payment|
-          nil.to_i
-          # if @positive[payment[:form]] == nil
-          #            @positive[payment[:form]] = 0
-          #          end
-          #          
-          #          if @negative[payment[:form]] == nil
-          #            @negative[payment[:form]] = 0
-          #          end
-        
           if payment[:amount] > 0
             @positive[payment[:form]] = payment[:amount].to_i + @positive[payment[:form]].to_i
           else
@@ -70,79 +59,9 @@ module Report
           end
            
         end
-      end  
+      end
+        @positive[:subtotal_sum] = subtotal_sum
     end
-    
-    
-    
-    
-      # @positive = Hash.new
-      #      @negative = Hash.new
-      #      @transactions = Transaction.find(:all, :conditions => {:created_at => @start_date.beginning_of_day..@end_date.end_of_day})
-      # 
-      #      @transactions.each do |transaction|
-      #        if transaction.lines
-      #          transaction.lines.each do |line|
-      # 
-      #            if line[:price] == nil
-      #               line[:price] = 0
-      #            end
-      # 
-      #            if line[:quantity] == nil
-      #               line[:quantity] = 0
-      #            end
-      # 
-      #            if line[:price] > 0
-      #              @payments = transaction.payments
-      #              @payments.each do |payment|
-      #              if payment[:amount] >0
-      #                if payment[:form] == "store_credit"
-      #                  @positive[:store_credit] = amount[:price].to_i + @positive[:store_credit].to_i
-      #                else
-      # 
-      #                  if payment[:form] == "check"
-      #                    @positive[:check] = line[:quantity].to_i * line[:price].to_i + @positive[:check].to_i
-      #                  elsif payment[:form] == "credit_card"
-      #                    @positive[:credit_card] = line[:quantity].to_i * line[:price].to_i + @positive[:credit_card].to_i
-      #                  elsif payment[:form] == "gift_card"
-      #                    @positive[:gift_card] = line[:quantity].to_i * line[:price].to_i + @positive[:gift_card].to_i
-      #                  else
-      #                    @positive[:cash] = line[:quantity].to_i * line[:price].to_i + @positive[:cash].to_i
-      #                  end
-      #                    if line[:taxable]
-      #                      @positive[:tax] = line[:price].to_i*transaction[:tax_rate].to_f + @positive[:tax].to_f
-      #                    end
-      #                  end
-      #                end
-      #              end
-      #            else
-      #              @payments = transaction.payments
-      #              @payments.each do |payment|
-      #                @negative[:sum] = transaction.lines
-      #                if payment[:amount].to_i != 0
-      #                  if payment[:form] == "store_credit"
-      # 
-      #                    @negative[:store_credit] = payment[:amount].to_i + @negative[:store_credit].to_i
-      #                  else
-      #                    if payment[:form] == "check"
-      #                      @negative[:check] = payment[:amount].to_i + @negative[:check].to_i
-      #                    elsif payment[:form] == "credit_card"
-      #                      @negative[:credit_card] = payment[:amount].to_i + @negative[:credit_card].to_i
-      #                    elsif payment[:form] == "gift_card"
-      #                      @negative[:gift_card] = payment[:amount].to_i + @negative[:gift_card].to_i
-      #                    else
-      #                      @negative[:cash] = payment[:amount].to_i + @negative[:cash].to_i
-      #                    end
-      #                  end
-      #                end
-      #              end  
-      #            end
-      # 
-      #          end
-      #        end
-      #      end
-      #      @start_date = @start_date.strftime("%Y-%m-%d")
-      #      @end_date = @end_date.strftime("%Y-%m-%d")
     
 
   end

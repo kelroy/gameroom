@@ -34,21 +34,35 @@ module Report
       @positive = Hash.new
       @negative = Hash.new
       @positive[:tax] = 0.0
-      @positive[:subtotal] = 0.0
-      subtotal = 0.0
-    
+      @positive[:store_credit] = 0
+      payment_net = 0
+      sum = 0
+      
       @transactions = Transaction.where('created_at >= ? AND created_at <= ?', @start_date + 5.hours, @end_date + 5.hours)
       @transactions.each do |transaction|
-        subtotal = 0.0
+        line_subtotal = 0
+        line_subtotal_ones = 0
+        line_subtotal_zeros = 0
+        taxable_subtotal = 0.0
+        
         @payments = transaction.payments
         
         @lines = transaction.lines
         @lines.each do |line| 
           if line[:purchase] && line[:taxable]
-            subtotal +=  transaction.change.to_f
-            @positive[:tax] += subtotal.to_f * transaction[:tax_rate].to_f
+            taxable_subtotal += line[:quantity] * line[:condition] * line[:price]
+          elsif  line[:purchase] 
+            line_subtotal_ones += line[:quantity] * line[:condition] * line[:price]
+          else
+            line_subtotal_zeros += line[:quantity] * line[:condition] * line[:price]
           end
         end
+        
+        if ((line_subtotal_ones + taxable_subtotal) - line_subtotal_zeros > 0)
+          
+          line_subtotal = (line_subtotal_ones + taxable_subtotal) - line_subtotal_zeros
+        end
+        @positive[:tax] += taxable_subtotal * transaction[:tax_rate]
         
         @payments.each do |payment|
           if payment[:amount] > 0
@@ -57,8 +71,21 @@ module Report
             @negative[payment[:form]] = payment[:amount].to_i
           end
         end
+        
+        RAILS_DEFAULT_LOGGER.error("line_subtotal \n")
+        RAILS_DEFAULT_LOGGER.error(line_subtotal.to_i)
+        RAILS_DEFAULT_LOGGER.error("\nsum \n")
+        RAILS_DEFAULT_LOGGER.error(sum.to_i)
+        if !(@positive[:store_credit] < 0)
+          sum += line_subtotal.to_i - @positive[:store_credit].to_i
+        end
+        
+        
+      
       end
-        @positive[:subtotal] = subtotal.to_f
+      
+
+      @positive[:sum] = sum.to_i
     end
     
 

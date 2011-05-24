@@ -34,33 +34,31 @@ module Report
       @positive = Hash.new
       @negative = Hash.new
       @positive[:tax] = 0.0
+      @positive[:subtotal] = 0.0
+      subtotal = 0.0
     
       @transactions = Transaction.where('created_at >= ? AND created_at <= ?', @start_date + 5.hours, @end_date + 5.hours)
-      subtotal_sum = 0.0
       @transactions.each do |transaction|
+        subtotal = 0.0
         @payments = transaction.payments
         
         @lines = transaction.lines
         @lines.each do |line| 
-          subtotal = 0.0
           if line[:purchase] && line[:taxable]
-            subtotal =  line[:quantity] * line[:condition] * line[:discount] * line[:price]
+            subtotal +=  transaction.change.to_f
             @positive[:tax] += subtotal.to_f * transaction[:tax_rate].to_f
           end
-          subtotal_sum += subtotal 
         end
-        
         
         @payments.each do |payment|
           if payment[:amount] > 0
-            @positive[payment[:form]] = payment[:amount].to_i + @positive[payment[:form]].to_i
+            @positive[payment[:form]] = payment[:amount].to_i
           else
-            @negative[payment[:form]] = payment[:amount].to_i +  @negative[payment[:form]].to_i
+            @negative[payment[:form]] = payment[:amount].to_i
           end
-           
         end
       end
-        @positive[:subtotal_sum] = subtotal_sum
+        @positive[:subtotal] = subtotal.to_f
     end
     
 

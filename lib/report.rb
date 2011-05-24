@@ -34,33 +34,56 @@ module Report
       @positive = Hash.new
       @negative = Hash.new
       @positive[:tax] = 0.0
-    
+      @positive[:store_credit] = 0
+      payment_net = 0
+      sum = 0
+      
       @transactions = Transaction.where('created_at >= ? AND created_at <= ?', @start_date + 5.hours, @end_date + 5.hours)
-      subtotal_sum = 0.0
       @transactions.each do |transaction|
+        line_subtotal = 0
+        line_subtotal_ones = 0
+        line_subtotal_zeros = 0
+        taxable_subtotal = 0.0
+        
         @payments = transaction.payments
         
         @lines = transaction.lines
         @lines.each do |line| 
-          subtotal = 0.0
           if line[:purchase] && line[:taxable]
-            subtotal =  line[:quantity] * line[:condition] * line[:discount] * line[:price]
-            @positive[:tax] += subtotal.to_f * transaction[:tax_rate].to_f
+            taxable_subtotal += line[:quantity] * line[:condition] * line[:price]
+          elsif  line[:purchase] 
+            line_subtotal_ones += line[:quantity] * line[:condition] * line[:price]
+          else
+            line_subtotal_zeros += line[:quantity] * line[:condition] * line[:price]
           end
-          subtotal_sum += subtotal 
         end
         
+        if ((line_subtotal_ones + taxable_subtotal) - line_subtotal_zeros > 0)
+          
+          line_subtotal = (line_subtotal_ones + taxable_subtotal) - line_subtotal_zeros
+        end
         
+        if taxable_subtotal - line_subtotal_zeros > 0
+          @positive[:tax] += taxable_subtotal * transaction[:tax_rate]
+        end
         @payments.each do |payment|
           if payment[:amount] > 0
-            @positive[payment[:form]] = payment[:amount].to_i + @positive[payment[:form]].to_i
+            @positive[payment[:form]] = payment[:amount].to_i
           else
-            @negative[payment[:form]] = payment[:amount].to_i +  @negative[payment[:form]].to_i
+            @negative[payment[:form]] = payment[:amount].to_i
           end
-           
         end
+        
+        if !(@positive[:store_credit] < 0)
+          sum += line_subtotal.to_i - @positive[:store_credit].to_i
+        end
+        
+        
+      
       end
-        @positive[:subtotal_sum] = subtotal_sum
+      
+
+      @positive[:sum] = sum.to_i
     end
     
 

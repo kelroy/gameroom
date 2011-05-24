@@ -62,8 +62,10 @@ module Report
           
           line_subtotal = (line_subtotal_ones + taxable_subtotal) - line_subtotal_zeros
         end
-        @positive[:tax] += taxable_subtotal * transaction[:tax_rate]
         
+        if taxable_subtotal - line_subtotal_zeros > 0
+          @positive[:tax] += taxable_subtotal * transaction[:tax_rate]
+        end
         @payments.each do |payment|
           if payment[:amount] > 0
             @positive[payment[:form]] = payment[:amount].to_i
@@ -72,10 +74,6 @@ module Report
           end
         end
         
-        RAILS_DEFAULT_LOGGER.error("line_subtotal \n")
-        RAILS_DEFAULT_LOGGER.error(line_subtotal.to_i)
-        RAILS_DEFAULT_LOGGER.error("\nsum \n")
-        RAILS_DEFAULT_LOGGER.error(sum.to_i)
         if !(@positive[:store_credit] < 0)
           sum += line_subtotal.to_i - @positive[:store_credit].to_i
         end

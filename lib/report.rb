@@ -67,10 +67,19 @@ module Report
           @positive[:tax] += taxable_subtotal * transaction[:tax_rate]
         end
         @payments.each do |payment|
+          if !payment[:amount]
+             payment[:amount] = 0
+          end
+          if !@positive[payment[:form]]
+            @positive[payment[:form]] = 0
+          end
+          if !@negative[payment[:form]]
+            @negative[payment[:form]] = 0
+          end
           if payment[:amount] > 0
-            @positive[payment[:form]] = payment[:amount].to_i
+            @positive[payment[:form]] += payment[:amount].to_i
           else
-            @negative[payment[:form]] = payment[:amount].to_i
+            @negative[payment[:form]] += payment[:amount].to_i
           end
         end
         
